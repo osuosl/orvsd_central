@@ -264,3 +264,7 @@ session.add_all([district1,district2,district3])
 
 # commit the session, which actually writes all this to the db.
 session.commit()
+
+"""
+When creating the migration to install this schema, for the reverse migration, a table drop shoudl be sufficient.
+"""
