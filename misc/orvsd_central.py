@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Table, Text, Float
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from datetime import datetime, date, time, timedelta
+from sqlite3 import dbapi2 as sqlite
 
 """
 This just sets up the engine and points it at the server
@@ -11,7 +12,7 @@ replace "lamp" with your mysql server name after you have
 created the orvsd_central table and user (use whatever 
 table and user names you like)
 """
-engine = create_engine('mysql://orvsd:0rvsd!@lamp/orvsd_central', echo=True)
+engine = create_engine('sqlite+pysqlite:///orvsd.db', module=sqlite)
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
