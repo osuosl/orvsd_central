@@ -53,7 +53,7 @@ class School(Base):
   __tablename__ = 'schools'
   id = Column(Integer, primary_key=True)
   # points to the owning district
-  disctrict_id = Column(Integer, ForeignKey('districts.id'))
+  district_id = Column(Integer, ForeignKey('districts.id'))
   # school name
   name = Column(String(255)) 
   # short name or abbreviation
