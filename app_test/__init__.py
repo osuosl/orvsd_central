@@ -18,6 +18,7 @@ def load_user(userid):
 
 def import_models():
     import users.models
+    import info.models
 
 @app.before_request
 def before_request():
