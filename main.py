@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request
-from orvsd_central.misc.orvsd_central import User
+# from orvsd_central.misc.orvsd_central import User
 import re
 
 app = Flask(__name__)
 
 @app.route("/")
 def main_page():
-    return reports()
+    return report()
 
 @app.route("/report")
 def report():
@@ -20,9 +20,9 @@ def register():
     if request.method == "POST": 
         print request.form        
         # Can not test until the inital migration is pushed. 
-        if User.query.filter_by(username=request.form['username']).first ():
-            message="This username already exists!\n"
-        elif request.form['password'] is not request.form['confirm_password']:
+        #if User.query.filter_by(username=request.form['username']).first ():
+        #    message="This username already exists!\n"
+        if request.form['password'] is not request.form['confirm_password']:
             message="The passwords provided did not match!\n"
         elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$', request.form['email']):
             message="Invalid email address!\n"
