@@ -22,4 +22,4 @@ DATABASE_CONNECT_OPTIONS = {}
 CSRF_ENABLED = True
 CSRF_SESSION_KEY="aser43wAG$#WAg43WAY$JH%j%$KJW%$uWA$5eYaEgsahsu"
 
-SQLALCHEMY_MIGRATE_REPO = os.path.join(_basedir, 'db')
+SQLALCHEMY_MIGRATE_REPO = os.path.join(_basedir, 'migrations')
