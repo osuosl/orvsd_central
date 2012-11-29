@@ -1,33 +1,38 @@
-from flask import Flask, render_template, request
-# from orvsd_central.orvsd_central.models import User
-import re
+from flask import Blueprint, request, render_template, flash, g, session, redirect, url_for
+from werkzeug import check_password_hash, generate_password_hash
+from flask.ext.login import login_required, login_user, logout_user, current_user
 
-@app.route("/")
-def main_page():
-    return report()
+from orvsd_central import db
+from forms import LoginForm #add regester form when needed
+from models import User
 
-@app.route("/report")
-def report():
-    return "A page for reports"
+userblp = Blueprint('users', __name__, url_prefix="/users")
 
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-    user = True
-    message = ""
+@userblp.route('/me/')
+@login_required
+def home():
+    """
+    Loads a users home information page
+    """
+    return render_template('users/templates/profile.html', user=current_user) #not sure current_user works this way, write test
 
-    if request.method == "POST":
-        print request.form
-        # Can not test until the inital migration is pushed. 
-        #if User.query.filter_by(username=request.form['username']).first ():
-        #    message="This username already exists!\n"
-        if request.form['password'] is not request.form['confirm_password']:
-            message="The passwords provided did not match!\n"
-        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$', request.form['email']):
-            message="Invalid email address!\n"
-        else:
-            #Add user to db
-            message=request.form['username']+" has been added successfully!\n"
+@userblp.route("/login/", methods=['GET', 'POST'])
+def login():
+    form = LoginForm(request.form)
 
-    #Check for a good username
-    return render_template('register.html', user=user, message=message)
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+
+        if user and check_password_hash(user.password, form.password.data):
+            login_user(user)
+            flash("Successful Login!")
+            return redirect("/users/me/")
+    return render_template("login.html", form=form)
+
+@userblp.route("/logout/")
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login/')
+
 

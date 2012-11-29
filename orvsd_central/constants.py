@@ -1,3 +1,7 @@
+
+"""
+User Constants
+"""
 ADMIN = 0
 STEVE = 1
 HELPDESK = 2

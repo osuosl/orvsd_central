@@ -1,6 +1,6 @@
 import imp
 from migrate.versioning import api
-from app_test import db
+from orvsd_central import db
 from config import SQLALCHEMY_DATABASE_URI
 from config import SQLALCHEMY_MIGRATE_REPO
 
