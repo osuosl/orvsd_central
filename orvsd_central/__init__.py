@@ -13,20 +13,22 @@ db = SQLAlchemy(app)
 
 import models
 
-lm.setup_app(app)
-@lm.user_loader
-def load_user(userid):
-    return User.get(userid)
+db.init_app(app)
+#lm.setup_app(app)
+#@lm.user_loader
+#def load_user(userid):
+#    return User.get(userid)
 
 
 
-@app.before_request
-def before_request():
-    g.db = db 
+#@app.before_request
+#def before_request():
+#    g.db = db 
 
-@app.teardown_request
-def teardown_request(exception):
-    g.db.db_session.remove()        
+#@app.teardown_request
+#def teardown_request(exception):
+#    g.db.db_session.remove()        
 
-from views import userblp 
+from views import userblp, base 
 app.register_blueprint(userblp)
+app.register_blueprint(base)

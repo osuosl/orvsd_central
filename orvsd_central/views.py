@@ -6,6 +6,16 @@ from orvsd_central import db
 from forms import LoginForm #add regester form when needed
 from models import User
 
+base = Blueprint('base', __name__, url_prefix="/")
+
+@base.route('/')
+def index():
+    """
+    loads the base page, redirect to login if not logged in
+    """
+    return render_template('base.html')
+
+
 userblp = Blueprint('users', __name__, url_prefix="/users")
 
 @userblp.route('/me/')
