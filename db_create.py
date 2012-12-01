@@ -1,7 +1,7 @@
 #!flask/bin/python
 from migrate.versioning import api
-from orvsd_central.config import SQLALCHEMY_DATABASE_URI
-from orvsd_central.config import SQLALCHEMY_MIGRATE_REPO
+from config import SQLALCHEMY_DATABASE_URI
+from config import SQLALCHEMY_MIGRATE_REPO
 from orvsd_central import db
 
 import os.path

@@ -2,9 +2,10 @@ from flask import Blueprint, request, render_template, flash, g, session, redire
 from werkzeug import check_password_hash, generate_password_hash
 from flask.ext.login import login_required, login_user, logout_user, current_user
 
-from orvsd_central import db
+from orvsd_central import db, lm
 from forms import LoginForm #add regester form when needed
 from models import User
+
 
 base = Blueprint('base', __name__, url_prefix="/")
 
