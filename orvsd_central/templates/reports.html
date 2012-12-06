@@ -1,0 +1,105 @@
+<html>
+    <head>
+        <title>ORVSD Reports!</title>
+    </head>
+    Filter Options: 
+    <form name="filter_options" action="/reports" method="POST">
+        <table>
+            <tr>
+                <th>Districts</th>
+                <th>Schools</th>
+                <th>Courses</th>
+                <th>Apply</th>
+            </tr>
+            <tr>
+                <td>
+                    <select name="all_districts">
+                        <option selected value="all">All</option>
+                        {% for district in all_districts %}
+                            <option value="{{district.name}}">{{district.name}}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="all_schools">
+                        <option selected value="all">All</option>
+                        {% for school in all_schools %}
+                            <option value="{{school.name}}">{{school.name}}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="all_courses">
+                        <option selected value="all">All</option>
+                        {% for course in all_courses %}
+                            <option value="{{course.name}}">{{course.name}}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <input type="submit" value="Submit">Submit</input> 
+                </td>
+        </table>
+    </form>
+    
+    <br><br>
+
+    {% if districts %}
+        <label name="Districts" size="16">Districts</label>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th># Schools</th>
+                <th># Sites</th>
+                <th># Courses</th>
+                <th># Users</th>
+            </tr>
+            {% for district in districts %}
+            <tr>
+                <td>{{district.name}}</td>
+                <td>{{district.schools|count}}</td>
+                <td>{{district.sites|count}}</td>
+                <td>{{district.courses|count}}</td>
+                <td>{{district.num_users}}</td>
+            </td>
+            {% endfor %}
+        </table>
+    {% endif %}
+    
+    {% if schools %}
+     <label name="Schools" size="16">Sites</label>
+        <table>
+            <tr>
+                <th>School Name</th>
+                <th>Domain</th>
+                <th>License</th>
+            </tr>
+            {% for school in schools %}
+            <tr>
+                <td>{{school.name}}</td>
+                <td>{{school.domain}}</td>
+                <td>{{school.license}}</td>
+            </td>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    {% if courses %}
+        <label name="Courses" size="16">Courses</label>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th># Installs</th>
+                <th># Users</th>
+            </tr>
+            {% for course in courses %}
+            <tr>
+                <td>{{course.name}}</td>
+                <td>{{course.installs}}</td>
+                <td>{{course.num_users}}</td>
+            </td>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+</html>
