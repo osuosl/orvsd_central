@@ -18,8 +18,6 @@ lm.setup_app(app)
 def load_user(userid):
     return User.get(userid)
 
-
-
 @app.before_request
 def before_request():
     g.db = db 
@@ -28,5 +26,3 @@ def before_request():
 def teardown_request(exception):
     g.db.db_session.remove()        
 
-from views import userblp 
-app.register_blueprint(userblp)

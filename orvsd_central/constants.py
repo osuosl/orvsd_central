@@ -1,15 +1,14 @@
-
 """
-User Constants
+User Constants (Permissions)
 """
-ADMIN = 0
-STEVE = 1
-HELPDESK = 2
+ADMIN = 0 
+HELPDESK = 1
+STEVE = 2
 
 ROLE = {
     ADMIN: 'admin',
-    STEVE: 'steve',
     HELPDESK: 'helpdesk',
+    STEVE: 'steve',
 }
 
 #Possibly add constants for current status
