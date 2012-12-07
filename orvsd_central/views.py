@@ -1,9 +1,8 @@
 from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
-
 from orvsd_central import db, lm, app
-from forms import LoginForm #add regester form when needed
+from forms import LoginForm #add register form when needed
 from models import User
 import re
 
@@ -44,17 +43,35 @@ def logout():
 @login_required
 def report():
 
-    districts, schools, districts = None
+    districts, schools, courses = None
 
+    # Get all districts/schools/courses
+    # all_districts = query for districts
+    # all_courses = query for courses
+
+    # Once filters have been applied
     if request.method== "POST":
         form = request.form
 
     else:# The initial page
-        # Get list of all districts
-        # Get list of all schools
-        # Get list of all courses
+        if request.form['filter_districts'] == "All":
+            districts = all_districts
+        else:
+            #districts = query for filtered_districts
+        if request.form['filter_schools'] == "All":
+            schools = all_schools
+        else:
+            #schools = query for filtered_schools
+        if request.form['filter_courses'] == "All":
+            courses = all_courses
+        else:
+            #courses = query for filtered_courses
 
-        return render_template("reports.html")
+    return render_template("reports.html",  all_districts=all_districts,
+                                            all_schools=all_schools,
+                                            all_courses=all_courses,
+                                            districts=districts,schools=schools,
+                                            courses=courses,)
 
 @app.route("/register", methods=['GET', 'POST'])
 @login_required
