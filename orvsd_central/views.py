@@ -3,11 +3,11 @@ from flask.ext.login import login_required, login_user, logout_user, current_use
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, lm, app
 from forms import LoginForm #add register form when needed
-from models import User
+from models import District, School, Site, SiteDetail, Course, CourseDetail
 import re
 
 @app.route("/")
-@login_required
+#@login_required
 def main_page():
     return redirect('/report')
 
@@ -40,11 +40,12 @@ def logout():
     return redirect('/login')
 
 @app.route("/report", methods=['GET', 'POST'])
-@login_required
+#@login_required
 def report():
 
-    districts, schools, courses = None
-
+    all_districts = District.query.filter().all
+    all_schools = School.query.filter().all
+    all_courses = Course.query.filter().all
     # Get all districts/schools/courses
     # all_districts = query for districts
     # all_courses = query for courses
