@@ -1,12 +1,9 @@
 from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db
-from forms import LoginForm #add register form when needed
 
-from orvsd_central import db, lm
+from orvsd_central import db, lm, app
 from forms import LoginForm #add regester form when needed
->>>>>>> e49bbdc869f247400ca359495379e40c94bc4ce5
 from models import User
 import re
 
@@ -46,18 +43,18 @@ def logout():
 @app.route("/report", methods=['GET', 'POST'])
 @login_required
 def report():
-    
+
     districts, schools, districts = None
 
     if request.method== "POST":
         form = request.form
-        
+
     else:# The initial page
         # Get list of all districts
         # Get list of all schools
         # Get list of all courses
 
-    return render_template("reports.html", 
+        return render_template("reports.html")
 
 @app.route("/register", methods=['GET', 'POST'])
 @login_required
@@ -67,7 +64,7 @@ def register():
 
     if request.method == "POST":
         print request.form
-        # Can not test until the inital migration is pushed. 
+        # Can not test until the inital migration is pushed.
         #if User.query.filter_by(username=request.form['username']).first ():
         #    message="This username already exists!\n"
         if request.form['password'] is not request.form['confirm_password']:

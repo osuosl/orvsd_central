@@ -112,7 +112,7 @@ class Site(db.Model):
     location = db.Column(db.String(255))
 
     school = db.relationship("School", backref=db.backref('sites', order_by=id))
-    courses = db.relationship("Course", secondary=sites_courses, backref='sites')
+    courses = db.relationship("Course", secondary='sites_courses', backref='sites')
 
     def __init__(self, sitename, sitetype, baseurl, basepath, jenkins_cron_job, location):
         self.sitename = sitename
@@ -167,7 +167,8 @@ Courses belong to many schools
 """
 class Course(db.Model):
     __tablename__ = 'courses'
-    serial = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    serial = db.Column(db.Integer)
     name = db.Column(db.String(255))
     shortname = db.Column(db.String(255))
     # schools with a license token matching this can install this class
