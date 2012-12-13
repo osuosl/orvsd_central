@@ -5,11 +5,12 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Tabl
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from datetime import datetime, date, time, timedelta
 from sqlite3 import dbapi2 as sqlite
+from orvsd_central.models import User, District, School, Site, SiteDetail, Course, Course_Detail
 
 """
 This just sets up the engine and points it at the server
-replace "lamp" with your mysql server name after you have 
-created the orvsd_central table and user (use whatever 
+replace "lamp" with your mysql server name after you have
+created the orvsd_central table and user (use whatever
 table and user names you like)
 """
 engine = create_engine('sqlite+pysqlite:///orvsd_test.db', module=sqlite)
@@ -27,157 +28,6 @@ sites_courses = Table('sites_courses', Base.metadata,
   Column('course_id', Integer, ForeignKey('courses.id'))
 )
 
-"""
-Districts have many schools
-"""
-class District(Base):
-  __tablename__ = 'districts'
-  id = Column(Integer, primary_key=True)
-  # Full name of the district
-  name = Column(String(255))
-  # short name/abbreviation
-  shortname = Column(String(255)) 
-  # root path in which school sites are stored - maybe redundant
-  base_path = Column(String(255)) 
-
-  def __init__(self, name, shortname, base_path):
-    self.name = name
-    self.shortname = shortname
-    self.base_path = base_path
-  def __repr__(self):
-    return "<Disctrict('%s','%s')>" % (self.name)
-
-"""
-Schools belong to one district, have many sites and  many courses
-"""
-class School(Base):
-  __tablename__ = 'schools'
-  id = Column(Integer, primary_key=True)
-  # points to the owning district
-  disctrict_id = Column(Integer, ForeignKey('districts.id'))
-  # school name
-  name = Column(String(255)) 
-  # short name or abbreviation
-  shortname = Column(String(255))
-  # the base domain name for this school's sites (possibly redundant) 
-  domain = Column(String(255))
-  # list of tokens indicating licenses for some courses - courses with 
-  # license tokens in this list can be installed in this school
-  license = Column(String(255)) 
-
-  district = relationship("District", backref=backref('schools', order_by=id))
-
-  def __init__(self, name, shortname, domain, license):
-    self.name = name
-    self.shortname = shortname
-    self.domain = domain
-    self.license = license
-
-  def __repr__(self):
-    return "<Site('%s','%s','%s')>" % (self.name, self.domain, self.license)
-
-"""
-Sites belong to one school, have many site_details, and many courses
-Some of the fields come from the siteinfo tables, see siteinfo notes
-"""
-class Site(Base):
-  __tablename__ = 'sites'
-  id = Column(Integer, primary_key=True)
-  # points to the owning school
-  school_id = Column(Integer, ForeignKey('schools.id'))
-  # name of the site - (from siteinfo)
-  sitename = Column(String(255)) 
-  sitetype = Column(Enum('moodle','drupal', name='site_types')) # (from siteinfo)
-  # moodle or drupal's base_url - (from siteinfo)
-  baseurl = Column(String(255)) 
-  # site's path on disk - (from siteinfo)
-  basepath = Column(String(255)) 
-  # is there a jenkins cron job? If so, when did it last run?
-  jenkins_cron_job = Column(DateTime) 
-  # what machine is this on, or is it in the moodle cloud?
-  location = Column(String(255)) 
-
-  school = relationship("School", backref=backref('sites', order_by=id))
-  courses = relationship("Course", secondary=sites_courses, backref='sites')
-
-  def __init__(self, sitename, sitetype, baseurl, basepath, jenkins_cron_job, location):
-    self.sitename = sitename
-    self.sitetype = sitetype
-    self.baseurl = baseurl
-    self.basepath = basepath
-    self.jenkins_cron_job = jenkins_cron_job
-    self.location = location
-
-
-  def __repr__(self):
-    return "<Site('%s','%s','%s','%s','%s')>" % (self.sitename, self.sitetype, self.baseurl, self.basepath, self.jenkins_cron_job)
-
-"""
-Site_details belong to one school. This data is updated from the 
-siteinfo tables, except the date - a new record is added with each
-update. See siteinfo notes.
-"""
-class SiteDetail(Base):
-  __tablename__ = 'site_details'
-  id = Column(Integer, primary_key=True)
-  # points to the owning site
-  site_id = Column(Integer, ForeignKey('sites.id'))
-  siteversion = Column(String(255))
-  siterelease = Column(String(255))
-  adminemail = Column(String(255))
-  totalusers = Column(Integer)
-  adminusers = Column(Integer)
-  teachers = Column(Integer)
-  activeusers = Column(Integer)
-  totalcourses = Column(Integer)
-  timemodified = Column(DateTime)
-
-  school = relationship("Site", backref=backref('site_details', order_by=id))
-
-  def __init__(self, siteversion, siterelease, adminemail, totalusers, adminusers, teachers, activeusers, totalcourses, timemodified):
-    self.siteversion = siteversion
-    self.siterelease = siterelease
-    self.adminemail = adminemail
-    self.totalusers = totalusers
-    self.adminusers = adminusers
-    self.teachers = teachers
-    self.activeusers = activeusers
-    self.totalcourses = totalcourses
-    self.timemodified = timemodified
-
-  def __repr__(self):
-    return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % (self.siteversion, self.siterelease, self.adminemail, self.totalusers, self.adminusers, self.teachers, self.activeusers, self.totalcourses, self.timemodified)
-
-"""
-Courses belong to many schools
-"""
-class Course(Base):
-  __tablename__ = 'courses'
-  id = Column(Integer, primary_key=True)
-  name = Column(String(255))
-  shortname = Column(String(255))
-  # just the name, with extension, no path
-  filename = Column(String(255))
-  # schools with a license token matching this can install this class 
-  license = Column(String(255)) 
-  # moodle category for this class (probably "default")
-  category = Column(String(255))
-  # course version number (could be a string, ask client on format)
-  version = Column(Float()) 
-  #number of installations of this course
-  num_installs = Column(Integer)
-  #number of users
-  num_users = Column(Integer)
-  def __init__(self, name, shortname, filename, license, category, version):
-    self.name = name
-    self.shortname = shortname
-    self.filename = filename
-    self.license = license
-    self.category = category
-    self.version = version
-
-  def __repr__(self):
-    return "<Site('%s','%s','%s','%s','%s','%s')>" % (self.name, self.shortname, self.filename, self.license, self.category, self.version)
 
 """
 Start a session and create all the tables based on the classes
@@ -189,7 +39,7 @@ Base.metadata.create_all(engine)
 """
 seed with some test data:
 
-Check with the client to make sure this test data is in the 
+Check with the client to make sure this test data is in the
 correct form and reflects the data that will be used in production
 
 at some point this should be moved into a fixture file for consistent
