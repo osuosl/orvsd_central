@@ -2,7 +2,7 @@ from oursql import connect
 
 # Deiails
 user = "siteinfo"
-pwrd = "cRzz942"
+pwrd = ""
 address = "applegate.orvsd.org"
 DEBUG = True
 

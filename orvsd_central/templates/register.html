@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <title>Add User</title>
+    </head>
+
+    </body>
+        {% if user %}
+            <h1 size="20">Add User</h1>
+            </br>
+            <form method="POST">
+                Username        : <input type="text" name="username"></input></br>
+                Password        : <input type="password" name="password"></input></br>
+                Confirm Password: <input type="password"  name="confirm_pass"></input></br>
+                Email           : <input type="text" name="email"></input> (For resetting passwords)</br>
+                Permission Level: <select name="permission_level">
+                                      <option value="Admin">Admin</option>
+                                      <option value="Helpdesk">Helpdesk</option>
+                                      <option value="General">General</option>
+                                  </select></br>
+                <input type="submit"></input></br>  
+                {% if new_user %}
+                    {{new_user}} was successfully added to the database!
+                {% endif %}
+            </form>
+        {% else %}
+            <h2 size="14">You do not have permissions to register a new user.</h2>
+        {% endif %}
+    </body>
+</html
