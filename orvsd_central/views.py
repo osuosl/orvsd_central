@@ -58,15 +58,17 @@ def report():
             districts = all_districts
         else:
             #districts = query for filtered_districts
+            print ""
         if request.form['filter_schools'] == "All":
             schools = all_schools
         else:
             #schools = query for filtered_schools
+            print ""
         if request.form['filter_courses'] == "All":
             courses = all_courses
         else:
             #courses = query for filtered_courses
-
+            print ""
     return render_template("reports.html",  all_districts=all_districts,
                                             all_schools=all_schools,
                                             all_courses=all_courses,
