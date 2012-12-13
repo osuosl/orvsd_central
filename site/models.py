@@ -14,7 +14,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(20))
     role = db.Column(db.SmallInteger, default = USER.HELPDESK)
-#Possibly another column for current status
+    #Possibly another column for current status
 
     def __init__(self, name=None, email=None, password=None):
         self.name = name
@@ -43,9 +43,9 @@ class User(db.Model):
         return '<User %r>' % (self.name)
 
 
-sites_courses = db.Table('sites_courses', db.Model.metadata,
-   db.Column('site_id', db.Integer, db.ForeignKey('sites.id')),
-      db.Column('course_id', db.Integer, db.ForeignKey('courses.id')))
+    sites_courses = db.Table('sites_courses', db.Model.metadata,
+    db.Column('site_id', db.Integer, db.ForeignKey('sites.id')),
+    db.Column('course_id', db.Integer, db.ForeignKey('courses.id')))
 
 
 """
@@ -167,26 +167,48 @@ Courses belong to many schools
 """
 class Course(db.Model):
     __tablename__ = 'courses'
-    id = db.Column(db.Integer, primary_key=True)
+    serial = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     shortname = db.Column(db.String(255))
-    # just the name, with extension, no path
-    filename = db.Column(db.String(255))
     # schools with a license token matching this can install this class 
     license = db.Column(db.String(255))
     # moodle category for this class (probably "default")
     category = db.Column(db.String(255))
-    # course version number (could be a string, ask client on format)
-    version = db.Column(db.Float())
                       
     def __init__(self, name, shortname, filename, license, category, version):
         self.name = name
         self.shortname = shortname
-        self.filename = filename
         self.license = license
         self.category = category
-        self.version = version
                                           
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % (self.name, self.shortname, self.filename, self.license, self.category, self.version)
-                                                                                                                                                                                                                                                                        
+    
+def Course_Details(db.Model):
+    __tablename__ = 'course_details'
+    course_id = db.Column(db.Integer, primary_key=True)
+    serial = db.Column(db.Integer, db.ForeignKey('courses.serial'))
+    shortname = db.Column(db.String(255))
+    # just the name, with extension, no path
+    filename = db.Column(db.String(255))
+    # course version number (could be a string, ask client on format)
+    version = db.Column(db.Float())
+    # When the Course was last updated
+    updated = db.Column(db.DateTime)
+    active = db.Column(db.Boolean)
+    moodle_version = db.Column(db.String(255))
+    source = db.Column(db.String(255))
+    
+    def __init__(self, course_id, serial, shortname, filename, version, updated, active, moodle_version, source):
+        self.course_id = course_id
+        self.serial = serial
+        self.shortname = shortname
+        self.filename = filename
+        self.version = version
+        self.updated = updated
+        self.active = active
+        self.moodle_version = moodle_version    
+        self.source = source
+
+    def __repr__(self):
+        return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % (self.course_id, self.serial, self.shrotname, self.filename, self.version, self.updated, self.active, self.moodle_version, self.source) 
