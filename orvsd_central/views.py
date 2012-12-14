@@ -12,7 +12,7 @@ def main_page():
     return redirect('/report')
 
 @app.route('/me')
-@login_required
+#@login_required
 def home():
     """
     Loads a users home information page
@@ -42,10 +42,9 @@ def logout():
 @app.route("/report", methods=['GET', 'POST'])
 #@login_required
 def report():
-
-    all_districts = District.query.filter().all
-    all_schools = School.query.filter().all
-    all_courses = Course.query.filter().all
+    all_districts = District.query.all()
+    all_schools = School.query.all()
+    all_courses = Course.query.all()
     # Get all districts/schools/courses
     # all_districts = query for districts
     # all_courses = query for courses
@@ -53,7 +52,7 @@ def report():
     # Once filters have been applied
     if request.method== "POST":
         form = request.form
-
+    '''
     else:# The initial page
         if request.form['filter_districts'] == "All":
             districts = all_districts
@@ -70,11 +69,12 @@ def report():
         else:
             #courses = query for filtered_courses
             pass
+    '''
     return render_template("reports.html",  all_districts=all_districts,
                                             all_schools=all_schools,
-                                            all_courses=all_courses,
-                                            districts=districts,schools=schools,
-                                            courses=courses,)
+                                            all_courses=all_courses,)
+                                            #districts=districts,schools=schools,
+                                            #courses=courses,)
 
 @app.route("/register", methods=['GET', 'POST'])
 @login_required
