@@ -1,11 +1,10 @@
-import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Table, Text, Float
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from datetime import datetime, date, time, timedelta
 from sqlite3 import dbapi2 as sqlite
-from orvsd_central.models import User, District, School, Site, SiteDetail, Course, Course_Detail
+from orvsd_central.models import User, District, School, Site, SiteDetail, Course, CourseDetail
 
 """
 This just sets up the engine and points it at the server
