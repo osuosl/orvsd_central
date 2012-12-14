@@ -3,6 +3,10 @@ from orvsd_central import constants as USER
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 
+sites_courses = db.Table('sites_courses', db.Model.metadata,
+    db.Column('site_id', db.Integer, db.ForeignKey('sites.id')),
+    db.Column('course_id', db.Integer, db.ForeignKey('courses.id'))
+)
 
 class User(db.Model):
     """
@@ -41,11 +45,6 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % (self.name)
-
-
-    sites_courses = db.Table('sites_courses', db.Model.metadata,
-    db.Column('site_id', db.Integer, db.ForeignKey('sites.id')),
-    db.Column('course_id', db.Integer, db.ForeignKey('courses.id')))
 
 
 """
@@ -188,7 +187,6 @@ class Course(db.Model):
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
     course_id = db.Column(db.Integer, primary_key=True)
-    serial = db.Column(db.Integer, db.ForeignKey('courses.serial'))
     shortname = db.Column(db.String(255))
     # just the name, with extension, no path
     filename = db.Column(db.String(255))
@@ -213,3 +211,4 @@ class CourseDetail(db.Model):
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % (self.course_id, self.serial, self.shrotname, self.filename, self.version, self.updated, self.active, self.moodle_version, self.source)
+
