@@ -41,32 +41,55 @@ def logout():
 @app.route("/report", methods=['GET', 'POST'])
 #@login_required
 def report():
+
+    #districts, schools, courses = [1, 2, 3]
+
     all_districts = District.query.all()
     all_schools = School.query.all()
-    all_courses = Course.query.all()
+    all_courses = Course.query.order_by("name").all()
 
     """
+    for district in all_districts:
+        district.schools = School.query.filter_by(district=district.name).all()
+
+    for school in all_schools:
+        school.sites = Site.query.filter_by(school=school.name).all()
+        # Do some parsing on sites_courses
+        for site in school.sites:
+            #Look up sites_courses table and relate the sites id and
+            #courses on that site
+            pass
+        pass
+    """
+    print request.method
+    print request.form
     # Once filters have been applied
     if request.method== "POST":
         form = request.form
 
-    else:# The initial page
         if request.form['filter_districts'] == "All":
             districts = all_districts
         else:
-            #districts = query for filtered_districts
+            districts = District.query.filter_by(name=request.form['filter_districts'])
             pass
         if request.form['filter_schools'] == "All":
             schools = all_schools
         else:
             #schools = query for filtered_schools
+            schools = School.query.filter_by(name=request.form['filter_schools'])
             pass
         if request.form['filter_courses'] == "All":
             courses = all_courses
         else:
             #courses = query for filtered_courses
+            courses = Course.query.filter_by(name=request.form['filter_courses'])
             pass
-    """
+
+    else:
+        districts = all_districts
+        schools = all_schools
+        courses = all_courses
+
     return render_template("report.html", all_districts=all_districts,
                                           all_schools=all_schools,
                                           all_courses=all_courses,)
