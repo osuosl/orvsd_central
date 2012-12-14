@@ -2,7 +2,7 @@ from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, lm, app
-from forms import LoginForm #add register form when needed
+from forms import LoginForm, AddDistrict #add register form when needed
 from models import District, School, Site, SiteDetail, Course, CourseDetail
 import re
 
@@ -10,6 +10,16 @@ import re
 #@login_required
 def main_page():
     return redirect('/report')
+
+@app.route("/add_district")
+def add_district():
+    form = AddDistrict()
+
+    if request.method == "POST":
+        #Do SQLAlchemy stuff
+        pass
+
+    return render_template('add_district.html', form)
 
 @app.route('/me')
 @login_required
