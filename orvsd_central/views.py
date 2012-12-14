@@ -2,7 +2,7 @@ from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, lm, app
-from forms import LoginForm, AddDistrict #add register form when needed
+from forms import LoginForm, AddDistrict, AddSchool
 from models import District, School, Site, SiteDetail, Course, CourseDetail
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -16,7 +16,6 @@ def main_page():
 @app.route("/add_district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
-
     if request.method == "POST":
         #Add district to db.
         db.session.add(District(form.name.data, form.shortname.data,
@@ -28,21 +27,24 @@ def add_district():
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
+    error_msg = ""
 
     if request.method == "POST":
-        #Add district to db.
         #The district_id is supposed to be an integer
         try:
             district = District.query.filter_by(id=int(form.name.data)).all()
             if len(district) == 1:
-                db.session.add(School(int(form.name.data),
-                        form.shortname.data,form.base_path.data))
+                #Add School to db
+                db.session.add(School(int(form.district_id.data),
+                        form.name.data, form.shortname.data,
+                        form.domain.data. form.license.data))
                 db.session.commit()
             else:
-                render_template("A district with that id doesn't exist!")
+                error_msg= "A district with that id doesn't exist!"
         except:
-            render_template("The entered district_id was not an integer!")
-    return render_template('add_school.html', form=form)
+            error_msg= "The entered district_id was not an integer!"
+    return render_template('add_school.html', form=form,
+                        error_msg=error_msg)
 
 
 @app.route('/me')
