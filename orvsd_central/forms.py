@@ -6,10 +6,7 @@ class LoginForm(Form):
     password = PasswordField('Password', [Required()])
 
 class AddDistrict(Form):
-    name = TextField('District Name: ', Required())
-    shortname = TextField('District Shortname: ', Required())
-    base_path = TextField('Base Path: ', Required())
+    name = TextField('name', [Required()])
+    shortname = TextField('shortname', [Required()])
+    base_path = TextField('base_path', [Required()])
 
-#Things to add:
-#   Register Form
-#   Possibly invite form

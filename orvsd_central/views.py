@@ -4,6 +4,8 @@ from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, lm, app
 from forms import LoginForm, AddDistrict #add register form when needed
 from models import District, School, Site, SiteDetail, Course, CourseDetail
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import re
 
 @app.route("/")
@@ -11,15 +13,17 @@ import re
 def main_page():
     return redirect('/report')
 
-@app.route("/add_district")
+@app.route("/add_district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
 
     if request.method == "POST":
-        #Do SQLAlchemy stuff
-        pass
+        #Add district to db.
+        db.session.add(District(form.name.data, form.shortname.data,
+                        form.base_path.data))
+        db.session.commit()
 
-    return render_template('add_district.html', form)
+    return render_template('add_district.html', form=form)
 
 @app.route('/me')
 @login_required
