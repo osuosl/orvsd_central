@@ -1,9 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
 <html>
     <head>
         <title>ORVSD Reports!</title>
     </head>
-
-    Filter Options:
+    <body class="container">
+    <div class="hero-unit">
     <form name="filter_options" action="/report" method="POST">
         <table>
             <tr>
@@ -43,7 +46,7 @@
         </table>
     </form>
 
-    <br><br>
+    </br>
     {#
     {% if districts %}
         <label name="Districts" size="16">Districts</label>
@@ -86,8 +89,9 @@
     {% endif %}
     #}
     {% if all_courses %}
-        <label name="Courses" size="16">Courses</label>
+        <font size="6">Courses:</font>
         <table>
+        </br>
             <tr>
                 <th>Serial</th>
                 <th>Name</th>
@@ -106,5 +110,7 @@
             {% endfor %}
         </table>
     {% endif %}
-
+    </div>
+    </body>
 </html>
+{% endblock %}

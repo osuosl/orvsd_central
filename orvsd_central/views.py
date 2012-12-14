@@ -42,8 +42,6 @@ def logout():
 #@login_required
 def report():
 
-    #districts, schools, courses = [1, 2, 3]
-
     all_districts = District.query.all()
     all_schools = School.query.all()
     all_courses = Course.query.order_by("name").all()
@@ -61,8 +59,6 @@ def report():
             pass
         pass
     """
-    print request.method
-    print request.form
     # Once filters have been applied
     if request.method== "POST":
         form = request.form
@@ -89,6 +85,7 @@ def report():
         districts = all_districts
         schools = all_schools
         courses = all_courses
+        pass
 
     return render_template("report.html", all_districts=all_districts,
                                           all_schools=all_schools,
