@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<html>
+    <head>
+    </head>
+
+    <form method="POST">
+        Associated District Id: {{form.district_id}}</br>
+        School Name: {{form.name}}</br>
+        School Shortname: {{form.shortname}}</br>
+        School Base Domain: {{form.domain}}
+        School License: {{form.license}}
+    <input type="submit"></input>
+    </form>
+</html>
+{% endblock %}
