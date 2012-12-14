@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<html>
+    <head>
+    </head>
+
+    <form method="POST">
+        District Name: {{form.name}}</br>
+        District Shortname: {{form.shortname}}</br>
+        District Basepath: {{form.base_path}}</br>
+    <input type="submit"></input>
+    </form>
+</html>
+{% endblock %}
