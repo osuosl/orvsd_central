@@ -25,6 +25,26 @@ def add_district():
 
     return render_template('add_district.html', form=form)
 
+@app.route("/add_school", methods=['GET', 'POST'])
+def add_school():
+    form = AddSchool()
+
+    if request.method == "POST":
+        #Add district to db.
+        #The district_id is supposed to be an integer
+        try:
+            district = District.query.filter_by(id=int(form.name.data)).all()
+            if len(district) == 1:
+                db.session.add(School(int(form.name.data),
+                        form.shortname.data,form.base_path.data))
+                db.session.commit()
+            else:
+                render_template("A district with that id doesn't exist!")
+        except:
+            render_template("The entered district_id was not an integer!")
+    return render_template('add_school.html', form=form)
+
+
 @app.route('/me')
 @login_required
 def home():
