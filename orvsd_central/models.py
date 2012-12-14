@@ -185,7 +185,7 @@ class Course(db.Model):
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % (self.name, self.shortname, self.filename, self.license, self.category, self.version)
 
-class Course_Details(db.Model):
+class CourseDetail(db.Model):
     __tablename__ = 'course_details'
     course_id = db.Column(db.Integer, primary_key=True)
     serial = db.Column(db.Integer, db.ForeignKey('courses.serial'))
