@@ -12,7 +12,7 @@ def main_page():
     return redirect('/report')
 
 @app.route('/me')
-#@login_required
+@login_required
 def home():
     """
     Loads a users home information page
@@ -20,7 +20,6 @@ def home():
     return render_template('users/templates/profile.html', user=current_user) #not sure current_user works this way, write test
 
 @app.route("/login", methods=['GET', 'POST'])
-@login_required
 def login():
     form = LoginForm(request.form)
 
