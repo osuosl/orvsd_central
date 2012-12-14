@@ -1,0 +1,13 @@
+Flask
+Flask-Login
+Flask-SQLAlchemy
+Flask-WTF
+Jinja2
+MySQL-python
+SQLAlchemy
+WTForms
+Werkzeug
+argparse
+distribute
+migrate
+wsgiref
