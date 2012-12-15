@@ -1,9 +1,17 @@
-from flask.ext.wtf import Form, TextField, PasswordField, BooleanField
+from flask.ext.wtf import Form, TextField, PasswordField, BooleanField, SelectField
 from flask.ext.wtf import Required, Email, EqualTo
 
 class LoginForm(Form):
-    email = TextField('Email address', [Required(), Email()])
-    password = PasswordField('Password', [Required()])
+    username = TextField('username', [Required()])
+    password = PasswordField('password', [Required()])
+
+class AddUser(Form):
+    user = TextField('user', [Required()])
+    password = PasswordField('password', [Required()])
+    confirm_pass = PasswordField('confirm_pass', [Required()])
+    email = TextField('username', [Required(), Email()])
+    perm = SelectField('perm', choices=[('steve', 'Steve'),
+        ('helpdesk', 'Helpdesk'),('admin', 'Admin')])
 
 class AddDistrict(Form):
     name = TextField('name', [Required()])

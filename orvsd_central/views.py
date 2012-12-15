@@ -2,8 +2,8 @@ from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, lm, app
-from forms import LoginForm, AddDistrict, AddSchool
-from models import District, School, Site, SiteDetail, Course, CourseDetail
+from forms import LoginForm, AddDistrict, AddSchool, AddUser
+from models import District, School, Site, SiteDetail, Course, CourseDetail, User
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import re
@@ -127,25 +127,27 @@ def report():
                                           all_schools=all_schools,
                                           all_courses=all_courses,)
 
-@app.route("/register", methods=['GET', 'POST'])
-@login_required
+@app.route("/add_user", methods=['GET', 'POST'])
+#@login_required
 def register():
-    user = True
+    form = AddUser()
     message = ""
 
     if request.method == "POST":
-        print request.form
         # Can not test until the inital migration is pushed.
         #if User.query.filter_by(username=request.form['username']).first ():
         #    message="This username already exists!\n"
-        if request.form['password'] is not request.form['confirm_password']:
+        if form.password.data != form.confirm_pass.data:
             message="The passwords provided did not match!\n"
-        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$', request.form['email']):
+        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$', form.email.data):
             message="Invalid email address!\n"
         else:
             #Add user to db
-            message=request.form['username']+" has been added successfully!\n"
+            db.session.add(User(name=form.user.data,
+                email=form.email.data, password=form.password.data))
+
+            message=form.user.data+" has been added successfully!\n"
 
     #Check for a good username
-    return render_template('register.html', user=user, message=message)
+    return render_template('add_user.html', form=form, message=message)
 
