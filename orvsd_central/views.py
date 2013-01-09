@@ -81,7 +81,6 @@ def report():
     all_districts = District.query.all()
     all_schools = School.query.all()
     all_courses = Course.query.order_by("name").all()
-
     """
     for district in all_districts:
         district.schools = School.query.filter_by(district=district.name).all()
