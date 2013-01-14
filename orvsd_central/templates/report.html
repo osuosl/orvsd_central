@@ -1,6 +1,31 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<script type="text/javascript">
+        var filter = $(".filter");
+        filter.change(function(event) {
+            var dropdown = $(this);
+            if (dropdown = "all_districts") {
+                {% for district in all_districts %}
+                    if ('{{district.name}}' == dropdown.value) {
+                        $(".all_schools").html(' {% for school in district.schools %} <option value="{{school.name}}">{{school.name}}</option> {% endfor %}');
+                        $(".all_courses").html('<option selected="true""></option>');
+                    }
+                    else {
+                         $(".all_courses").html('<option selected="true""></option>');
+                    }
+                {% endfor %}
+            }
+            else if (dropdown = "all_schools") {
+                {% for school in all_schools %}
+                    if ('{{school.name}}' == dropdown.value) {
+                        $(".all_courses").html(' {% for course in school.courses %} <option value="{{course.name}}">{{course.name}}</option> {% endfor %}');
+                    }
+                {% endfor %}
+            }
+        });
+</script>
+
 <html>
     <head>
         <title>ORVSD Reports!</title>
@@ -17,24 +42,24 @@
             </tr>
             <tr>
                 <td>
-                    <select name="all_districts">
-                        <option selected value="all">All</option>
+                    <select name="all_districts" class="filter">
+                        <option selected value="All">All</option>
                         {% for district in all_districts %}
                             <option value="{{district.name}}">{{district.name}}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td>
-                    <select name="all_schools">
-                        <option selected value="all">All</option>
+                    <select name="all_schools" class="filter">
+                        <option selected value="All">All</option>
                         {% for school in all_schools %}
                             <option value="{{school.name}}">{{school.name}}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td>
-                    <select name="all_courses">
-                        <option selected value="all">All</option>
+                    <select name="all_courses" class="filter">
+                        <option selected value="All">All</option>
                         {% for course in all_courses %}
                             <option value="{{course.name}}">{{course.name}}</option>
                         {% endfor %}
