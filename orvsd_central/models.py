@@ -74,7 +74,7 @@ class School(db.Model):
     __tablename__ = 'schools'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning district
-    district_id = db.Column(db.Integer, db.ForeignKey('districts.id'))
+    disctrict_id = db.Column(db.Integer, db.ForeignKey('districts.id'))
     # school name
     name = db.Column(db.String(255))
     # short name or abbreviation
