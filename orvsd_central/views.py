@@ -82,7 +82,7 @@ def report():
     all_schools = School.query.all()
     all_courses = Course.query.order_by("name").all()
 
-    istricts = all_districts
+    districts = all_districts
     schools = all_schools
     courses = all_courses
 
