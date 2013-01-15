@@ -83,13 +83,11 @@
     <font name="Districts" size="6">Districts</font>
         <table class="toggle">
             <tr>
-                <th>Id</th>
                 <th>Name</th>
                 <th># Sites</th>
             </tr>
             {% for district in all_districts %}
             <tr>
-                <td>{{district.id}}<td>
                 <td>{{district.name}}</td>
                 <td>{{district.sites|count}}</td>
             </td>
@@ -99,9 +97,8 @@
     <font name="Sites" size="6">Sites</font>
         <table class="toggle">
             <tr>
-                <th>School</th>
-                <th>Name</th>
-                <th>Type</th>
+                <th>Site Id</th>
+                <th>Admin Email</th>
                 <th>Total Users</th>
                 <th># Admins</th>
                 <th># Teachers</th>
@@ -109,28 +106,27 @@
                 <th>Last Updated</th>
             </tr>
             {% for site in all_sites %}
-                <td>{{site.school_id}}</th>
-                <td>{{site.name}}</th>
-                <td>{{site.type}}</th>
-                <td>{{site.totalusers}}</th>
-                <td>{{site.adminusers}}</th>
-                <td>{{site.teachers}}</th>
-                <td>{{site.totalcourses}}</th>
-                <td>{{site.timemodified}}</th>
+            <tr>
+                <td>{{site.site_id}}</td>
+                <td>{{site.adminemail}}</td>
+                <td>{{site.totalusers}}</td>
+                <td>{{site.adminusers}}</td>
+                <td>{{site.teachers}}</td>
+                <td>{{site.totalcourses}}</td>
+                <td>NULL</td>
+            </tr>
             {% endfor %}
         </table>
 
     <font name="Schools" size="6">Schools</font>
         <table class="toggle">
             <tr>
-                <th>District Id</th>
                 <th>School Name</th>
                 <th>Domain</th>
                 <th>License</th>
             </tr>
             {% for school in all_schools %}
             <tr>
-                <td>{{school.disctrict_id}}</td>
                 <td>{{school.name}}</td>
                 <td>{{school.domain}}</td>
                 <td>{{school.license}}</td>
@@ -142,7 +138,6 @@
         <table class="toggle">
         </br>
             <tr>
-                <th>Serial</th>
                 <th>Name</th>
                 <th>Shortname</th>
                 <th>Category</th>
@@ -150,7 +145,6 @@
             </tr>
             {% for course in all_courses %}
             <tr>
-                <td>{{course.serial}}</td>
                 <td>{{course.name}}</td>
                 <td>{{course.shortname}}</td>
                 <td>{{course.category}}</td>
