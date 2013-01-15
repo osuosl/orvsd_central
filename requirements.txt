@@ -9,5 +9,5 @@ WTForms
 Werkzeug
 argparse
 distribute
-sqlalchemy-migrate
 wsgiref
+alembic
