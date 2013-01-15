@@ -65,7 +65,7 @@ class District(db.Model):
         self.shortname = shortname
         self.base_path = base_path
     def __repr__(self):
-        return "<District('%s','%s')>" % (self.name)
+        return "<Disctrict('%s','%s')>" % (self.name)
 
     """
     Schools belong to one district, have many sites and  many courses

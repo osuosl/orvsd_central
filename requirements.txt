@@ -4,10 +4,10 @@ Flask-SQLAlchemy
 Flask-WTF
 Jinja2
 MySQL-python
-SQLAlchemy
+SQLAlchemy==0.7
 WTForms
 Werkzeug
 argparse
 distribute
-migrate
 wsgiref
+alembic
