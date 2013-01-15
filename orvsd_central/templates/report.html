@@ -1,6 +1,38 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<script type="text/javascript">
+        {#
+        var filter = this;
+        $("select[name=all_courses]").html('<option value="success">Success!</option>');
+        $(filter).change(function(event) {
+            var dropdown = filter.val;
+            alert(dropdown);
+            if (dropdown == 'all_districts') {
+                {% for district in all_districts %}
+                    if ('{{district.name}}' == dropdown.value) {
+                        $('.all_schools').html(' {% for school in district.schools %} <option value="{{school.name}}">{{school.name}}</option> {% endfor %}');
+                        $('.all_courses').html('<option selected="true""></option>');
+                    }
+                    else {
+                         $('.all_courses').html('<option selected="true""></option>');
+                    }
+                {% endfor %}
+            }
+            else if (dropdown == 'all_schools') {
+                {% for school in all_schools %}
+                    if ('{{school.name}}' == dropdown.value) {
+                        $('.all_courses').html(' {% for course in school.courses %} <option value="{{course.name}}">{{course.name}}</option> {% endfor %}');
+                    }
+                {% endfor %}
+            }
+        });
+        $(".toggle").click( function(event) {
+            $(this).toggle();
+        });
+        #}
+</script>
+
 <html>
     <head>
         <title>ORVSD Reports!</title>
@@ -17,24 +49,24 @@
             </tr>
             <tr>
                 <td>
-                    <select name="all_districts">
-                        <option selected value="all">All</option>
+                    <select name="all_districts" class="filter">
+                        <option selected="True" value="All">All</option>
                         {% for district in all_districts %}
                             <option value="{{district.name}}">{{district.name}}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td>
-                    <select name="all_schools">
-                        <option selected value="all">All</option>
+                    <select name="all_schools" class="filter">
+                        <option selected="True" value="All">All</option>
                         {% for school in all_schools %}
                             <option value="{{school.name}}">{{school.name}}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td>
-                    <select name="all_courses">
-                        <option selected value="all">All</option>
+                    <select name="all_courses" class="filter">
+                        <option selected="True" value="All">All</option>
                         {% for course in all_courses %}
                             <option value="{{course.name}}">{{course.name}}</option>
                         {% endfor %}
@@ -47,50 +79,67 @@
     </form>
 
     </br>
-    {#
-    {% if districts %}
-        <label name="Districts" size="16">Districts</label>
-        <table>
+
+    <font name="Districts" size="6">Districts</font>
+        <table class="toggle">
             <tr>
+                <th>Id</th>
                 <th>Name</th>
-                <th># Schools</th>
                 <th># Sites</th>
-                <th># Courses</th>
-                <th># Users</th>
             </tr>
-            {% for district in districts %}
+            {% for district in all_districts %}
             <tr>
+                <td>{{district.id}}<td>
                 <td>{{district.name}}</td>
-                <td>{{district.schools|count}}</td>
                 <td>{{district.sites|count}}</td>
-                <td>{{district.courses|count}}</td>
-                <td>{{district.num_users}}</td>
             </td>
             {% endfor %}
         </table>
-    {% endif %}
 
-    {% if schools %}
-     <label name="Schools" size="16">Sites</label>
-        <table>
+    <font name="Sites" size="6">Sites</font>
+        <table class="toggle">
             <tr>
+                <th>School</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Total Users</th>
+                <th># Admins</th>
+                <th># Teachers</th>
+                <th># Courses</th>
+                <th>Last Updated</th>
+            </tr>
+            {% for site in all_sites %}
+                <td>{{site.school_id}}</th>
+                <td>{{site.name}}</th>
+                <td>{{site.type}}</th>
+                <td>{{site.totalusers}}</th>
+                <td>{{site.adminusers}}</th>
+                <td>{{site.teachers}}</th>
+                <td>{{site.totalcourses}}</th>
+                <td>{{site.timemodified}}</th>
+            {% endfor %}
+        </table>
+
+    <font name="Schools" size="6">Schools</font>
+        <table class="toggle">
+            <tr>
+                <th>District Id</th>
                 <th>School Name</th>
                 <th>Domain</th>
                 <th>License</th>
             </tr>
-            {% for school in schools %}
+            {% for school in all_schools %}
             <tr>
+                <td>{{school.disctrict_id}}</td>
                 <td>{{school.name}}</td>
                 <td>{{school.domain}}</td>
                 <td>{{school.license}}</td>
             </td>
             {% endfor %}
         </table>
-    {% endif %}
-    #}
-    {% if all_courses %}
-        <font size="6">Courses:</font>
-        <table>
+
+     <font name="Courses" size="6">Courses</font>
+        <table class="toggle">
         </br>
             <tr>
                 <th>Serial</th>
@@ -109,7 +158,6 @@
             </td>
             {% endfor %}
         </table>
-    {% endif %}
     </div>
     </body>
 </html>

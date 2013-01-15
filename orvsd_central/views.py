@@ -81,46 +81,56 @@ def report():
     all_districts = District.query.all()
     all_schools = School.query.all()
     all_courses = Course.query.order_by("name").all()
-    """
-    for district in all_districts:
-        district.schools = School.query.filter_by(district=district.name).all()
 
-    for school in all_schools:
-        school.sites = Site.query.filter_by(school=school.name).all()
-        # Do some parsing on sites_courses
-        for site in school.sites:
-            #Look up sites_courses table and relate the sites id and
-            #courses on that site
-            pass
-        pass
-    """
+    districts = all_districts
+    schools = all_schools
+    courses = all_courses
+
     # Once filters have been applied
     if request.method== "POST":
         form = request.form
+        if request.form['all_districts'] != "None":
+        # Getting district related information
+            if request.form['all_districts'] != "All":
+                districts = District.query.filter_by(name=request.form['filter_districts'])
+            for district in districts:
+                district.schools = School.query.filter_by(disctrict_id=district.id).order_by("name").all()
+                for school in district.schools:
+                    school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
+                    for site in sites:
+                        related_courses = Session.execute("select course_id where site_id="+sites.id+" from sites_courses")
+                        site.courses = []
+                        site.courses.append(Course.query.get(course))
 
-        if request.form['filter_districts'] == "All":
-            districts = all_districts
-        else:
-            districts = District.query.filter_by(name=request.form['filter_districts'])
-            pass
-        if request.form['filter_schools'] == "All":
-            schools = all_schools
-        else:
-            #schools = query for filtered_schools
-            schools = School.query.filter_by(name=request.form['filter_schools'])
-            pass
-        if request.form['filter_courses'] == "All":
-            courses = all_courses
-        else:
-            #courses = query for filtered_courses
-            courses = Course.query.filter_by(name=request.form['filter_courses'])
-            pass
+            districts = None
+            if request.form['all_schools'] != "None":
+                if request.form['all_schools'] != "All":
+                    schools = School.query.filter_by(name=request.form['filter_schools']).order_by("name").all()
+                for school in schools:
+                    school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
+                    for site in sites:
+                        related_courses = Session.execute("select course_id where site_id="+sites.id+" from sites_courses")
+                        for course in related_courses:
+                            # course is the primary key which is used to relate a site's course to a specific course.
+                            site.courses.append(Course.query.get(course))
+                        for course in site.courses:
+                            # Parse information from SiteDetails
+                            continue
 
+            else:
+                schools = None
+                if request.form['all_courses'] != "None":
+                    if request.form['all_courses'] != "All":
+                        courses = Course.query.filter_by(name=request.form['filter_courses']).order_by("name").all()
+                    for course in courses:
+                        #Calculate num of users in total
+                        continue
+                else:
+                    return "Error: No filter provided!!"
     else:
         districts = all_districts
         schools = all_schools
         courses = all_courses
-        pass
 
     return render_template("report.html", all_districts=all_districts,
                                           all_schools=all_schools,
