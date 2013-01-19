@@ -31,18 +31,18 @@ def add_school():
 
     if request.method == "POST":
         #The district_id is supposed to be an integer
-        try:
-            district = District.query.filter_by(id=int(form.name.data)).all()
-            if len(district) == 1:
+        #try:
+            #district = District.query.filter_by(id=int(form.district_id)).all()
+            #if len(district) == 1:
                 #Add School to db
-                db.session.add(School(int(form.district_id.data),
+        db.session.add(School(int(form.district_id.data),
                         form.name.data, form.shortname.data,
                         form.domain.data. form.license.data))
-                db.session.commit()
-            else:
-                error_msg= "A district with that id doesn't exist!"
-        except:
-            error_msg= "The entered district_id was not an integer!"
+        db.session.commit()
+            #else:
+            #    error_msg= "A district with that id doesn't exist!"
+        #except:
+        #    error_msg= "The entered district_id was not an integer!"
     return render_template('add_school.html', form=form,
                         error_msg=error_msg)
 
@@ -78,10 +78,13 @@ def logout():
 #@login_required
 def report():
 
-    all_districts = District.query.all()
-    all_schools = School.query.all()
+    all_districts = District.query.order_by("name").all()
+    all_schools = School.query.order_by("name").all()
     all_courses = Course.query.order_by("name").all()
+    all_sites = SiteDetail.query.all()
 
+    for item in all_sites:
+        print item
     districts = all_districts
     schools = all_schools
     courses = all_courses
@@ -134,7 +137,8 @@ def report():
 
     return render_template("report.html", all_districts=all_districts,
                                           all_schools=all_schools,
-                                          all_courses=all_courses,)
+                                          all_courses=all_courses,
+                                          all_sites=all_sites)
 
 @app.route("/add_user", methods=['GET', 'POST'])
 #@login_required
