@@ -2,22 +2,19 @@
 
 {% block content %}
 <script type="text/javascript">
-        {#
-        var filter = this;
-        $("select[name=all_courses]").html('<option value="success">Success!</option>');
-        $(filter).change(function(event) {
-            var dropdown = filter.val;
-            alert(dropdown);
-            if (dropdown == 'all_districts') {
-                {% for district in all_districts %}
-                    if ('{{district.name}}' == dropdown.value) {
-                        $('.all_schools').html(' {% for school in district.schools %} <option value="{{school.name}}">{{school.name}}</option> {% endfor %}');
+$(function() {
+        console.log($(".filter"));
+        $(".filter").change(function(event) {
+            var dropdown = $(this);
+            console.log(dropdown);
+            if (dropdown.attr("name") == 'all_districts') {
+                var districts = {{all_districts}};
+                for (district in districts) {
+                    if (district.name == dropdown.val()) {
+                        $('.all_schools').html('{% for school in district.schools %} <option value="{{school.name}}">{{school.name}}</option> {% endfor %}');
                         $('.all_courses').html('<option selected="true""></option>');
                     }
-                    else {
-                         $('.all_courses').html('<option selected="true""></option>');
-                    }
-                {% endfor %}
+                }
             }
             else if (dropdown == 'all_schools') {
                 {% for school in all_schools %}
@@ -27,10 +24,12 @@
                 {% endfor %}
             }
         });
+        {#
         $(".toggle").click( function(event) {
             $(this).toggle();
         });
         #}
+});
 </script>
 
 <html>
@@ -44,13 +43,14 @@
             <tr>
                 <th>Districts</th>
                 <th>Schools</th>
+                <th>Sites</th>
                 <th>Courses</th>
                 <th>Apply</th>
             </tr>
             <tr>
                 <td>
                     <select name="all_districts" class="filter">
-                        <option selected="True" value="All">All</option>
+                        <option value="All">All</option>
                         {% for district in all_districts %}
                             <option value="{{district.name}}">{{district.name}}</option>
                         {% endfor %}
@@ -61,6 +61,14 @@
                         <option selected="True" value="All">All</option>
                         {% for school in all_schools %}
                             <option value="{{school.name}}">{{school.name}}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="all_sites" class="filter">
+                        <option selected="True" value="All">All</option>
+                        {% for site in all_sites %}
+                            <option value="{{site.sitename}}">{{site.sitename}}</option>
                         {% endfor %}
                     </select>
                 </td>
