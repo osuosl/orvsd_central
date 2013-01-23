@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
-{% block content %}
-<html>
-    <head>
-    </head>
 
+{% block title %}
+    <title>Add School</title>
+{% endblock %}
+
+{% block content %}
     <form method="POST">
         Associated District Id: {{form.district_id}}</br>
         School Name: {{form.name}}</br>
         School Shortname: {{form.shortname}}</br>
         School Base Domain: {{form.domain}}</br>
         School License: {{form.license}}</br>
-    <input type="submit"></input>
+        <input type="submit"></input>
+    </form>
     {% if error_msg %}
         {{error_msg}}
     {% endif %}
-    </form>
-</html>
 {% endblock %}
