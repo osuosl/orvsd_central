@@ -1,41 +1,18 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block js %}
 <script type="text/javascript">
-$(function() {
-        console.log($(".filter"));
-        $(".filter").change(function(event) {
-            var dropdown = $(this);
-            console.log(dropdown);
-            if (dropdown.attr("name") == 'all_districts') {
-                var districts = {{all_districts}};
-                for (district in districts) {
-                    if (district.name == dropdown.val()) {
-                        $('.all_schools').html('{% for school in district.schools %} <option value="{{school.name}}">{{school.name}}</option> {% endfor %}');
-                        $('.all_courses').html('<option selected="true""></option>');
-                    }
-                }
-            }
-            else if (dropdown == 'all_schools') {
-                {% for school in all_schools %}
-                    if ('{{school.name}}' == dropdown.value) {
-                        $('.all_courses').html(' {% for course in school.courses %} <option value="{{course.name}}">{{course.name}}</option> {% endfor %}');
-                    }
-                {% endfor %}
-            }
-        });
-        {#
-        $(".toggle").click( function(event) {
-            $(this).toggle();
-        });
-        #}
-});
-</script>
+    $(function() {
 
-<html>
-    <head>
-        <title>ORVSD Reports!</title>
-    </head>
+    });
+</script>
+{% endblock %}
+
+{% block title %}
+    <title>Report</title>
+{% endblock %}
+
+{% block content %}
     <body class="container">
     <div class="hero-unit">
     <form name="filter_options" action="/report" method="POST">
@@ -45,12 +22,11 @@ $(function() {
                 <th>Schools</th>
                 <th>Sites</th>
                 <th>Courses</th>
-                <th>Apply</th>
             </tr>
             <tr>
                 <td>
                     <select name="all_districts" class="filter">
-                        <option value="All">All</option>
+                        <option selected="True" value="All">All</option>
                         {% for district in all_districts %}
                             <option value="{{district.name}}">{{district.name}}</option>
                         {% endfor %}
@@ -80,16 +56,14 @@ $(function() {
                         {% endfor %}
                     </select>
                 </td>
-                <td>
-                    <input type="submit" value="Submit"></input>
-                </td>
         </table>
+        <input type="submit" value="Submit"></input>
     </form>
 
     </br>
 
     <font name="Districts" size="6">Districts</font>
-        <table class="toggle">
+        <table>
             <tr>
                 <th>Name</th>
                 <th># Sites</th>
@@ -102,8 +76,9 @@ $(function() {
             {% endfor %}
         </table>
 
+    </br>
     <font name="Sites" size="6">Sites</font>
-        <table class="toggle">
+        <table>
             <tr>
                 <th>Site Id</th>
                 <th>Admin Email</th>
@@ -125,9 +100,9 @@ $(function() {
             </tr>
             {% endfor %}
         </table>
-
+    </br>
     <font name="Schools" size="6">Schools</font>
-        <table class="toggle">
+        <table>
             <tr>
                 <th>School Name</th>
                 <th>Domain</th>
@@ -141,10 +116,9 @@ $(function() {
             </td>
             {% endfor %}
         </table>
-
-     <font name="Courses" size="6">Courses</font>
-        <table class="toggle">
-        </br>
+    </br>
+    <font name="Courses" size="6">Courses</font>
+        <table>
             <tr>
                 <th>Name</th>
                 <th>Shortname</th>
@@ -162,5 +136,4 @@ $(function() {
         </table>
     </div>
     </body>
-</html>
 {% endblock %}

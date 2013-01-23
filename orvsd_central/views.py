@@ -1,11 +1,9 @@
 from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db, lm, app
+from orvsd_central import db, app
 from forms import LoginForm, AddDistrict, AddSchool, AddUser
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import re
 
 @app.route("/")
@@ -24,6 +22,7 @@ def add_district():
 
     return render_template('add_district.html', form=form)
 
+#@login_required
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
@@ -85,6 +84,7 @@ def report():
 
     for item in all_sites:
         print item
+
     districts = all_districts
     schools = all_schools
     courses = all_courses
@@ -92,6 +92,7 @@ def report():
     # Once filters have been applied
     if request.method== "POST":
         form = request.form
+        # Check to see if the user wants to see district info
         if request.form['all_districts'] != "None":
         # Getting district related information
             if request.form['all_districts'] != "All":
@@ -106,6 +107,7 @@ def report():
                         site.courses.append(Course.query.get(course))
 
             districts = None
+            # Check to see if the user wanted school information
             if request.form['all_schools'] != "None":
                 if request.form['all_schools'] != "All":
                     schools = School.query.filter_by(name=request.form['filter_schools']).order_by("name").all()
@@ -122,6 +124,7 @@ def report():
 
             else:
                 schools = None
+                # Check to see if the user wanted course information
                 if request.form['all_courses'] != "None":
                     if request.form['all_courses'] != "All":
                         courses = Course.query.filter_by(name=request.form['filter_courses']).order_by("name").all()
@@ -147,9 +150,6 @@ def register():
     message = ""
 
     if request.method == "POST":
-        # Can not test until the inital migration is pushed.
-        #if User.query.filter_by(username=request.form['username']).first ():
-        #    message="This username already exists!\n"
         if form.password.data != form.confirm_pass.data:
             message="The passwords provided did not match!\n"
         elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$', form.email.data):
@@ -157,11 +157,10 @@ def register():
         else:
             #Add user to db
             db.session.add(User(name=form.user.data,
-                email=form.email.data, password=form.password.data))
+                email = form.email.data, password=form.password.data))
 
-            message=form.user.data+" has been added successfully!\n"
+            message = form.user.data+" has been added successfully!\n"
 
-    #Check for a good username
     return render_template('add_user.html', form=form, message=message)
 
 @app.route("/display/<category>")

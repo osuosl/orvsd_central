@@ -1,5 +1,4 @@
 from orvsd_central import db
-from orvsd_central import constants as USER
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 
@@ -17,7 +16,7 @@ class User(db.Model):
     name = db.Column(db.String(50), unique=True)
     email = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(20))
-    role = db.Column(db.SmallInteger, default = USER.HELPDESK)
+    role = db.Column(db.SmallInteger)
     #Possibly another column for current status
 
     def __init__(self, name=None, email=None, password=None):

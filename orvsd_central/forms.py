@@ -1,5 +1,5 @@
 from flask.ext.wtf import Form, TextField, PasswordField, BooleanField, SelectField
-from flask.ext.wtf import Required, Email, EqualTo
+from flask.ext.wtf import Required, Email
 
 class LoginForm(Form):
     username = TextField('username', [Required()])
