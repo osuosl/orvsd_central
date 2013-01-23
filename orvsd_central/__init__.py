@@ -13,6 +13,3 @@ import models, views
 def before_request():
     g.db = db
 
-@app.teardown_request
-def teardown_request(exception):
-    g.db.db_session.remove()
