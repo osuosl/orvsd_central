@@ -1,25 +1,20 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<html>
-    <head>
-        <title>Add User</title>
-    </head>
+{% block title %}
+    <title>Add User</title>
+{% endblock %}
 
-    <body>
-        </br>
-        <form method="POST">
-            Username: {{form.user}}</br>
-            Password: {{form.password}}</br>
-            Confirm Password: {{form.confirm_pass}}</br>
-            Email: {{form.email}}</br>
-            Permissions: {{form.perm}}</br>
-            <input type="submit" value="Add User"></input></br>
-        </form>
-        {% if message %}
-            {{message}}
-        {% endif %}
-    </body>
-</html>
+{% block content %}
+    <form method="POST">
+        Username: {{form.user}}</br>
+        Password: {{form.password}}</br>
+        Confirm Password: {{form.confirm_pass}}</br>
+        Email: {{form.email}}</br>
+        Permissions: {{form.perm}}</br>
+        <input type="submit" value="Add User"></input></br>
+    </form>
+    {% if message %}
+        {{message}}
+    {% endif %}
 
 {% endblock %}

@@ -1,10 +1,9 @@
-from orvsd_central import main
 import unittest
 import tempfile
 import sqlalchemy
 
 class ORVSD_Central_Tests(unittest.TestCase):
-    def add_User(username, password, confirm_password, email, permission_level):    
+    def add_User(username, password, confirm_password, email, permission_level):
         return self.app.post('/register', data=dict(
             username=username,
             password=password,
