@@ -164,3 +164,41 @@ def register():
     #Check for a good username
     return render_template('add_user.html', form=form, message=message)
 
+@app.route("/display/<category>")
+def remove(category):
+    obj = get_obj_by_category(category)
+    objects = obj.query.all()
+    if objects:
+        # fancy way to get the properties of an object
+        properties = objects[0].get_properties()
+        return render_template('removal.html', category=category, objects=objects, properties=properties)
+
+
+@app.route("/remove/<category>", methods=['POST'])
+def remove_objects(category):
+    obj = get_obj_by_category(category)
+    remove_ids = request.form.getlist('remove')
+    for remove_id in remove_ids:
+        # obj.query returns a list, but should only have one element because
+        # ids are unique.
+        remove = obj.query.filter_by(id=remove_id)[0]
+        db.session.delete(remove)
+
+    db.session.commit()
+
+    return redirect('display/'+category)
+
+def get_obj_by_category(category):
+    if category == "District":
+        return District
+    elif category == "School":
+        return School
+    elif category == "Site":
+        return Site
+    elif category == "Course":
+        return Course
+    else:
+        raise Exception('Invalid category: '+category)
+
+
+
