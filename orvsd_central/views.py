@@ -26,22 +26,19 @@ def add_district():
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
-    error_msg = ""
+    msg = ""
 
     if request.method == "POST":
         #The district_id is supposed to be an integer
-        #try:
-            #district = District.query.filter_by(id=int(form.district_id)).all()
-            #if len(district) == 1:
-                #Add School to db
-        db.session.add(School(int(form.district_id.data),
+        district = District.query.filter_by(id=int(form.district_id)).all()
+        if len(district) == 1:
+            #Add School to db
+            db.session.add(School(int(form.district_id.data),
                         form.name.data, form.shortname.data,
                         form.domain.data. form.license.data))
-        db.session.commit()
-            #else:
-            #    error_msg= "A district with that id doesn't exist!"
-        #except:
-        #    error_msg= "The entered district_id was not an integer!"
+            db.session.commit()
+        else:
+            msg= "A district with that id doesn't exist!"
     return render_template('add_school.html', form=form,
                         error_msg=error_msg)
 
@@ -115,7 +112,7 @@ def report():
                 for school in district.schools:
                     school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
                     for site in sites:
-                        related_courses = Session.execute("select course_id where site_id="+sites.id+" from sites_courses")
+                        related_courses = session.execute("select course_id where site_id="+site.id+" from sites_courses")
                         site.courses = []
                         site.courses.append(Course.query.get(course))
 
@@ -127,7 +124,7 @@ def report():
                 for school in schools:
                     school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
                     for site in sites:
-                        related_courses = Session.execute("select course_id where site_id="+sites.id+" from sites_courses")
+                        related_courses = session.execute("select course_id where site_id="+site.id+" from sites_courses")
                         for course in related_courses:
                             # course is the primary key which is used to relate a site's course to a specific course.
                             site.courses.append(Course.query.get(course))
@@ -201,13 +198,13 @@ def remove_objects(category):
     return redirect('display/'+category)
 
 def get_obj_by_category(category):
-    if category == "District":
+    if category == "Districts":
         return District
-    elif category == "School":
+    elif category == "Schools":
         return School
-    elif category == "Site":
+    elif category == "Sites":
         return Site
-    elif category == "Course":
+    elif category == "Courses":
         return Course
     else:
         raise Exception('Invalid category: '+category)
