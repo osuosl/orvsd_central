@@ -24,3 +24,12 @@ class AddSchool(Form):
     shortname = TextField('shortname', [Required()])
     domain = TextField('domain', [Required()])
     license = TextField('license', [Required()])
+
+class AddCourse(Form):
+    serial = TextField('serial', [Required()])
+    name = TextField('name', [Required()])
+    shortname = TextField('shortname', [Required()])
+    license = TextField('license')
+    category = TextField('category')
+
+

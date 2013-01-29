@@ -2,7 +2,7 @@ from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app
-from forms import LoginForm, AddDistrict, AddSchool, AddUser
+from forms import LoginForm, AddDistrict, AddSchool, AddUser, AddCourse
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
 import re
 
@@ -44,6 +44,19 @@ def add_school():
         #    error_msg= "The entered district_id was not an integer!"
     return render_template('add_school.html', form=form,
                         error_msg=error_msg)
+
+@app.route("/add_course", methods=['GET', 'POST'])
+def add_course():
+    form = AddCourse()
+    msg = ""
+    if request.method == "POST":
+        db.session.add(Course(int(form.serial.data), form.name.data,
+                            form.shortname.data, form.license.data,
+                            form.category.data))
+        db.session.commit()
+        msg = "Course: "+form.name.data+"added successfully!"
+
+    return render_template('add_course.html', form=form, msg=msg)
 
 
 @app.route('/me')

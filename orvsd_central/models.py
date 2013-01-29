@@ -183,7 +183,8 @@ class Course(db.Model):
     # moodle category for this class (probably "default")
     category = db.Column(db.String(255))
 
-    def __init__(self, name, shortname, filename, license, category, version):
+    def __init__(self, serial, name, shortname, license=None, category=None):
+        self.serial = serial
         self.name = name
         self.shortname = shortname
         self.license = license
