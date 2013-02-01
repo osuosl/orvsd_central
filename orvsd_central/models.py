@@ -2,6 +2,7 @@ from orvsd_central import db
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 
+
 sites_courses = db.Table('sites_courses', db.Model.metadata,
     db.Column('site_id', db.Integer, db.ForeignKey('sites.id')),
     db.Column('course_id', db.Integer, db.ForeignKey('courses.id'))
@@ -76,7 +77,7 @@ class School(db.Model):
     __tablename__ = 'schools'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning district
-    disctrict_id = db.Column(db.Integer, db.ForeignKey('districts.id'))
+    district_id = db.Column(db.Integer, db.ForeignKey('districts.id', use_alter=True, name='fk_school_to_district_id'))
     # school name
     name = db.Column(db.String(255))
     # short name or abbreviation
