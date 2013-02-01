@@ -4,8 +4,8 @@ from datetime import datetime, date, time, timedelta
 
 
 sites_courses = db.Table('sites_courses', db.Model.metadata,
-    db.Column('site_id', db.Integer, db.ForeignKey('sites.id')),
-    db.Column('course_id', db.Integer, db.ForeignKey('courses.id'))
+    db.Column('site_id', db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_sites_courses_site_id')),
+    db.Column('course_id', db.Integer, db.ForeignKey('courses.id', use_alter=True, name='fk_sites_courses_course_id'))
 )
 
 class User(db.Model):
@@ -103,7 +103,7 @@ class Site(db.Model):
     __tablename__ = 'sites'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning school
-    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id', use_alter=True, name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
     sitename = db.Column(db.String(255))
     sitetype = db.Column(db.Enum('moodle','drupal', name='site_types')) # (from siteinfo)
@@ -143,7 +143,7 @@ class SiteDetail(db.Model):
     __tablename__ = 'site_details'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning site
-    site_id = db.Column(db.Integer, db.ForeignKey('sites.id'))
+    site_id = db.Column(db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_site_details_site_id'))
     siteversion = db.Column(db.String(255))
     siterelease = db.Column(db.String(255))
     adminemail = db.Column(db.String(255))
