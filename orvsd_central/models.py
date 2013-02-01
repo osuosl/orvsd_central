@@ -66,6 +66,9 @@ class District(db.Model):
     def __repr__(self):
         return "<Disctrict('%s','%s')>" % (self.name)
 
+    def get_properties(self):
+        return ['id', 'name', 'shortname', 'base_path']
+
     """
     Schools belong to one district, have many sites and  many courses
     """
@@ -91,6 +94,9 @@ class School(db.Model):
         self.shortname = shortname
         self.domain = domain
         self.license = license
+
+    def get_properties(self):
+        return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license']
 
 class Site(db.Model):
     __tablename__ = 'sites'
@@ -123,6 +129,9 @@ class Site(db.Model):
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s')>" % (self.sitename, self.sitetype, self.baseurl, self.basepath, self.jenkins_cron_job)
+
+    def get_properties(self):
+        return ['id', 'school_id', 'sitename', 'sitetype', 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
 """
 Site_details belong to one school. This data is updated from the
@@ -174,7 +183,8 @@ class Course(db.Model):
     # moodle category for this class (probably "default")
     category = db.Column(db.String(255))
 
-    def __init__(self, name, shortname, filename, license, category, version):
+    def __init__(self, serial, name, shortname, license=None, category=None):
+        self.serial = serial
         self.name = name
         self.shortname = shortname
         self.license = license
@@ -182,6 +192,9 @@ class Course(db.Model):
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % (self.name, self.shortname, self.filename, self.license, self.category, self.version)
+
+    def get_properties(self):
+        return ['id', 'serial', 'name', 'shortname', 'license', 'category']
 
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'

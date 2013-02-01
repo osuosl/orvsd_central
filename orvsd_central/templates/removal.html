@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Display {{category}}s</title>
+{% endblock %}
+
+{% block content %}
+    <form action="{{ url_for('remove_objects', category=category)}}" method="POST">
+        <table>
+            <tr>
+                <th></th>
+                {% for prop in properties %}
+                    <th>{{prop}}</th>
+                {% endfor %}
+            </tr>
+
+            {% for obj in objects %}
+                <tr>
+                    <td><input type="checkbox" name="remove" value="{{obj['id']}}"></input>
+                    {% for prop in properties %}
+                        <td>{{obj[prop]}}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+        <input type="submit" value="Remove Selected"></input>
+    </form>
+{% endblock %}
+
+

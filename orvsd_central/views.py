@@ -2,7 +2,7 @@ from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app
-from forms import LoginForm, AddDistrict, AddSchool, AddUser
+from forms import LoginForm, AddDistrict, AddSchool, AddUser, AddCourse
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
 import re
 
@@ -26,24 +26,34 @@ def add_district():
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
-    error_msg = ""
+    msg = ""
 
     if request.method == "POST":
         #The district_id is supposed to be an integer
-        #try:
-            #district = District.query.filter_by(id=int(form.district_id)).all()
-            #if len(district) == 1:
-                #Add School to db
-        db.session.add(School(int(form.district_id.data),
+        district = District.query.filter_by(id=int(form.district_id)).all()
+        if len(district) == 1:
+            #Add School to db
+            db.session.add(School(int(form.district_id.data),
                         form.name.data, form.shortname.data,
                         form.domain.data. form.license.data))
-        db.session.commit()
-            #else:
-            #    error_msg= "A district with that id doesn't exist!"
-        #except:
-        #    error_msg= "The entered district_id was not an integer!"
+            db.session.commit()
+        else:
+            msg= "A district with that id doesn't exist!"
     return render_template('add_school.html', form=form,
                         error_msg=error_msg)
+
+@app.route("/add_course", methods=['GET', 'POST'])
+def add_course():
+    form = AddCourse()
+    msg = ""
+    if request.method == "POST":
+        db.session.add(Course(int(form.serial.data), form.name.data,
+                            form.shortname.data, form.license.data,
+                            form.category.data))
+        db.session.commit()
+        msg = "Course: "+form.name.data+"added successfully!"
+
+    return render_template('add_course.html', form=form, msg=msg)
 
 
 @app.route('/me')
@@ -102,7 +112,7 @@ def report():
                 for school in district.schools:
                     school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
                     for site in sites:
-                        related_courses = Session.execute("select course_id where site_id="+sites.id+" from sites_courses")
+                        related_courses = session.execute("select course_id where site_id="+site.id+" from sites_courses")
                         site.courses = []
                         site.courses.append(Course.query.get(course))
 
@@ -114,7 +124,7 @@ def report():
                 for school in schools:
                     school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
                     for site in sites:
-                        related_courses = Session.execute("select course_id where site_id="+sites.id+" from sites_courses")
+                        related_courses = session.execute("select course_id where site_id="+site.id+" from sites_courses")
                         for course in related_courses:
                             # course is the primary key which is used to relate a site's course to a specific course.
                             site.courses.append(Course.query.get(course))
@@ -162,4 +172,42 @@ def register():
             message = form.user.data+" has been added successfully!\n"
 
     return render_template('add_user.html', form=form, message=message)
+
+@app.route("/display/<category>")
+def remove(category):
+    obj = get_obj_by_category(category)
+    objects = obj.query.all()
+    if objects:
+        # fancy way to get the properties of an object
+        properties = objects[0].get_properties()
+        return render_template('removal.html', category=category, objects=objects, properties=properties)
+
+
+@app.route("/remove/<category>", methods=['POST'])
+def remove_objects(category):
+    obj = get_obj_by_category(category)
+    remove_ids = request.form.getlist('remove')
+    for remove_id in remove_ids:
+        # obj.query returns a list, but should only have one element because
+        # ids are unique.
+        remove = obj.query.filter_by(id=remove_id)[0]
+        db.session.delete(remove)
+
+    db.session.commit()
+
+    return redirect('display/'+category)
+
+def get_obj_by_category(category):
+    if category == "Districts":
+        return District
+    elif category == "Schools":
+        return School
+    elif category == "Sites":
+        return Site
+    elif category == "Courses":
+        return Course
+    else:
+        raise Exception('Invalid category: '+category)
+
+
 
