@@ -65,7 +65,7 @@ class District(db.Model):
         self.shortname = shortname
         self.base_path = base_path
     def __repr__(self):
-        return "<Disctrict('%s','%s')>" % (self.name)
+        return "<Disctrict('%s')>" % (self.name)
 
     def get_properties(self):
         return ['id', 'name', 'shortname', 'base_path']
@@ -116,6 +116,7 @@ class Site(db.Model):
     # what machine is this on, or is it in the moodle cloud?
     location = db.Column(db.String(255))
 
+    site_details = db.relationship("SiteDetail" backref=db.backref('sites'))
     school = db.relationship("School", backref=db.backref('sites', order_by=id))
     courses = db.relationship("Course", secondary='sites_courses', backref='sites')
 
