@@ -90,10 +90,7 @@ def report():
     all_districts = District.query.order_by("name").all()
     all_schools = School.query.order_by("name").all()
     all_courses = Course.query.order_by("name").all()
-    all_sites = SiteDetail.query.all()
-
-    for item in all_sites:
-        print item
+    all_sites = Site.query.order_by("sitename").all()
 
     districts = all_districts
     schools = all_schools
