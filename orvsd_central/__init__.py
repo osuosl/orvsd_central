@@ -7,6 +7,8 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 db.init_app(app)
 
+
+
 import models, views
 
 @app.before_request

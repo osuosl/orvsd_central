@@ -2,9 +2,10 @@ from orvsd_central import db
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 
+
 sites_courses = db.Table('sites_courses', db.Model.metadata,
-    db.Column('site_id', db.Integer, db.ForeignKey('sites.id')),
-    db.Column('course_id', db.Integer, db.ForeignKey('courses.id'))
+    db.Column('site_id', db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_sites_courses_site_id')),
+    db.Column('course_id', db.Integer, db.ForeignKey('courses.id', use_alter=True, name='fk_sites_courses_course_id'))
 )
 
 class User(db.Model):
@@ -76,7 +77,7 @@ class School(db.Model):
     __tablename__ = 'schools'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning district
-    disctrict_id = db.Column(db.Integer, db.ForeignKey('districts.id'))
+    district_id = db.Column(db.Integer, db.ForeignKey('districts.id', use_alter=True, name='fk_school_to_district_id'))
     # school name
     name = db.Column(db.String(255))
     # short name or abbreviation
@@ -102,7 +103,7 @@ class Site(db.Model):
     __tablename__ = 'sites'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning school
-    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id', use_alter=True, name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
     sitename = db.Column(db.String(255))
     sitetype = db.Column(db.Enum('moodle','drupal', name='site_types')) # (from siteinfo)
@@ -143,7 +144,7 @@ class SiteDetail(db.Model):
     __tablename__ = 'site_details'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning site
-    site_id = db.Column(db.Integer, db.ForeignKey('sites.id'))
+    site_id = db.Column(db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_site_details_site_id'))
     siteversion = db.Column(db.String(255))
     siterelease = db.Column(db.String(255))
     adminemail = db.Column(db.String(255))
