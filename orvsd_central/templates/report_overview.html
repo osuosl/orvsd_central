@@ -27,6 +27,7 @@
                 <td>
                     <select name="all_schools" class="filter">
                         <option selected="True" value="All">All</option>
+                        <option value="None">None</option>
                         {% for school in all_schools %}
                             <option value="{{school.name}}">{{school.name}}</option>
                         {% endfor %}
@@ -35,6 +36,7 @@
                 <td>
                     <select name="all_sites" class="filter">
                         <option selected="True" value="All">All</option>
+                        <option value="None">None</option>
                         {% for site in all_sites %}
                             <option value="{{site.sitename}}">{{site.sitename}}</option>
                         {% endfor %}
@@ -43,6 +45,7 @@
                 <td>
                     <select name="all_courses" class="filter">
                         <option selected="True" value="All">All</option>
+                        <option value="None">None</option>
                         {% for course in all_courses %}
                             <option value="{{course.name}}">{{course.name}}</option>
                         {% endfor %}
