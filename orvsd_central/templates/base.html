@@ -1,14 +1,17 @@
 <html>
     <head>
-        {% block head %}
-            <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='bootstrap/css/bootstrap.css') }}" />
-            <script type="text/javascript" src="{{url_for('static',filename='js/jquery.min.js') }}"></script>
-        {% endblock %}
         {% block title %}
-            <title>ORVSD Central</title>
+        <title>ORVSD Central</title>
+        {% endblock %}
+
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='bootstrap/css/bootstrap.css') }}" />
+        <script type="text/javascript" src="{{url_for('static',filename='js/jquery.min.js') }}"></script>
+
+        {% block head %}
         {% endblock %}
     </head>
-    <body>
+
+    <body class=container>
         <div id="content">
             {%block content%}
             {%endblock%}
