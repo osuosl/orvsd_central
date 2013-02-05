@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
 
+{% block head %}
+        <script src="{{url_for('static',filename='js/report_overview.js') }}" ></script>
+{% endblock %}
+
 {% block title %}
-    <title>Report Overview</title>
+        <title>Report Overview</title>
 {% endblock %}
 
 {% block content %}
-    <body class="container">
     <div class="hero-unit">
     <form name="filter_options" action="/report" method="POST">
         <table>
@@ -17,7 +20,7 @@
             </tr>
             <tr>
                 <td>
-                    <select name="all_districts" class="filter">
+                    <select name="all_districts" class="filter" id="districts">
                         <option selected="True" value="All">All</option>
                         {% for district in all_districts %}
                             <option value="{{district.name}}">{{district.name}}</option>
@@ -25,7 +28,7 @@
                     </select>
                 </td>
                 <td>
-                    <select name="all_schools" class="filter">
+                    <select name="all_schools" class="filter" id="schools">
                         <option selected="True" value="All">All</option>
                         <option value="None">None</option>
                         {% for school in all_schools %}
@@ -34,7 +37,7 @@
                     </select>
                 </td>
                 <td>
-                    <select name="all_sites" class="filter">
+                    <select name="all_sites" class="filter" id="sites">
                         <option selected="True" value="All">All</option>
                         <option value="None">None</option>
                         {% for site in all_sites %}
@@ -43,7 +46,7 @@
                     </select>
                 </td>
                 <td>
-                    <select name="all_courses" class="filter">
+                    <select name="all_courses" class="filter" id="courses">
                         <option selected="True" value="All">All</option>
                         <option value="None">None</option>
                         {% for course in all_courses %}
@@ -63,6 +66,5 @@
     Courses: {{ course_count }}
 
 
-    </body>
 {% endblock %}
 
