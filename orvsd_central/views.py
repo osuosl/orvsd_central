@@ -77,19 +77,22 @@ def logout():
 #@login_required
 def report():
 
+    all_districts = District.query.order_by("name").all()
+
     if request.method == "GET":
         dist_count = District.query.count()
         school_count = School.query.count()
         course_count = Course.query.count()
         site_count = SiteDetail.query.count()
 
+
         return render_template("report_overview.html", dist_count=dist_count,
                                                        school_count=school_count,
                                                        course_count=course_count,
-                                                       site_count=site_count )
+                                                       site_count=site_count,
+                                                       all_districts=all_districts)
 
     elif request.method == "POST":
-        all_districts = District.query.order_by("name").all()
         all_schools = School.query.order_by("name").all()
         all_courses = Course.query.order_by("name").all()
         all_sites = SiteDetail.query.all()
