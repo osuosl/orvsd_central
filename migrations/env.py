@@ -37,7 +37,7 @@ db_names = config.get_main_option('databases')
 sys.path.append("./")
 #from orvsd_central import db
 from orvsd_central import db 
-target_metadata = db
+target_metadata = db.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
