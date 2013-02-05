@@ -2,7 +2,7 @@ from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app
-from forms import LoginForm, AddDistrict, AddSchool, AddUser, AddCourse
+from forms import LoginForm, AddDistrict, AddSchool, AddUser
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
 import re
 
@@ -26,34 +26,24 @@ def add_district():
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
-    msg = ""
+    error_msg = ""
 
     if request.method == "POST":
         #The district_id is supposed to be an integer
-        district = District.query.filter_by(id=int(form.district_id)).all()
-        if len(district) == 1:
-            #Add School to db
-            db.session.add(School(int(form.district_id.data),
+        #try:
+            #district = District.query.filter_by(id=int(form.district_id)).all()
+            #if len(district) == 1:
+                #Add School to db
+        db.session.add(School(int(form.district_id.data),
                         form.name.data, form.shortname.data,
                         form.domain.data. form.license.data))
-            db.session.commit()
-        else:
-            msg= "A district with that id doesn't exist!"
+        db.session.commit()
+            #else:
+            #    error_msg= "A district with that id doesn't exist!"
+        #except:
+        #    error_msg= "The entered district_id was not an integer!"
     return render_template('add_school.html', form=form,
                         error_msg=error_msg)
-
-@app.route("/add_course", methods=['GET', 'POST'])
-def add_course():
-    form = AddCourse()
-    msg = ""
-    if request.method == "POST":
-        db.session.add(Course(int(form.serial.data), form.name.data,
-                            form.shortname.data, form.license.data,
-                            form.category.data))
-        db.session.commit()
-        msg = "Course: "+form.name.data+"added successfully!"
-
-    return render_template('add_course.html', form=form, msg=msg)
 
 
 @app.route('/me')
@@ -87,71 +77,85 @@ def logout():
 #@login_required
 def report():
 
-    all_districts = District.query.order_by("name").all()
-    all_schools = School.query.order_by("name").all()
-    all_courses = Course.query.order_by("name").all()
-    all_sites = SiteDetail.query.all()
+    if request.method == "GET":
+        dist_count = District.query.count()
+        school_count = School.query.count()
+        course_count = Course.query.count()
+        site_count = SiteDetail.query.count()
 
-    for item in all_sites:
-        print item
+        return render_template("report_overview.html", dist_count=dist_count,
+                                                       school_count=school_count,
+                                                       course_count=course_count,
+                                                       site_count=site_count )
 
-    districts = all_districts
-    schools = all_schools
-    courses = all_courses
+    elif request.method == "POST":
+        all_districts = District.query.order_by("name").all()
+        all_schools = School.query.order_by("name").all()
+        all_courses = Course.query.order_by("name").all()
+        all_sites = SiteDetail.query.all()
 
-    # Once filters have been applied
-    if request.method== "POST":
-        form = request.form
-        # Check to see if the user wants to see district info
-        if request.form['all_districts'] != "None":
-        # Getting district related information
-            if request.form['all_districts'] != "All":
-                districts = District.query.filter_by(name=request.form['filter_districts'])
-            for district in districts:
-                district.schools = School.query.filter_by(disctrict_id=district.id).order_by("name").all()
-                for school in district.schools:
-                    school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
-                    for site in sites:
-                        related_courses = session.execute("select course_id where site_id="+site.id+" from sites_courses")
-                        site.courses = []
-                        site.courses.append(Course.query.get(course))
 
-            districts = None
-            # Check to see if the user wanted school information
-            if request.form['all_schools'] != "None":
-                if request.form['all_schools'] != "All":
-                    schools = School.query.filter_by(name=request.form['filter_schools']).order_by("name").all()
-                for school in schools:
-                    school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
-                    for site in sites:
-                        related_courses = session.execute("select course_id where site_id="+site.id+" from sites_courses")
-                        for course in related_courses:
-                            # course is the primary key which is used to relate a site's course to a specific course.
-                            site.courses.append(Course.query.get(course))
-                        for course in site.courses:
-                            # Parse information from SiteDetails
-                            continue
 
-            else:
-                schools = None
-                # Check to see if the user wanted course information
-                if request.form['all_courses'] != "None":
-                    if request.form['all_courses'] != "All":
-                        courses = Course.query.filter_by(name=request.form['filter_courses']).order_by("name").all()
-                    for course in courses:
-                        #Calculate num of users in total
-                        continue
-                else:
-                    return "Error: No filter provided!!"
-    else:
-        districts = all_districts
-        schools = all_schools
-        courses = all_courses
-
-    return render_template("report.html", all_districts=all_districts,
-                                          all_schools=all_schools,
-                                          all_courses=all_courses,
-                                          all_sites=all_sites)
+#    for item in all_sites:
+#        print item
+#
+#    districts = all_districts
+#    schools = all_schools
+#    courses = all_courses
+#
+#    # Once filters have been applied
+#    if request.method== "POST":
+#        form = request.form
+#        # Check to see if the user wants to see district info
+#        if request.form['all_districts'] != "None":
+#        # Getting district related information
+#            if request.form['all_districts'] != "All":
+#                districts = District.query.filter_by(name=request.form['filter_districts'])
+#            for district in districts:
+#                district.schools = School.query.filter_by(disctrict_id=district.id).order_by("name").all()
+#                for school in district.schools:
+#                    school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
+#                    for site in sites:
+#                        related_courses = Session.execute("select course_id where site_id="+sites.id+" from sites_courses")
+#                        site.courses = []
+#                        site.courses.append(Course.query.get(course))
+#
+#            districts = None
+#            # Check to see if the user wanted school information
+#            if request.form['all_schools'] != "None":
+#                if request.form['all_schools'] != "All":
+#                    schools = School.query.filter_by(name=request.form['filter_schools']).order_by("name").all()
+#                for school in schools:
+#                    school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
+#                    for site in sites:
+#                        related_courses = Session.execute("select course_id where site_id="+sites.id+" from sites_courses")
+#                        for course in related_courses:
+#                            # course is the primary key which is used to relate a site's course to a specific course.
+#                            site.courses.append(Course.query.get(course))
+#                        for course in site.courses:
+#                            # Parse information from SiteDetails
+#                            continue
+#
+#            else:
+#                schools = None
+#                # Check to see if the user wanted course information
+#                if request.form['all_courses'] != "None":
+#                    if request.form['all_courses'] != "All":
+#                        courses = Course.query.filter_by(name=request.form['filter_courses']).order_by("name").all()
+#                    for course in courses:
+#                        #Calculate num of users in total
+#                        continue
+#                else:
+#                    return "Error: No filter provided!!"
+#    else:
+#        districts = all_districts
+#        schools = all_schools
+#        courses = all_courses
+#
+        return render_template("report.html", all_districts=all_districts,
+                                             all_schools=all_schools,
+                                             all_courses=all_courses,
+                                             all_sites=all_sites)
 
 @app.route("/add_user", methods=['GET', 'POST'])
 #@login_required
@@ -198,13 +202,13 @@ def remove_objects(category):
     return redirect('display/'+category)
 
 def get_obj_by_category(category):
-    if category == "Districts":
+    if category == "District":
         return District
-    elif category == "Schools":
+    elif category == "School":
         return School
-    elif category == "Sites":
+    elif category == "Site":
         return Site
-    elif category == "Courses":
+    elif category == "Course":
         return Course
     else:
         raise Exception('Invalid category: '+category)
