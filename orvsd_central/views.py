@@ -1,15 +1,38 @@
 from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db, app
+from orvsd_central import db, app, login_manager
 from forms import LoginForm, AddDistrict, AddSchool, AddUser, AddCourse
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
 import re
+
+def no_perms():
+    return "You do not have permission to be here!"
 
 @app.route("/")
 #@login_required
 def main_page():
     return redirect('/report')
+
+@login_manager.user_loader
+def load_user(userid):
+    return User.get(userid)
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    form=LoginForm()
+    if form.validate_on_submit():
+        # login and validate the user...
+        login_user(user)
+        flash("Logged in successfully.")
+        return redirect("/")
+
+    return render_template("login.html", form=form)
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect("/")
 
 @app.route("/add_district", methods=['GET', 'POST'])
 def add_district():
