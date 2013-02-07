@@ -161,7 +161,7 @@ def install_course():
     form = InstallCourse()
 
     # Get all the available course modules
-    all_courses = CourseDetail.query.order_by("shortname").all()
+    all_courses = CourseDetail.query.all()
 
     # Generate the list of choices for the template
     choices = []
@@ -169,7 +169,7 @@ def install_course():
     for course in all_courses:
         choices.append((course.course_id,
                    "%s - Version: %s - Moodle Version: %s" % 
-                   (course.shortname, course.version, course.moodle_version)))
+                   (course.course.shortname, course.version, course.moodle_version)))
 
     form.course.choices = choices
 
@@ -211,16 +211,16 @@ def install_course_output():
 
         data = "\"filepath=%s&file=%s&courseid=%s&coursename=%s&shortname=%s&category=%s&firstname=%s&lastname=%s&city=%s&username=%s&email=%s\"" % (
             fp,  # filepath
-            course.filename,    # file
-            course.course_id,   # courseid
-            course.course.name, # coursename
-            course.shortname,   # shortname
-            '1',                # category
-            'orvsd',            # firstname
-            'central',          # lastname
-            'none',             # city
-            'admin',            # username
-            'a@a.aa')           # email
+            course.filename,        # file
+            course.course_id,       # courseid
+            course.course.name,     # coursename
+            course.course.shortname,# shortname
+            '1',                    # category
+            'orvsd',                # firstname
+            'central',              # lastname
+            'none',                 # city
+            'admin',                # username
+            'a@a.aa')               # email
 
         # Append the output of the process to output. This is pased to the
         # template and will be displayed
