@@ -2,9 +2,11 @@ from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app
-from forms import LoginForm, AddDistrict, AddSchool, AddUser
+from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
+
 import re
+import subprocess
 
 @app.route("/")
 #@login_required
@@ -146,6 +148,71 @@ def remove_objects(category):
     db.session.commit()
 
     return redirect('display/'+category)
+
+@app.route('/install/course', methods=['GET'])
+def install_course():
+
+    form = InstallCourse()
+
+    # Get all the available course modules
+    all_courses = CourseDetail.query.order_by("shortname").all()
+
+    # Generate the list of choices for the template
+    choices = []
+
+    for course in all_courses:
+        choices.append((course.course_id,
+                   "%s - Version: %s - Moodle Version: %s" % 
+                   (course.shortname, course.version, course.moodle_version)))
+
+    form.course.choices = choices
+
+    return render_template('install_course.html', form=form)
+
+@app.route('/install/course/output', methods=['POST'])
+def install_course_output():
+    """
+    Displays the output for any course installs
+    """
+
+    # An array of unicode strings will be passed, they need to be integers for the query
+    selected_courses = [int(cid) for cid in request.form.getlist('course')]
+
+    # The site to install the courses
+    site = request.form.get('site')
+
+    # The CourseDetail objects of info needed to generate the url
+    courses = CourseDetail.query.filter(CourseDetail.course_id.in_(selected_courses)).all()
+
+    # Appended to buy all the courses being installed
+    commands = []
+    output = ''
+
+    # Loop through the courses, generate the command to be run, run it, and
+    # append the ouput to output
+    #
+    # Currently this will break ao our db is not setup correctly yet
+    for course in courses:
+        data = "\"filepath=%s&file=%s&courseid=%s&coursename=%s&shortname=%s&category=%s&firstname=%s&lastname=%s&city=%s&username=%s&email=%s&pass=%s \"" % (
+            # We don't have,  # filepath
+            course.filename,  # file
+            course.course_id, # courseid
+            # Query fix,      # coursename
+            course.shortname, # shortname
+            '1',              # category
+            'orvsd',          # firstname
+            'central',        # lastname
+            'none',           # city
+            'admin',          # username
+            'a@a.aa',         # email
+            'pass')           # pass
+
+        # Append the output of the process to output. This is pased to the
+        # template and will be displayed
+        output += "\n\n" + subprocess.check_output(['curl', '--data', data, site])
+
+    return render_template('install_course_output.html', command=commands, output=output)
+
 
 def get_obj_by_category(category):
     if category == "District":
