@@ -199,19 +199,28 @@ def install_course_output():
     #
     # Currently this will break ao our db is not setup correctly yet
     for course in courses:
-        data = "\"filepath=%s&file=%s&courseid=%s&coursename=%s&shortname=%s&category=%s&firstname=%s&lastname=%s&city=%s&username=%s&email=%s&pass=%s \"" % (
-            # We don't have,  # filepath
-            course.filename,  # file
-            course.course_id, # courseid
-            # Query fix,      # coursename
-            course.shortname, # shortname
-            '1',              # category
-            'orvsd',          # firstname
-            'central',        # lastname
-            'none',           # city
-            'admin',          # username
-            'a@a.aa',         # email
-            'pass')           # pass
+
+        # To get the file path we need the text input, the lowercase of source, and
+        # the filename
+        fp = request.form.get('filepath')
+        fp = fp if fp.endswith('/') else fp + '/'
+        fp += course.source.lower() + '/'
+        fp += course.filename
+
+        print fp
+
+        data = "\"filepath=%s&file=%s&courseid=%s&coursename=%s&shortname=%s&category=%s&firstname=%s&lastname=%s&city=%s&username=%s&email=%s\"" % (
+            fp,  # filepath
+            course.filename,    # file
+            course.course_id,   # courseid
+            course.course.name, # coursename
+            course.shortname,   # shortname
+            '1',                # category
+            'orvsd',            # firstname
+            'central',          # lastname
+            'none',             # city
+            'admin',            # username
+            'a@a.aa')           # email
 
         # Append the output of the process to output. This is pased to the
         # template and will be displayed

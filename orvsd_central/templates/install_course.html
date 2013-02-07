@@ -9,7 +9,8 @@
 <form name='install_course' method='POST', action='/install/course/output'>
     <div>Site: {{form.site}}</div>
     <div>Course: {{form.course}}</div>
-    <div><input type='submit' value='Install'>
+    <div>Filepath: {{form.filepath}}</div>
+    <div><input type='submit' value='Install'></div>
 </form>
 
 {% endblock %}

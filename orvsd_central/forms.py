@@ -36,4 +36,5 @@ class InstallCourse(Form):
     defaults = [('None','---')]
     site = TextField('Site')
     course = SelectMultipleField('Course', choices=defaults)
+    filepath = TextField('Filepath')
 
