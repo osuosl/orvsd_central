@@ -136,7 +136,7 @@ class Site(db.Model):
         return ['id', 'school_id', 'sitename', 'sitetype', 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
 """
-Site_details belong to one school. This data is updated from the
+Site_details belong to one site. This data is updated from the
 siteinfo tables, except the date - a new record is added with each
 update. See siteinfo notes.
 """
@@ -185,6 +185,8 @@ class Course(db.Model):
     # moodle category for this class (probably "default")
     category = db.Column(db.String(255))
 
+    course_details = db.relationship("CourseDetails", backref=db.backref('course', order_by=id))
+
     def __init__(self, serial, name, shortname, license=None, category=None):
         self.serial = serial
         self.name = name
@@ -200,7 +202,8 @@ class Course(db.Model):
 
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
-    course_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_site_details_site_id'))
     shortname = db.Column(db.String(255))
     # just the name, with extension, no path
     filename = db.Column(db.String(255))
@@ -211,6 +214,8 @@ class CourseDetail(db.Model):
     active = db.Column(db.Boolean)
     moodle_version = db.Column(db.String(255))
     source = db.Column(db.String(255))
+
+    course = db.relationship("Course", backref=db.backref('course_details', order_by=id))
 
     def __init__(self, course_id, serial, shortname, filename, version, updated, active, moodle_version, source):
         self.course_id = course_id
