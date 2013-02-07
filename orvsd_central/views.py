@@ -105,6 +105,11 @@ def report():
                                              all_courses=all_courses,
                                              all_sites=all_sites)
 
+    return render_template("report.html", all_districts=all_districts,
+                                          all_schools=all_schools,
+                                          all_courses=all_courses,
+                                          all_sites=all_sites)
+
 
 @app.route("/add_user", methods=['GET', 'POST'])
 #@login_required
