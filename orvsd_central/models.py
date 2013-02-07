@@ -213,7 +213,7 @@ class CourseDetail(db.Model):
     source = db.Column(db.String(255))
 
 
-    def __init__(self, course_id, serial, shortname, filename, version, updated, active, moodle_version, source):
+    def __init__(self, course_id, shortname, filename, version, updated, active, moodle_version, source):
         self.course_id = course_id
         self.shortname = shortname
         self.filename = filename
