@@ -117,7 +117,6 @@ class Site(db.Model):
     location = db.Column(db.String(255))
 
     site_details = db.relationship("SiteDetail", backref=db.backref('sites'))
-    school = db.relationship("School", backref=db.backref('sites', order_by=id))
     courses = db.relationship("Course", secondary='sites_courses', backref='sites')
 
     def __init__(self, sitename, sitetype, baseurl, basepath, jenkins_cron_job, location):
@@ -155,8 +154,6 @@ class SiteDetail(db.Model):
     totalcourses = db.Column(db.Integer)
     timemodified = db.Column(db.DateTime)
 
-    school = db.relationship("Site", backref=db.backref('site_details', order_by=id))
-
     def __init__(self, siteversion, siterelease, adminemail, totalusers, adminusers, teachers, activeusers, totalcourses, timemodified):
         self.siteversion = siteversion
         self.siterelease = siterelease
@@ -185,7 +182,7 @@ class Course(db.Model):
     # moodle category for this class (probably "default")
     category = db.Column(db.String(255))
 
-    course_details = db.relationship("CourseDetails", backref=db.backref('course', order_by=id))
+    course_details = db.relationship("CourseDetail", backref=db.backref('course', order_by=id))
 
     def __init__(self, serial, name, shortname, license=None, category=None):
         self.serial = serial
@@ -203,7 +200,7 @@ class Course(db.Model):
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
     id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_site_details_site_id'))
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id', use_alter=True, name='fk_course_details_site_id'))
     shortname = db.Column(db.String(255))
     # just the name, with extension, no path
     filename = db.Column(db.String(255))
@@ -215,7 +212,6 @@ class CourseDetail(db.Model):
     moodle_version = db.Column(db.String(255))
     source = db.Column(db.String(255))
 
-    course = db.relationship("Course", backref=db.backref('course_details', order_by=id))
 
     def __init__(self, course_id, serial, shortname, filename, version, updated, active, moodle_version, source):
         self.course_id = course_id
