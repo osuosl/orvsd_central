@@ -14,8 +14,8 @@ script_location = migrations
 databases = engine1
 
 [engine1]
-sqlalchemy.url = mysql://orvsd:xL54wj4@stagingdb.orvsd.org/central 
-
+# sqlalchemy.url = mysql://orvsd:xL54wj4@stagingdb.orvsd.org/central 
+sqlalchemy.url = sqlite:///db/orvsd_test.db
 # Logging configuration
 [loggers]
 keys = root,sqlalchemy,alembic
