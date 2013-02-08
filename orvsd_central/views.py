@@ -181,11 +181,19 @@ def install_course_output():
     Displays the output for any course installs
     """
 
+    # Some needed vars
+    wstoken = '13f6df8a8b66742e02f7b3791710cf84'
+    wsfunction = 'local_orvsd_create_course'
+
     # An array of unicode strings will be passed, they need to be integers for the query
     selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
     # The site to install the courses
-    site = request.form.get('site')
+    site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s&moodlerestformat=json" % (
+                request.form.get('site'),
+                wstoken,
+                wsfunction
+            )
 
     # The CourseDetail objects of info needed to generate the url
     courses = CourseDetail.query.filter(CourseDetail.course_id.in_(selected_courses)).all()
@@ -207,8 +215,6 @@ def install_course_output():
         fp += course.source.lower() + '/'
         fp += course.filename
 
-        print fp
-
         data = "\"filepath=%s&file=%s&courseid=%s&coursename=%s&shortname=%s&category=%s&firstname=%s&lastname=%s&city=%s&username=%s&email=%s\"" % (
             fp,  # filepath
             course.filename,        # file
@@ -224,7 +230,9 @@ def install_course_output():
 
         # Append the output of the process to output. This is pased to the
         # template and will be displayed
-        output += "\n\n" + subprocess.check_output(['curl', '--data', data, site])
+        command = ['curl', '--data', data, site]
+        commands.append(command)
+        output += "\n\n" + subprocess.check_output(command)
 
     return render_template('install_course_output.html', command=commands, output=output)
 
