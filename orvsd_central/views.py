@@ -189,7 +189,7 @@ def install_course_output():
     selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
     # The site to install the courses
-    site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s&moodlerestformat=json" % (
+    site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
                 request.form.get('site'),
                 wstoken,
                 wsfunction
@@ -199,7 +199,6 @@ def install_course_output():
     courses = CourseDetail.query.filter(CourseDetail.course_id.in_(selected_courses)).all()
 
     # Appended to buy all the courses being installed
-    commands = []
     output = ''
 
     # Loop through the courses, generate the command to be run, run it, and
@@ -231,10 +230,9 @@ def install_course_output():
         # Append the output of the process to output. This is pased to the
         # template and will be displayed
         command = ['curl', '--data', data, site]
-        commands.append(command)
-        output += "\n\n" + subprocess.check_output(command)
+        output += "%s\n\n%s\n\n\n" % (command, subprocess.check_output(command))
 
-    return render_template('install_course_output.html', command=commands, output=output)
+    return render_template('install_course_output.html', output=output)
 
 
 def get_obj_by_category(category):
