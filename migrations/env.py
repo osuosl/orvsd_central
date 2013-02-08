@@ -4,7 +4,6 @@ from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 import logging
 import re
-
 import sys
 
 USE_TWOPHASE = False
@@ -34,10 +33,9 @@ db_names = config.get_main_option('databases')
 #       'engine1':mymodel.metadata1,
 #       'engine2':mymodel.metadata2
 #}
-sys.path.append("./")
-#from orvsd_central import db
-from orvsd_central import db 
-target_metadata = db.metadata
+sys.path.append('./')
+from orvsd_central import db
+target_metadata = {'engine1': db.metadata}
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -111,7 +109,7 @@ def run_migrations_online():
                         connection=rec['connection'],
                         upgrade_token="%s_upgrades",
                         downgrade_token="%s_downgrades",
-                        target_metadata=target_metadata
+                        target_metadata=target_metadata.get(name)
                     )
             context.run_migrations(engine_name=name)
 
