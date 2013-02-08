@@ -2,7 +2,7 @@ from flask.ext.wtf import Form, TextField, PasswordField, BooleanField, SelectFi
 from flask.ext.wtf import Required, Email
 
 class LoginForm(Form):
-    username = TextField('username', [Required()])
+    name = TextField('name', [Required()])
     password = PasswordField('password', [Required()])
 
 class AddUser(Form):

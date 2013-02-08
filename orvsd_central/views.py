@@ -16,18 +16,34 @@ def main_page():
 
 @login_manager.user_loader
 def load_user(userid):
-    return User.get(userid)
+    return User.id
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    form=LoginForm()
+    form=LoginForm(csrf_enabled=False)
     if form.validate_on_submit():
         # login and validate the user...
-        login_user(user)
-        flash("Logged in successfully.")
-        return redirect("/")
+        user = User.query.filter_by(name=form.name.data).first()
+        print check_password_hash
+        if user and user.password == form.password.data:
+            login_user(user)
+            flash("Logged in successfully.")
+            return redirect("/add_school")
 
     return render_template("login.html", form=form)
+
+def get_user():
+    # A user id is sent in, to check against the session
+    # and based on the result of querying that id we
+    # return a user (whether it be a sqlachemy obj or an
+    # obj named guest
+
+    if session["user_id"]:
+        user = User.query.filter_by(id=session["user_id"]).first()
+    else:
+        user = {"name": "Guest"}
+    return user
+
 
 @app.route("/logout")
 def logout():
@@ -37,23 +53,25 @@ def logout():
 @app.route("/add_district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
+    user = get_user()
     if request.method == "POST":
         #Add district to db.
         db.session.add(District(form.name.data, form.shortname.data,
                         form.base_path.data))
         db.session.commit()
 
-    return render_template('add_district.html', form=form)
+    return render_template('add_district.html', form=form, user=user)
 
 #@login_required
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
+    user = get_user()
     msg = ""
 
     if request.method == "POST":
         #The district_id is supposed to be an integer
-        district = District.query.filter_by(id=int(form.district_id)).all()
+        district = District.query.filter_by(id=int(form.district_id.data)).all()
         if len(district) == 1:
             #Add School to db
             db.session.add(School(int(form.district_id.data),
@@ -63,11 +81,12 @@ def add_school():
         else:
             msg= "A district with that id doesn't exist!"
     return render_template('add_school.html', form=form,
-                        error_msg=error_msg)
+                        msg=msg, user=user)
 
 @app.route("/add_course", methods=['GET', 'POST'])
 def add_course():
     form = AddCourse()
+    user = get_user()
     msg = ""
     if request.method == "POST":
         db.session.add(Course(int(form.serial.data), form.name.data,
@@ -76,7 +95,7 @@ def add_course():
         db.session.commit()
         msg = "Course: "+form.name.data+"added successfully!"
 
-    return render_template('add_course.html', form=form, msg=msg)
+    return render_template('add_course.html', form=form, msg=msg, user=user)
 
 
 @app.route('/me')
@@ -87,9 +106,10 @@ def home():
     """
     return render_template('users/templates/profile.html', user=current_user) #not sure current_user works this way, write test
 
+"""
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    form = LoginForm(request.form)
+    form = LoginForm(csrf_enabled=False)
 
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -99,7 +119,7 @@ def login():
             flash("Successful Login!")
             return redirect("/users/me/")
     return render_template("login.html", form=form)
-
+"""
 @app.route("/logout")
 @login_required
 def logout():
@@ -109,6 +129,7 @@ def logout():
 @app.route("/report", methods=['GET', 'POST'])
 #@login_required
 def report():
+    user = get_user()
 
     all_districts = District.query.order_by("name").all()
     all_schools = School.query.order_by("name").all()
@@ -171,11 +192,12 @@ def report():
     return render_template("report.html", all_districts=all_districts,
                                           all_schools=all_schools,
                                           all_courses=all_courses,
-                                          all_sites=all_sites)
+                                          all_sites=all_sites, user=user)
 
 @app.route("/add_user", methods=['GET', 'POST'])
 #@login_required
 def register():
+    user = get_user()
     form = AddUser()
     message = ""
 
@@ -191,16 +213,17 @@ def register():
 
             message = form.user.data+" has been added successfully!\n"
 
-    return render_template('add_user.html', form=form, message=message)
+    return render_template('add_user.html', form=form, message=message, user=user)
 
 @app.route("/display/<category>")
 def remove(category):
+    user = get_user()
     obj = get_obj_by_category(category)
     objects = obj.query.all()
     if objects:
         # fancy way to get the properties of an object
         properties = objects[0].get_properties()
-        return render_template('removal.html', category=category, objects=objects, properties=properties)
+        return render_template('removal.html', category=category, objects=objects, properties=properties, user=user)
 
 
 @app.route("/remove/<category>", methods=['POST'])

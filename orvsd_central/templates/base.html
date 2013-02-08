@@ -7,6 +7,11 @@
         {% block title %}
             <title>ORVSD Central</title>
         {% endblock %}
+
+        {% if user %}
+            Logged in as: {{user.name}}
+            </br>
+        {% endif %}
     </head>
     <body>
         <div id="content">
