@@ -7,8 +7,8 @@ from models import District, School, Site, SiteDetail, Course, CourseDetail, Use
 
 import re
 import subprocess
-import pycurl
 import StringIO
+import urllib
 
 @app.route("/")
 #@login_required
@@ -196,6 +196,7 @@ def install_course_output():
                 wstoken,
                 wsfunction
             )
+    site=str(site.encode('utf-8'))
 
     # The CourseDetail objects of info needed to generate the url
     courses = CourseDetail.query.filter(CourseDetail.course_id.in_(selected_courses)).all()
@@ -217,27 +218,36 @@ def install_course_output():
         fp += course.filename
 
 
-        post_data = [('filepath', fp),
-                     ('file', course.filename),
-                     ('courseid', course.course_id),
-                     ('coursename', course.course.name),
-                     ('shortname', course.course.shortname),
-                     ('category', '1'),
-                     ('firstname', 'orvsd'),
-                     ('lastname', 'central'),
-                     ('city', 'none'),
-                     ('username', 'admin'),
-                     ('email', 'a@a.aa')]
+        data = {'filepath': fp,
+                    'file': course.filename,
+                    'courseid': course.course_id,
+                    'coursename': course.course.name,
+                    'shortname': course.course.shortname,
+                    'category': '1',
+                    'firstname': 'orvsd',
+                    'lastname': 'central',
+                    'city': 'none',
+                    'username': 'admin',
+                    'email': 'a@a.aa'}
 
+        postdata = urllib.urlencode(data)
+
+        resp = urllib.urlopen(site, data=postdata)
+
+        output += resp.code
+        output += " : "
+        output += resp.read()
+
+        """
         storage = StringIO.StringIO()
         c = pycurl.Curl()
         c.setopt(pycurl.URL, site)
-        c.setopt(pycurl.HTTPPOST, pf)
+        c.setopt(pycurl.HTTPPOST, post_data)
         c.setopt(pycurl.VERBOSE, 1)
         c.setopt(pycurl.WRITEFUNCTION, storage.write)
         c.perform()
         c.close()
-
+        """
         output += "%s\n\n%s\n\n\n" % (coure.shortname, storage.getvalue())
 
         """
