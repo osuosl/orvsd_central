@@ -209,7 +209,6 @@ def install_course_output():
     #
     # Currently this will break ao our db is not setup correctly yet
     for course in courses:
-
         # To get the file path we need the text input, the lowercase of source, and
         # the filename
         fp = request.form.get('filepath')
@@ -217,58 +216,24 @@ def install_course_output():
         fp += course.source.lower() + '/'
         fp += course.filename
 
-
         data = {'filepath': fp,
-                    'file': course.filename,
-                    'courseid': course.course_id,
-                    'coursename': course.course.name,
-                    'shortname': course.course.shortname,
-                    'category': '1',
-                    'firstname': 'orvsd',
-                    'lastname': 'central',
-                    'city': 'none',
-                    'username': 'admin',
-                    'email': 'a@a.aa'}
+                'file': course.filename,
+                'courseid': course.course_id,
+                'coursename': course.course.name,
+                'shortname': course.course.shortname,
+                'category': '1',
+                'firstname': 'orvsd',
+                'lastname': 'central',
+                'city': 'none',
+                'username': 'admin',
+                'email': 'a@a.aa',
+                'pass': 'testo123'}
 
         postdata = urllib.urlencode(data)
 
         resp = urllib.urlopen(site, data=postdata)
 
-        output += resp.code
-        output += " : "
-        output += resp.read()
-
-        """
-        storage = StringIO.StringIO()
-        c = pycurl.Curl()
-        c.setopt(pycurl.URL, site)
-        c.setopt(pycurl.HTTPPOST, post_data)
-        c.setopt(pycurl.VERBOSE, 1)
-        c.setopt(pycurl.WRITEFUNCTION, storage.write)
-        c.perform()
-        c.close()
-        """
-        output += "%s\n\n%s\n\n\n" % (coure.shortname, storage.getvalue())
-
-        """
-        data = "\"filepath=%s&file=%s&courseid=%s&coursename=%s&shortname=%s&category=%s&firstname=%s&lastname=%s&city=%s&username=%s&email=%s\"" % (
-            fp,  # filepath
-            course.filename,        # file
-            course.course_id,       # courseid
-            course.course.name,     # coursename
-            course.course.shortname,# shortname
-            '1',                    # category
-            'orvsd',                # firstname
-            'central',              # lastname
-            'none',                 # city
-            'admin',                # username
-            'a@a.aa')               # email
-        
-        # Append the output of the process to output. This is pased to the
-        # template and will be displayed
-        command = ['curl', '--data', data, site]
-        output += "%s\n\n%s\n\n\n" % (command, subprocess.check_output(command))
-        """
+        output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
 
     return render_template('install_course_output.html', output=output)
 
