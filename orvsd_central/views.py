@@ -171,7 +171,7 @@ def install_course():
     for course in all_courses:
         choices.append((course.course_id,
                    "%s - Version: %s - Moodle Version: %s" % 
-                   (course.course.shortname, course.version, course.moodle_version)))
+                   (course.course.name, course.version, course.moodle_version)))
 
     form.course.choices = choices
 
