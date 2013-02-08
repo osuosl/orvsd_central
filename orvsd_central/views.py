@@ -214,7 +214,6 @@ def install_course_output():
         fp = request.form.get('filepath')
         fp = fp if fp.endswith('/') else fp + '/'
         fp += course.source.lower() + '/'
-        fp += course.filename
 
         data = {'filepath': fp,
                 'file': course.filename,
