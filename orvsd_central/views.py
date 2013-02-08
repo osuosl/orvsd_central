@@ -7,6 +7,7 @@ from models import District, School, Site, SiteDetail, Course, CourseDetail, Use
 
 import re
 import subprocess
+import pycurl
 
 @app.route("/")
 #@login_required
@@ -214,6 +215,31 @@ def install_course_output():
         fp += course.source.lower() + '/'
         fp += course.filename
 
+
+        post_data = [('filepath', fp),
+                     ('file', course.filename),
+                     ('courseid', course.course_id),
+                     ('coursename', course.course.name),
+                     ('shortname', course.course.shortname),
+                     ('category', '1'),
+                     ('firstname', 'orvsd'),
+                     ('lastname', 'central'),
+                     ('city', 'none'),
+                     ('username', 'admin'),
+                     ('email', 'a@a.aa')]
+
+        storage = StringIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, site)
+        c.setopt(c.HTTPPOST, pf)
+        c.setopt(c.VERBOSE, 1)
+        c.setopt(c.WRITEFUNCTION, storage.write)
+        c.perform()
+        c.close()
+
+        output += "%s\n\n%s\n\n\n" % (coure.shortname, storage.getvalue())
+
+        """
         data = "\"filepath=%s&file=%s&courseid=%s&coursename=%s&shortname=%s&category=%s&firstname=%s&lastname=%s&city=%s&username=%s&email=%s\"" % (
             fp,  # filepath
             course.filename,        # file
@@ -226,11 +252,12 @@ def install_course_output():
             'none',                 # city
             'admin',                # username
             'a@a.aa')               # email
-
+        
         # Append the output of the process to output. This is pased to the
         # template and will be displayed
         command = ['curl', '--data', data, site]
         output += "%s\n\n%s\n\n\n" % (command, subprocess.check_output(command))
+        """
 
     return render_template('install_course_output.html', output=output)
 
