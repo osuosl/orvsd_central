@@ -8,6 +8,7 @@ from models import District, School, Site, SiteDetail, Course, CourseDetail, Use
 import re
 import subprocess
 import pycurl
+import StringIO
 
 @app.route("/")
 #@login_required
