@@ -229,7 +229,7 @@ def install_course_output():
                      ('username', 'admin'),
                      ('email', 'a@a.aa')]
 
-        storage = StringIO()
+        storage = StringIO.StringIO()
         c = pycurl.Curl()
         c.setopt(c.URL, site)
         c.setopt(c.HTTPPOST, pf)
