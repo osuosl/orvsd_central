@@ -231,10 +231,10 @@ def install_course_output():
 
         storage = StringIO.StringIO()
         c = pycurl.Curl()
-        c.setopt(c.URL, site)
-        c.setopt(c.HTTPPOST, pf)
-        c.setopt(c.VERBOSE, 1)
-        c.setopt(c.WRITEFUNCTION, storage.write)
+        c.setopt(pycurl.URL, site)
+        c.setopt(pycurl.HTTPPOST, pf)
+        c.setopt(pycurl.VERBOSE, 1)
+        c.setopt(pycurl.WRITEFUNCTION, storage.write)
         c.perform()
         c.close()
 
