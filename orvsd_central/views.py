@@ -75,14 +75,6 @@ def add_school():
 
     if request.method == "POST":
         #The district_id is supposed to be an integer
-        district = District.query.filter_by(id=int(form.district_id.data)).all()
-        if len(district) == 1:
-            #Add School to db
-            db.session.add(School(int(form.district_id.data),
-    error_msg = ""
-
-    if request.method == "POST":
-        #The district_id is supposed to be an integer
         #try:
             #district = District.query.filter_by(id=int(form.district_id)).all()
             #if len(district) == 1:
