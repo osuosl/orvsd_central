@@ -6,4 +6,4 @@ venv/
 db/
 *.db
 reload
-alamebic.ini
+alembic.ini

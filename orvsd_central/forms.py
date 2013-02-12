@@ -1,4 +1,4 @@
-from flask.ext.wtf import Form, TextField, PasswordField, BooleanField, SelectField
+from flask.ext.wtf import Form, TextField, PasswordField, BooleanField, SelectField, SelectMultipleField
 from flask.ext.wtf import Required, Email
 
 class LoginForm(Form):
@@ -32,4 +32,9 @@ class AddCourse(Form):
     license = TextField('license')
     category = TextField('category')
 
+class InstallCourse(Form):
+    defaults = [('None','---')]
+    site = TextField('Site')
+    course = SelectMultipleField('Course', choices=defaults)
+    filepath = TextField('Filepath')
 

@@ -20,6 +20,8 @@ sqlalchemy.url = mysql://orvsd:xL54wj4@stagingdb.orvsd.org/central
 #sqlalchemy.url = driver://user:pass@localhost/dbname2
 
 
+# sqlalchemy.url = mysql://orvsd:xL54wj4@stagingdb.orvsd.org/central 
+sqlalchemy.url = sqlite:///db/orvsd_test.db
 # Logging configuration
 [loggers]
 keys = root,sqlalchemy,alembic
