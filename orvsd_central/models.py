@@ -215,8 +215,6 @@ class CourseDetail(db.Model):
 
     def __init__(self, course_id, serial, shortname, filename, version, updated, active, moodle_version, source):
         self.course_id = course_id
-        self.serial = serial
-        self.shortname = shortname
         self.filename = filename
         self.version = version
         self.updated = updated
@@ -225,5 +223,5 @@ class CourseDetail(db.Model):
         self.source = source
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % (self.course_id, self.serial, self.shrotname, self.filename, self.version, self.updated, self.active, self.moodle_version, self.source)
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % (self.course_id, self.filename, self.version, self.updated, self.active, self.moodle_version, self.source)
 

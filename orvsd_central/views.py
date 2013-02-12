@@ -2,9 +2,13 @@ from flask import request, render_template, flash, g, session, redirect, url_for
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager
-from forms import LoginForm, AddDistrict, AddSchool, AddUser, AddCourse
+from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
+
 import re
+import subprocess
+import StringIO
+import urllib
 
 def no_perms():
     return "You do not have permission to be here!"
@@ -75,11 +79,22 @@ def add_school():
         if len(district) == 1:
             #Add School to db
             db.session.add(School(int(form.district_id.data),
+    error_msg = ""
+
+    if request.method == "POST":
+        #The district_id is supposed to be an integer
+        #try:
+            #district = District.query.filter_by(id=int(form.district_id)).all()
+            #if len(district) == 1:
+                #Add School to db
+        db.session.add(School(int(form.district_id.data),
                         form.name.data, form.shortname.data,
                         form.domain.data. form.license.data))
-            db.session.commit()
-        else:
-            msg= "A district with that id doesn't exist!"
+        db.session.commit()
+            #else:
+            #    error_msg= "A district with that id doesn't exist!"
+        #except:
+        #    error_msg= "The entered district_id was not an integer!"
     return render_template('add_school.html', form=form,
                         msg=msg, user=user)
 
@@ -96,7 +111,6 @@ def add_course():
         msg = "Course: "+form.name.data+"added successfully!"
 
     return render_template('add_course.html', form=form, msg=msg, user=user)
-
 
 @app.route('/me')
 @login_required
@@ -189,10 +203,17 @@ def report():
         schools = all_schools
         courses = all_courses
 
+    if request.method == "GET":
+        dist_count = District.query.count()
+        school_count = School.query.count()
+        course_count = Course.query.count()
+        site_count = SiteDetail.query.count()
+
     return render_template("report.html", all_districts=all_districts,
                                           all_schools=all_schools,
                                           all_courses=all_courses,
                                           all_sites=all_sites, user=user)
+
 
 @app.route("/add_user", methods=['GET', 'POST'])
 #@login_required
@@ -240,14 +261,94 @@ def remove_objects(category):
 
     return redirect('display/'+category)
 
+@app.route('/install/course', methods=['GET'])
+def install_course():
+
+    form = InstallCourse()
+
+    # Get all the available course modules
+    all_courses = CourseDetail.query.all()
+
+    # Generate the list of choices for the template
+    choices = []
+
+    for course in all_courses:
+        choices.append((course.course_id,
+                   "%s - Version: %s - Moodle Version: %s" %
+                   (course.course.name, course.version, course.moodle_version)))
+
+    form.course.choices = choices
+
+    return render_template('install_course.html', form=form)
+
+@app.route('/install/course/output', methods=['POST'])
+def install_course_output():
+    """
+    Displays the output for any course installs
+    """
+
+    # Some needed vars
+    wstoken = '13f6df8a8b66742e02f7b3791710cf84'
+    wsfunction = 'local_orvsd_create_course'
+
+    # An array of unicode strings will be passed, they need to be integers for the query
+    selected_courses = [int(cid) for cid in request.form.getlist('course')]
+
+    # The site to install the courses
+    site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+                request.form.get('site'),
+                wstoken,
+                wsfunction
+            )
+    site=str(site.encode('utf-8'))
+
+    # The CourseDetail objects of info needed to generate the url
+    courses = CourseDetail.query.filter(CourseDetail.course_id.in_(selected_courses)).all()
+
+    # Appended to buy all the courses being installed
+    output = ''
+
+    # Loop through the courses, generate the command to be run, run it, and
+    # append the ouput to output
+    #
+    # Currently this will break ao our db is not setup correctly yet
+    for course in courses:
+        # To get the file path we need the text input, the lowercase of source, and
+        # the filename
+        fp = request.form.get('filepath')
+        fp = fp if fp.endswith('/') else fp + '/'
+        fp += course.source.lower() + '/'
+
+        data = {'filepath': fp,
+                'file': course.filename,
+                'courseid': course.course_id,
+                'coursename': course.course.name,
+                'shortname': course.course.shortname,
+                'category': '1',
+                'firstname': 'orvsd',
+                'lastname': 'central',
+                'city': 'none',
+                'username': 'admin',
+                'email': 'a@a.aa',
+                'pass': 'testo123'}
+
+        postdata = urllib.urlencode(data)
+
+        resp = urllib.urlopen(site, data=postdata)
+
+        output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
+
+    return render_template('install_course_output.html', output=output)
+
+
 def get_obj_by_category(category):
-    if category == "Districts":
+    if category == "District":
         return District
-    elif category == "Schools":
+    elif category == "School":
         return School
-    elif category == "Sites":
+    elif category == "Site":
         return Site
-    elif category == "Courses":
+    elif category == "Course":
         return Course
     else:
         raise Exception('Invalid category: '+category)
