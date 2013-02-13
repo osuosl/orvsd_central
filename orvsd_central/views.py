@@ -40,8 +40,7 @@ def get_user():
 
     if 'user_id' in session::
             return User.query.filter_by(id=session["user_id"]).first()
-    else:
-        return None
+    return None
 
 @app.route("/logout")
 def logout():
