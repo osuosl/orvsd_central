@@ -16,7 +16,7 @@ def main_page():
 
 @login_manager.user_loader
 def load_user(userid):
-    return User.id
+    return User.query.filter_by(id=userid).first()
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -38,12 +38,13 @@ def get_user():
     # return a user (whether it be a sqlachemy obj or an
     # obj named guest
 
-    if session["user_id"]:
-        user = User.query.filter_by(id=session["user_id"]).first()
-    else:
-        user = {"name": "Guest"}
-    return user
+    try:
+        if session["user_id"]:
+            user = User.query.filter_by(id=session["user_id"]).first()
+    except KeyError:
+        user = None
 
+    return user
 
 @app.route("/logout")
 def logout():
