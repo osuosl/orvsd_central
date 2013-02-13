@@ -38,10 +38,9 @@ def get_user():
     # return a user (whether it be a sqlachemy obj or an
     # obj named guest
 
-    if 'user_id' in session::
+    if 'user_id' in session:
             return User.query.filter_by(id=session["user_id"]).first()
-    else:
-        return None
+    return None
 
 @app.route("/logout")
 def logout():
