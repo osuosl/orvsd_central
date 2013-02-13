@@ -40,6 +40,16 @@ def login():
 
     return render_template("login.html", form=form)
 
+def get_user():
+    # A user id is sent in, to check against the session
+    # and based on the result of querying that id we
+    # return a user (whether it be a sqlachemy obj or an
+    # obj named guest
+
+    if 'user_id' in session::
+            return User.query.filter_by(id=session["user_id"]).first()
+    else:
+        return None
 
 @app.route("/logout")
 def logout():
