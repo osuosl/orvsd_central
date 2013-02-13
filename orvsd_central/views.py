@@ -13,8 +13,13 @@ import urllib
 def no_perms():
     return "You do not have permission to be here!"
 
+@login_manager.unauthorized_handler
+def unauthorized():
+    flash('You are not authorized to view this page, please login.')
+    return redirect('/login')
+
 @app.route("/")
-#@login_required
+@login_required
 def main_page():
     return redirect('/report')
 
@@ -36,19 +41,6 @@ def login():
 
     return render_template("login.html", form=form)
 
-def get_user():
-    # A user id is sent in, to check against the session
-    # and based on the result of querying that id we
-    # return a user (whether it be a sqlachemy obj or an
-    # obj named guest
-
-    try:
-        if session["user_id"]:
-            user = User.query.filter_by(id=session["user_id"]).first()
-    except KeyError:
-        user = None
-
-    return user
 
 @app.route("/logout")
 def logout():
@@ -58,7 +50,7 @@ def logout():
 @app.route("/add_district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
-    user = get_user()
+    user = current_user
     if request.method == "POST":
         #Add district to db.
         db.session.add(District(form.name.data, form.shortname.data,
@@ -67,11 +59,11 @@ def add_district():
 
     return render_template('add_district.html', form=form, user=user)
 
-#@login_required
+@login_required
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
-    user = get_user()
+    user = current_user
     msg = ""
 
     if request.method == "POST":
@@ -94,7 +86,7 @@ def add_school():
 @app.route("/add_course", methods=['GET', 'POST'])
 def add_course():
     form = AddCourse()
-    user = get_user()
+    user = current_user
     msg = ""
     if request.method == "POST":
         db.session.add(Course(int(form.serial.data), form.name.data,
@@ -134,9 +126,9 @@ def logout():
     return redirect('/login')
 
 @app.route("/report", methods=['GET', 'POST'])
-#@login_required
+@login_required
 def report():
-    user = get_user()
+    user = current_user
 
     all_districts = District.query.order_by("name").all()
 
@@ -164,9 +156,9 @@ def report():
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
-#@login_required
+@login_required
 def register():
-    user = get_user()
+    user = current_user
     form = AddUser()
     message = ""
 
