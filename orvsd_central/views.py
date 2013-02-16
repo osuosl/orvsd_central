@@ -37,7 +37,7 @@ def login():
         if user and user.password == form.password.data:
             login_user(user)
             flash("Logged in successfully.")
-            return redirect("/add_school")
+            return redirect("/report")
 
     return render_template("login.html", form=form)
 
