@@ -201,7 +201,6 @@ class CourseDetail(db.Model):
     __tablename__ = 'course_details'
     id = db.Column(db.Integer, primary_key=True)
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id', use_alter=True, name='fk_course_details_site_id'))
-    shortname = db.Column(db.String(255))
     # just the name, with extension, no path
     filename = db.Column(db.String(255))
     # course version number (could be a string, ask client on format)
@@ -213,7 +212,7 @@ class CourseDetail(db.Model):
     source = db.Column(db.String(255))
 
 
-    def __init__(self, course_id, serial, shortname, filename, version, updated, active, moodle_version, source):
+    def __init__(self, course_id, serial, filename, version, updated, active, moodle_version, source):
         self.course_id = course_id
         self.filename = filename
         self.version = version

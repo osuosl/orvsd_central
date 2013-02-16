@@ -37,7 +37,7 @@ def login():
         if user and user.password == form.password.data:
             login_user(user)
             flash("Logged in successfully.")
-            return redirect("/add_school")
+            return redirect("/report")
 
     return render_template("login.html", form=form)
 
@@ -131,62 +131,6 @@ def report():
     user = current_user
 
     all_districts = District.query.order_by("name").all()
-    all_schools = School.query.order_by("name").all()
-    all_courses = Course.query.order_by("name").all()
-    all_sites = Site.query.order_by("sitename").all()
-
-    districts = all_districts
-    schools = all_schools
-    courses = all_courses
-
-    # Once filters have been applied
-    if request.method== "POST":
-        form = request.form
-        # Check to see if the user wants to see district info
-        if request.form['all_districts'] != "None":
-        # Getting district related information
-            if request.form['all_districts'] != "All":
-                districts = District.query.filter_by(name=request.form['filter_districts'])
-            for district in districts:
-                district.schools = School.query.filter_by(disctrict_id=district.id).order_by("name").all()
-                for school in district.schools:
-                    school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
-                    for site in sites:
-                        related_courses = session.execute("select course_id where site_id="+site.id+" from sites_courses")
-                        site.courses = []
-                        site.courses.append(Course.query.get(course))
-
-            districts = None
-            # Check to see if the user wanted school information
-            if request.form['all_schools'] != "None":
-                if request.form['all_schools'] != "All":
-                    schools = School.query.filter_by(name=request.form['filter_schools']).order_by("name").all()
-                for school in schools:
-                    school.sites = Site.query.filter_by(school_id=school.id).order_by("name").all()
-                    for site in sites:
-                        related_courses = session.execute("select course_id where site_id="+site.id+" from sites_courses")
-                        for course in related_courses:
-                            # course is the primary key which is used to relate a site's course to a specific course.
-                            site.courses.append(Course.query.get(course))
-                        for course in site.courses:
-                            # Parse information from SiteDetails
-                            continue
-
-            else:
-                schools = None
-                # Check to see if the user wanted course information
-                if request.form['all_courses'] != "None":
-                    if request.form['all_courses'] != "All":
-                        courses = Course.query.filter_by(name=request.form['filter_courses']).order_by("name").all()
-                    for course in courses:
-                        #Calculate num of users in total
-                        continue
-                else:
-                    return "Error: No filter provided!!"
-    else:
-        districts = all_districts
-        schools = all_schools
-        courses = all_courses
 
     if request.method == "GET":
         dist_count = District.query.count()
@@ -194,10 +138,21 @@ def report():
         course_count = Course.query.count()
         site_count = SiteDetail.query.count()
 
-    return render_template("report.html", all_districts=all_districts,
-                                          all_schools=all_schools,
-                                          all_courses=all_courses,
-                                          all_sites=all_sites, user=user)
+        return render_template("report_overview.html", dist_count=dist_count,
+                                                       school_count=school_count,
+                                                       course_count=course_count,
+                                                       site_count=site_count,
+                                                       all_districts=all_districts)
+
+    elif request.method == "POST":
+        all_schools = School.query.order_by("name").all()
+        all_courses = Course.query.order_by("name").all()
+        all_sites = SiteDetail.query.all()
+
+        return render_template("report.html", all_districts=all_districts,
+                                              all_schools=all_schools,
+                                              all_courses=all_courses,
+                                              all_sites=all_sites, user=user)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
