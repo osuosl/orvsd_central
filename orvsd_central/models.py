@@ -1,7 +1,7 @@
 from orvsd_central import db
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
-
+from werkzeug.security import generate_password_hash, check_password_hash
 
 sites_courses = db.Table('sites_courses', db.Model.metadata,
     db.Column('site_id', db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_sites_courses_site_id')),
@@ -16,14 +16,17 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
     email = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String(20))
+    password = db.Column(db.String(255))
     role = db.Column(db.SmallInteger)
     #Possibly another column for current status
 
     def __init__(self, name=None, email=None, password=None):
         self.name = name
         self.email = email
-        self.password = password
+        #using email as the salt
+        self.password = generate_password_hash(self.email + password)
+    def check_password(self, password):
+        return check_password_hash(self.password, self.email + password)
 
     def is_authenticated(self):
         return True
