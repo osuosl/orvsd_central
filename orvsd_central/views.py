@@ -33,8 +33,12 @@ def login():
     if form.validate_on_submit():
         # login and validate the user...
         user = User.query.filter_by(name=form.name.data).first()
-        print check_password_hash
-        if user and user.password == form.password.data:
+        print user.name
+        print user.password
+        print form.password.data
+        print generate_password_hash(user.email + form.password.data)
+        print user.check_password(form.password.data)
+        if user and user.check_password(form.password.data):
             login_user(user)
             flash("Logged in successfully.")
             return redirect("/report")
@@ -156,9 +160,9 @@ def report():
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
-@login_required
+#@login_required
 def register():
-    user = current_user
+    #user = current_user
     form = AddUser()
     message = ""
 
@@ -171,10 +175,10 @@ def register():
             #Add user to db
             db.session.add(User(name=form.user.data,
                 email = form.email.data, password=form.password.data))
-
+            db.session.commit()
             message = form.user.data+" has been added successfully!\n"
 
-    return render_template('add_user.html', form=form, message=message, user=user)
+    return render_template('add_user.html', form=form, message=message)
 
 @app.route("/display/<category>")
 def remove(category):

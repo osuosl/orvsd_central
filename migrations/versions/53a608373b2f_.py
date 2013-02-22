@@ -16,7 +16,7 @@ Create Date: 2013-02-07 17:09:41.085350
 
 # revision identifiers, used by Alembic.
 revision = '53a608373b2f'
-down_revision = None
+down_revision = '38181464f76b' 
 
 from alembic import op
 import sqlalchemy as sa
@@ -24,7 +24,7 @@ from sqlalchemy.dialects import mysql
 
 def upgrade(engine_name):
     eval("upgrade_%s" % engine_name)()
-
+    op.alter_column(table_name='users', column_name='password', type = sa.String(255))
 
 def downgrade(engine_name):
     eval("downgrade_%s" % engine_name)()
