@@ -23,7 +23,6 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 def upgrade(engine_name):
-    eval("upgrade_%s" % engine_name)()
     op.alter_column(table_name='users', column_name='password', type = sa.String(255))
 
 def downgrade(engine_name):
