@@ -108,7 +108,7 @@ class Site(db.Model):
     # points to the owning school
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id', use_alter=True, name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
-    sitename = db.Column(db.String(255))
+    site = db.Column(db.String(255))
     sitetype = db.Column(db.Enum('moodle','drupal', name='site_types')) # (from siteinfo)
     # moodle or drupal's base_url - (from siteinfo)
     baseurl = db.Column(db.String(255))
