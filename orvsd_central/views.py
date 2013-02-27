@@ -33,11 +33,6 @@ def login():
     if form.validate_on_submit():
         # login and validate the user...
         user = User.query.filter_by(name=form.name.data).first()
-        print user.name
-        print user.password
-        print form.password.data
-        print generate_password_hash(user.email + form.password.data)
-        print user.check_password(form.password.data)
         if user and user.check_password(form.password.data):
             login_user(user)
             flash("Logged in successfully.")
