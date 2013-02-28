@@ -22,7 +22,11 @@ class Util():
         curs = con.cursor()
 
         # find all the databases with a siteinfo table
-        find = "SELECT table_schema, table_name FROM information_schema.tables WHERE table_name =  'siteinfo' OR table_name = 'mdl_siteinfo';"
+        find = ("SELECT table_schema, table_name " 
+                  "FROM information_schema.tables "
+                 "WHERE table_name =  'siteinfo' " 
+                    "OR table_name = 'mdl_siteinfo';")
+
         curs.execute(find)
         check = curs.fetchall()
         con.close()
@@ -35,7 +39,11 @@ class Util():
 
             # for each relevent database, pull the siteinfo data
             for database in db_sites:
-                cherry = connect(user=user, passwd=password, host=address, db=database[0])
+                cherry = connect(user=user, 
+                                 passwd=password, 
+                                 host=address, 
+                                 db=database[0])
+
                 # use DictCursor here to get column names as well
                 pie = cherry.cursor(DictCursor)
 
@@ -49,7 +57,8 @@ class Util():
                     # what version of moodle is this from?
                     version = d['siterelease'][:3]
 
-                    # what is our school domain? take the protocol off the baseurl
+                    # what is our school domain? take the protocol 
+                    # off the baseurl
                     school_re = 'http[s]{0,1}:\/\/'
                     school_url = re.sub(school_re, '', d['baseurl'])
 
@@ -84,7 +93,7 @@ class Util():
                                     sitetype=d['sitetype'],
                                     baseurl='',
                                     basepath='',
-                                    jenkins_cron_job='',
+                                    jenkins_cron_job=None,
                                     location='')
                     
                     site.school_id = school.id
@@ -97,7 +106,6 @@ class Util():
 
                     # create new site_details table
                     # site_id = site.id, timemodified = now()
-                   
                     now = datetime.datetime.now() 
                     site_details = SiteDetail(siteversion=d['siteversion'],
                                               siterelease=d['siterelease'],
@@ -127,8 +135,9 @@ class Util():
                                 course_serial = course['serial'][:4]
                                 orvsd_course = Course.query.filter_by(serial=course_serial).first()
                                 if orvsd_course:
-                                    associated_courses.append(orvsd_course)
-                                    del courses[i]
+                                    # @TODO: store this association
+                                    # delete this course from the json string
+                                    pass
                                      
                         # put all the unknown courses back in the 
                         # site_details record
