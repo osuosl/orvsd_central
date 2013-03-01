@@ -147,6 +147,7 @@ class SiteDetail(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning site
     site_id = db.Column(db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_site_details_site_id'))
+    courses = db.Column(db.Text())
     siteversion = db.Column(db.String(255))
     siterelease = db.Column(db.String(255))
     adminemail = db.Column(db.String(255))
