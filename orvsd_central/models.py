@@ -108,7 +108,7 @@ class Site(db.Model):
     # points to the owning school
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id', use_alter=True, name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
-    site = db.Column(db.String(255))
+    name = db.Column(db.String(255))
     sitetype = db.Column(db.Enum('moodle','drupal', name='site_types')) # (from siteinfo)
     # moodle or drupal's base_url - (from siteinfo)
     baseurl = db.Column(db.String(255))
@@ -122,8 +122,8 @@ class Site(db.Model):
     site_details = db.relationship("SiteDetail", backref=db.backref('sites'))
     courses = db.relationship("Course", secondary='sites_courses', backref='sites')
 
-    def __init__(self, sitename, sitetype, baseurl, basepath, jenkins_cron_job, location):
-        self.sitename = sitename
+    def __init__(self, name, sitetype, baseurl, basepath, jenkins_cron_job, location):
+        self.name = name
         self.sitetype = sitetype
         self.baseurl = baseurl
         self.basepath = basepath
@@ -132,10 +132,10 @@ class Site(db.Model):
 
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s')>" % (self.sitename, self.sitetype, self.baseurl, self.basepath, self.jenkins_cron_job)
+        return "<Site('%s','%s','%s','%s','%s')>" % (self.name, self.sitetype, self.baseurl, self.basepath, self.jenkins_cron_job)
 
     def get_properties(self):
-        return ['id', 'school_id', 'sitename', 'sitetype', 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
+        return ['id', 'school_id', 'name', 'sitetype', 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
 """
 Site_details belong to one site. This data is updated from the
