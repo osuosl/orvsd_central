@@ -1,7 +1,7 @@
 from orvsd_central import db
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
-
+from werkzeug.security import generate_password_hash, check_password_hash
 
 sites_courses = db.Table('sites_courses', db.Model.metadata,
     db.Column('site_id', db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_sites_courses_site_id')),
@@ -16,14 +16,17 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
     email = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String(20))
+    password = db.Column(db.String(255))
     role = db.Column(db.SmallInteger)
     #Possibly another column for current status
 
     def __init__(self, name=None, email=None, password=None):
         self.name = name
         self.email = email
-        self.password = password
+        #using email as the salt
+        self.password = generate_password_hash(self.email + password)
+    def check_password(self, password):
+        return check_password_hash(self.password, self.email + password)
 
     def is_authenticated(self):
         return True
@@ -105,7 +108,7 @@ class Site(db.Model):
     # points to the owning school
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id', use_alter=True, name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
-    sitename = db.Column(db.String(255))
+    name = db.Column(db.String(255))
     sitetype = db.Column(db.Enum('moodle','drupal', name='site_types')) # (from siteinfo)
     # moodle or drupal's base_url - (from siteinfo)
     baseurl = db.Column(db.String(255))
@@ -119,8 +122,8 @@ class Site(db.Model):
     site_details = db.relationship("SiteDetail", backref=db.backref('sites'))
     courses = db.relationship("Course", secondary='sites_courses', backref='sites')
 
-    def __init__(self, sitename, sitetype, baseurl, basepath, jenkins_cron_job, location):
-        self.sitename = sitename
+    def __init__(self, name, sitetype, baseurl, basepath, jenkins_cron_job, location):
+        self.name = name
         self.sitetype = sitetype
         self.baseurl = baseurl
         self.basepath = basepath
@@ -129,10 +132,10 @@ class Site(db.Model):
 
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s')>" % (self.sitename, self.sitetype, self.baseurl, self.basepath, self.jenkins_cron_job)
+        return "<Site('%s','%s','%s','%s','%s')>" % (self.name, self.sitetype, self.baseurl, self.basepath, self.jenkins_cron_job)
 
     def get_properties(self):
-        return ['id', 'school_id', 'sitename', 'sitetype', 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
+        return ['id', 'school_id', 'name', 'sitetype', 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
 """
 Site_details belong to one site. This data is updated from the
@@ -144,6 +147,7 @@ class SiteDetail(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning site
     site_id = db.Column(db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_site_details_site_id'))
+    courses = db.Column(db.Text())
     siteversion = db.Column(db.String(255))
     siterelease = db.Column(db.String(255))
     adminemail = db.Column(db.String(255))

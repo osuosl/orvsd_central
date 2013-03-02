@@ -4,7 +4,6 @@ from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 import logging
 import re
-import sys
 
 USE_TWOPHASE = False
 
@@ -33,10 +32,10 @@ db_names = config.get_main_option('databases')
 #       'engine1':mymodel.metadata1,
 #       'engine2':mymodel.metadata2
 #}
-sys.path.append("./")
-#from orvsd_central import db
+import sys
+sys.path.append('./')
 from orvsd_central import db
-target_metadata = db.metadata
+target_metadata = {}
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

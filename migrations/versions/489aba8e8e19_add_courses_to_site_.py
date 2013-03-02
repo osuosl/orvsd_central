@@ -1,21 +1,22 @@
-"""empty message
+"""add courses to site_details
 
-Revision ID: 37c8daee72b6
-Revises: 345f42be80fd
-Create Date: 2013-01-28 17:10:33.656857
+Revision ID: 489aba8e8e19
+Revises: 6bf51fc87fa
+Create Date: 2013-02-28 16:04:04.646625
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '37c8daee72b6'
-down_revision = '345f42be80fd'
+revision = '489aba8e8e19'
+down_revision = '6bf51fc87fa'
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import mysql
+
 
 def upgrade(engine_name):
-    op.drop_column('schools', 'disctrict_id')    
+    op.add_column('site_details', sa.Column('courses', sa.Text()))
+
 def downgrade(engine_name):
     eval("downgrade_%s" % engine_name)()
 
