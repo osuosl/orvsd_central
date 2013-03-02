@@ -115,7 +115,6 @@ class Util():
                                               teachers=d['teachers'],
                                               activeusers=d['activeusers'],
                                               totalcourses=d['totalcourses'],
-                                              courses='',
                                               timemodified=now)
                     site_details.site_id = site.id
 
@@ -127,6 +126,7 @@ class Util():
                         if d['courses'][:2] != '[{':
                             continue
                             
+                        """ @TODO: create the correct association model for this to work
                         courses = json.loads(d['courses'])
                         associated_courses = []
 
@@ -135,14 +135,16 @@ class Util():
                                 course_serial = course['serial'][:4]
                                 orvsd_course = Course.query.filter_by(serial=course_serial).first()
                                 if orvsd_course:
-                                    # @TODO: store this association
+                                    # store this association
                                     # delete this course from the json string
                                     pass
                                      
                         # put all the unknown courses back in the 
                         # site_details record
                         site_details.courses = json.dumps(courses)
-                        site.courses = associated_courses
+                        """
+
+                        site_details.courses = d['courses']
                     
                     db.session.add(site_details)
                     db.session.commit()
