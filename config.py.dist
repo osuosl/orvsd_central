@@ -4,8 +4,6 @@ _basedir = os.path.abspath(os.path.dirname(__file__))
 #use 'dev', 'test', or 'production'
 DATABASE_TYPE = 'test'
 
-
-
 DEBUG = False
 
 SECRET_KEY = "ay98r0u2q9305jr2or@QTG%#QH^KWTRTGrqy43"
@@ -24,9 +22,13 @@ CSRF_SESSION_KEY="aser43wAG$#WAg43WAY$JH%j%$KJW%$uWA$5eYaEgsahsu"
 
 SQLALCHEMY_MIGRATE_REPO = os.path.join(_basedir, 'migrations')
 
-INSTALL_COURSE_FILE_PATH = "/some/absolute/path/" # must end with a /
-
 # Moodle course install web service definitions
+INSTALL_COURSE_FILE_PATH = "/some/absolute/path/" # must end with a /
 INSTALL_COURSE_WS_TOKEN = ""
 INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
 
+# database info for data gathering
+
+SITEINFO_DATABASE_HOST = "applegate.orvsd.org"
+SITEINFO_DATABASE_USER = "siteinfo"
+SITEINFO_DATABASE_PASS = ""
