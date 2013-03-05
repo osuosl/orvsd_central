@@ -233,7 +233,7 @@ def install_course_output():
     # The site to install the courses
     site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
                 request.form.get('site'),
-                wapp.config['INSTALL_COURSE_WS_TOKEN'],
+                app.config['INSTALL_COURSE_WS_TOKEN'],
                 app.config['INSTALL_COURSE_WS_FUNCTION']
             )
     site=str(site.encode('utf-8'))
