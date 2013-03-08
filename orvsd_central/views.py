@@ -226,18 +226,14 @@ def install_course_output():
     Displays the output for any course installs
     """
 
-    # Some needed vars
-    wstoken = '13f6df8a8b66742e02f7b3791710cf84'
-    wsfunction = 'local_orvsd_create_course'
-
     # An array of unicode strings will be passed, they need to be integers for the query
     selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
     # The site to install the courses
     site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
                 request.form.get('site'),
-                wstoken,
-                wsfunction
+                app.config['INSTALL_COURSE_WS_TOKEN'],
+                app.config['INSTALL_COURSE_WS_FUNCTION']
             )
     site=str(site.encode('utf-8'))
 
@@ -254,8 +250,7 @@ def install_course_output():
     for course in courses:
         # To get the file path we need the text input, the lowercase of source, and
         # the filename
-        fp = request.form.get('filepath')
-        fp = fp if fp.endswith('/') else fp + '/'
+        fp = app.config['INSTALL_COURSE_FILE_PATH']
         fp += course.source.lower() + '/'
 
         data = {'filepath': fp,
