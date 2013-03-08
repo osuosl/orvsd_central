@@ -5,6 +5,7 @@ from orvsd_central import db, app, login_manager, google
 from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
 import urllib2
+import json
 
 import re
 import subprocess
@@ -44,33 +45,34 @@ def login():
 
 @app.route("/google_login")
 def google_login():    
-    print "before token"
     access_token = session.get('access_token')
-    print 'after token'
     if access_token is None:
         callback=url_for('authorized', _external=True)
         return google.authorize(callback=callback)
-        print 'after google request'
     else:
-        access_token = access_token[0]
-        print "before header creation"
-        print access_token
-        headers = {'Authorization': 'Oauth '+access_token}
-        print 'before Request'
+        access_token = access_token
+        headers = {'Authorization': 'OAuth '+access_token}
         req = urllib2.Request('https://www.googleapis.com/oauth2/v1/userinfo',
                                 None, headers)
-        print 'before open url'
         try:
             res = urllib2.urlopen(req)
         except urllib2.URLError, e:
             if e.code == 401:
-                print "token error"
                 session.pop('access_token', None)
                 flash('There was a problem with your Google login information.  Please try again.')
                 return redirect(url_for('login'))
             return res.read()
-        return res.read()
-
+        obj = json.loads(res.read())
+        email = obj['email']
+        user = User.query.filter_by(email=email).first()
+        #pop access token so it isn't sitting around in our session any longer than nescessary
+        session.pop('access_token', None)
+        if user is not None:
+            login_user(user)
+            return redirect(url_for('report'))
+        else:
+            flash("This google account was not recognized as having access. Sorry.")
+            return redirect(url_for('login'))
 
 @app.route(app.config['REDIRECT_URI'])
 @google.authorized_handler
