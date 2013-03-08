@@ -3,12 +3,17 @@ from flask import (request, render_template, flash, g, session, redirect,
 from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db, app, login_manager
+from orvsd_central import db, app, login_manager, google
 from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
+<<<<<<< HEAD
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func
 from sqlalchemy.sql.expression import desc
+=======
+from models import District, School, Site, SiteDetail, Course, CourseDetail, User
+import urllib2
+>>>>>>> got google login with access token working
 
 import re
 import subprocess
@@ -51,6 +56,7 @@ def login():
     return render_template("login.html", form=form)
 
 
+<<<<<<< HEAD
 def get_user():
     # A user id is sent in, to check against the session
     # and based on the result of querying that id we
@@ -61,6 +67,48 @@ def get_user():
             return User.query.filter_by(id=session["user_id"]).first()
     return None
 
+=======
+@app.route("/google_login")
+def google_login():
+    print "before token"
+    access_token = session.get('access_token')
+    print 'after token'
+    if access_token is None:
+        callback=url_for('authorized', _external=True)
+        return google.authorize(callback=callback)
+        print 'after google request'
+    else:
+        access_token = access_token[0]
+        print "before header creation"
+        print access_token
+        headers = {'Authorization': 'Oauth '+access_token}
+        print 'before Request'
+        req = urllib2.Request('https://www.googleapis.com/oauth2/v1/userinfo',
+                                None, headers)
+        print 'before open url'
+        try:
+            res = urllib2.urlopen(req)
+        except urllib2.URLError, e:
+            if e.code == 401:
+                print "token error"
+                session.pop('access_token', None)
+                flash('There was a problem with your Google login information.  Please try again.')
+                return redirect(url_for('login'))
+            return res.read()
+        return res.read()
+
+
+@app.route(app.config['REDIRECT_URI'])
+@google.authorized_handler
+def authorized(resp):
+    access_token = resp['access_token']
+    session['access_token'] = access_token
+    return redirect(url_for('google_login'))
+
+@google.tokengetter
+def get_access_token():
+    return session.get('access_token')
+>>>>>>> got google login with access token working
 
 @app.route("/logout")
 def logout():
