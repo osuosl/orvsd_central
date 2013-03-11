@@ -23,10 +23,9 @@ class User(db.Model):
     def __init__(self, name=None, email=None, password=None):
         self.name = name
         self.email = email
-        #using email as the salt
-        self.password = generate_password_hash(self.email + password)
+        self.password = generate_password_hash(password)
     def check_password(self, password):
-        return check_password_hash(self.password, self.email + password)
+        return check_password_hash(self.password, password)
 
     def is_authenticated(self):
         return True
