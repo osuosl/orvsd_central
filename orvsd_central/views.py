@@ -1,4 +1,4 @@
-from flask import request, render_template, flash, g, session, redirect, url_for
+from flask import request, render_template, flash, g, session, redirect, url_for, abort
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager
@@ -188,12 +188,16 @@ def register():
 def remove(category):
     user = get_user()
     obj = get_obj_by_category(category)
-    objects = obj.query.all()
-    if objects:
-        # fancy way to get the properties of an object
-        properties = objects[0].get_properties()
-        return render_template('removal.html', category=category, objects=objects, properties=properties, user=user)
+    if obj:
+        objects = obj.query.all()
+        if objects:
+            # fancy way to get the properties of an object
+            properties = objects[0].get_properties()
+            return render_template('removal.html', category=category,
+                                    objects=objects, properties=properties,
+                                    user=user)
 
+    abort(404)
 
 @app.route("/remove/<category>", methods=['POST'])
 def remove_objects(category):
