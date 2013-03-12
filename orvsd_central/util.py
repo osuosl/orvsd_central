@@ -22,9 +22,9 @@ class Util():
         curs = con.cursor()
 
         # find all the databases with a siteinfo table
-        find = ("SELECT table_schema, table_name " 
+        find = ("SELECT table_schema, table_name "
                   "FROM information_schema.tables "
-                 "WHERE table_name =  'siteinfo' " 
+                 "WHERE table_name =  'siteinfo' "
                     "OR table_name = 'mdl_siteinfo';")
 
         curs.execute(find)
@@ -39,9 +39,9 @@ class Util():
 
             # for each relevent database, pull the siteinfo data
             for database in db_sites:
-                cherry = connect(user=user, 
-                                 passwd=password, 
-                                 host=address, 
+                cherry = connect(user=user,
+                                 passwd=password,
+                                 host=address,
                                  db=database[0])
 
                 # use DictCursor here to get column names as well
@@ -51,13 +51,13 @@ class Util():
                 pie.execute("select * from `%s`;" % database[1])
                 data = pie.fetchall()
                 cherry.close()
-                
+
                 # For all the data, shove it into the central db
                 for d in data:
                     # what version of moodle is this from?
                     version = d['siterelease'][:3]
 
-                    # what is our school domain? take the protocol 
+                    # what is our school domain? take the protocol
                     # off the baseurl
                     school_re = 'http[s]{0,1}:\/\/'
                     school_url = re.sub(school_re, '', d['baseurl'])
@@ -71,13 +71,13 @@ class Util():
                     else:
                         location = 'unknown'
 
-                    # get the school 
+                    # get the school
                     school = School.query.filter_by(domain=school_url).first()
-                    # if no school exists, create a new one with 
+                    # if no school exists, create a new one with
                     # name = sitename, district_id = 0 (special 'Unknown'
                     # district)
                     if school is None:
-                        school = School(name=d['sitename'], 
+                        school = School(name=d['sitename'],
                                         shortname=d['sitename'],
                                         domain=school_url,
                                         license='')
@@ -89,13 +89,13 @@ class Util():
                     site = Site.query.filter_by(baseurl=school_url).first()
                     # if no site exists, make a new one, school_id = school.id
                     if site is None:
-                        site = Site(name=d['sitename'],   
+                        site = Site(name=d['sitename'],
                                     sitetype=d['sitetype'],
                                     baseurl='',
                                     basepath='',
                                     jenkins_cron_job=None,
                                     location='')
-                    
+
                     site.school_id = school.id
 
                     site.baseurl = school_url
@@ -106,7 +106,7 @@ class Util():
 
                     # create new site_details table
                     # site_id = site.id, timemodified = now()
-                    now = datetime.datetime.now() 
+                    now = datetime.datetime.now()
                     site_details = SiteDetail(siteversion=d['siteversion'],
                                               siterelease=d['siterelease'],
                                               adminemail=d['adminemail'],
@@ -118,14 +118,14 @@ class Util():
                                               timemodified=now)
                     site_details.site_id = site.id
 
-                    # if there are courses on this site, try to 
+                    # if there are courses on this site, try to
                     # associate them with our catalog
                     if d['courses']:
                         # quick and ugly check to make sure we have
                         # a json string
                         if d['courses'][:2] != '[{':
                             continue
-                            
+
                         """ @TODO: create the correct association model for this to work
                         courses = json.loads(d['courses'])
                         associated_courses = []
@@ -138,14 +138,14 @@ class Util():
                                     # store this association
                                     # delete this course from the json string
                                     pass
-                                     
-                        # put all the unknown courses back in the 
+
+                        # put all the unknown courses back in the
                         # site_details record
                         site_details.courses = json.dumps(courses)
                         """
 
                         site_details.courses = d['courses']
-                    
+
                     db.session.add(site_details)
                     db.session.commit()
 
