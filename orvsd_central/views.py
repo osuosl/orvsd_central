@@ -284,13 +284,8 @@ def install_course_output():
     return render_template('install_course_output.html', output=output)
 
 def get_obj_by_category(category):
+    # Checking for case insensitive categories
     categories = {'districts' : District, 'schools' : School,
                   'sites' : Site, 'courses' : Course }
 
-    if category.lower() in categories:
-        return categories[category.lower()]
-
-    raise Exception("Invalid category: "+category)
-
-
-
+    return categories.get(category.lower())
