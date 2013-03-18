@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block head %}
+        <script src="{{url_for('static',filename='js/report_overview.js') }}" ></script>
+{% endblock %}
+
+{% block title %}
+        <title>Report Overview</title>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+    </br>
+    <div class='span12'>&nbsp;</div>
+    <div class='span12'>Districts: {{ dist_count }}</div>
+    <div class='span12'>Schools: {{ school_count }}</div>
+    <div class='span12'>Sites: {{ site_count }}</div>
+    <div class='span12'>Courses: {{ course_count }}</div>
+    </div>
+{% endblock %}
+
