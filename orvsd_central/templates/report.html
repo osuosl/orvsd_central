@@ -1,13 +1,5 @@
 {% extends 'base.html' %}
 
-{% block js %}
-<script type="text/javascript">
-    $(function() {
-
-    });
-</script>
-{% endblock %}
-
 {% block title %}
     <title>Report</title>
 {% endblock %}
@@ -15,92 +7,37 @@
 {% block content %}
     <div class='row'>
         <div class='span12'>&nbsp;</div>
-        <div class='span12'><h3>Districts</h3></div>
-        <table class='table table-striped table-hover table-condensed table-bordered'>
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th># Sites</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for district in all_districts %}
-            <tr>
-                <td>{{district.name}}</td>
-                <td>{{district.sites|count}}</td>
-            </td>
-            {% endfor %}
-            </tbody>
-        </table>
-
-        <div class='span12'><h3>Sites</h3></div>
-        <table class='table table-striped table-hover table-condensed table-bordered'>
-            <thead>
-            <tr>
-                <th>Site Id</th>
-                <th>Admin Email</th>
-                <th>Total Users</th>
-                <th># Admins</th>
-                <th># Teachers</th>
-                <th># Courses</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for site in all_sites %}
-            <tr>
-                <td>{{site.site_id}}</td>
-                <td>{{site.adminemail}}</td>
-                <td>{{site.totalusers}}</td>
-                <td>{{site.adminusers}}</td>
-                <td>{{site.teachers}}</td>
-                <td>{{site.totalcourses}}</td>
-                <td>NULL</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-
-        <div class='span12'><h3>Schools</h3></div>
-        <table class='table table-striped table-hover table-condensed table-bordered'>
-            <thead>
-            <tr>
-                <th>School Name</th>
-                <th>Domain</th>
-                <th>License</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for school in all_schools %}
-            <tr>
-                <td>{{school.name}}</td>
-                <td>{{school.domain}}</td>
-                <td>{{school.license}}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-
-        <div class='span12'><h3>Courses</h3></div>
-        <table class='table table-striped table-hover table-condensed table-bordered'>
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th>Shortname</th>
-                <th>Category</th>
-                <th>License</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for course in all_courses %}
-            <tr>
-                <td>{{course.name}}</td>
-                <td>{{course.shortname}}</td>
-                <td>{{course.category}}</td>
-                <td>{{course.license}}</td>
-            </td>
-            {% endfor %}
-            </tbody>
-        </table>
+    </div>
+        <div class="row">
+        <div class="span3"><h5>District</h5></div>
+        <div class="span2"><h5>Admins</h5></div>
+        <div class="span2"><h5>Teachers</h5></div>
+        <div class="span2"><h5>Users</h5></div>
+        <div class="span2"><h5>Schools</h5></div>
+    </div>
+    <div class="accordion" id="dist_accord">
+        {% for district in all_districts %}
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                <a class="accordion-toggle"
+                   data-toggle="collapse"
+                   data-parent="#accordion2"
+                   href="#{{district.shortname}}">
+                   <div class="row">
+                       <div class="span3">{{district.name}}</div>
+                       <div class="span2">#</div>
+                       <div class="span2">#</div>
+                       <div class="span2">#</div>
+                       <div class="span2">#</div>
+                   </div>
+               </a>
+            </div>
+            <div id="{{district.shortname}}" class="accordion-body collapse">
+                <div class="accordion-inner">
+                    DATA
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 {% endblock %}
-
