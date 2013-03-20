@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block head %}
+        <script src="{{url_for('static',filename='js/report_overview.js') }}" ></script>
+{% endblock %}
+
+{% block title %}
+        <title>Report Overview</title>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <form name="filter_options" action="/report" method="POST">
+            <div class='span3'><h4>Districts</h4></div>
+            <div class='span3'><h4>Schools</h4></div>
+            <div class='span3'><h4>Sites</h4></div>
+            <div class='span3'><h4>Courses</h4></div>
+            <div class='span3'>
+                <select name="all_districts">
+                    <option selected="True" value="All">All</option>
+                    {% for district in all_districts %}
+                        <option value="{{district.name}}">{{district.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class='span3'>
+                <select name="all_schools">
+                    <option selected="True" value="All">All</option>
+                    {% for school in all_schools %}
+                        <option value="{{school.name}}">{{school.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class='span3'>
+                <select name="all_sites">
+                    <option selected="True" value="All">All</option>
+                    {% for site in all_sites %}
+                        <option value="{{site.sitename}}">{{site.sitename}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class='span3'>
+                <select name="all_courses">
+                    <option selected="True" value="All">All</option>
+                    {% for course in all_courses %}
+                        <option value="{{course.name}}">{{course.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class='span12'>
+                <input type="submit" class='btn btn-primary' value="Submit"></input>
+                <a href="report" class='btn'>Overview</a>
+            </div>
+        </form>
+    </br>
+    <div class='span12'>&nbsp;</div>
+    <div class='span12'>Districts: {{ dist_count }}</div>
+    <div class='span12'>Schools: {{ school_count }}</div>
+    <div class='span12'>Sites: {{ site_count }}</div>
+    <div class='span12'>Courses: {{ course_count }}</div>
+    </div>
+{% endblock %}
+
