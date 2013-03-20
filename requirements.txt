@@ -2,6 +2,7 @@ Flask
 Flask-Login
 Flask-SQLAlchemy
 Flask-WTF
+Flask-oAuth
 Jinja2
 MySQL-python
 SQLAlchemy==0.7
