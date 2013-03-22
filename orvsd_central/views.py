@@ -1,4 +1,4 @@
-from flask import request, render_template, flash, g, session, redirect, url_for, abort
+from flask import request, render_template, flash, g, session, redirect, url_for, abort, jsonify
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager
@@ -176,34 +176,39 @@ def logout():
     logout_user()
     return redirect('/login')
 
-@app.route("/report", methods=['GET', 'POST'])
+
+@app.route('/report/get_schools', methods=['POST'])
+def get_schools():
+    dist_id = request.form.get('distid')
+    if dist_id:
+        schools_list = db.session.query(School.id, School.name).filter_by(district_id = dist_id).all()
+        schools = {}
+        for school in schools_list:
+            schools[school.id] = school.name
+        return jsonify(schools = schools)
+    return jsonify(schools = "")
+
+
+@app.route("/report", methods=['GET'])
 @login_required
 def report():
     all_districts = District.query.order_by("name").all()
+    all_schools = None
+    all_sites = None
+    all_courses = None
+
+    dist_count = District.query.count()
+    school_count = School.query.count()
+    course_count = Course.query.count()
+    site_count = SiteDetail.query.count()
 
     if request.method == "GET":
-        dist_count = District.query.count()
-        school_count = School.query.count()
-        course_count = Course.query.count()
-        site_count = SiteDetail.query.count()
-
-        return render_template("report_overview.html", dist_count=dist_count,
-                                                       school_count=school_count,
-                                                       course_count=course_count,
-                                                       site_count=site_count,
-                                                       all_districts=all_districts,
-                                                       user=current_user)
-
-    elif request.method == "POST":
-        all_schools = School.query.order_by("name").all()
-        all_courses = Course.query.order_by("name").all()
-        all_sites = SiteDetail.query.all()
-
-        return render_template("report.html", all_districts=all_districts,
-                                              all_schools=all_schools,
-                                              all_courses=all_courses,
-                                              all_sites=all_sites,
-                                              user=current_user)
+        return render_template("report.html", all_districts = all_districts,
+                                              dist_count = dist_count,
+                                              school_count = school_count,
+                                              site_count = site_count,
+                                              course_count = course_count,
+                                              user = current_user)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])

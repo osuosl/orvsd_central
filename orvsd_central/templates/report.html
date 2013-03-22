@@ -4,6 +4,10 @@
     <title>Report</title>
 {% endblock %}
 
+{% block head %}
+    <script type="text/javascript" src="{{url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}
+
 {% block content %}
     <div class='row'>
         <div class='span12'>&nbsp;</div>
@@ -19,20 +23,22 @@
         {% for district in all_districts %}
         <div class="accordion-group">
             <div class="accordion-heading">
-                <a class="accordion-toggle"
-                   data-toggle="collapse"
-                   data-parent="#accordion2"
-                   href="#{{district.shortname}}">
-                   <div class="row">
-                       <div class="span3">{{district.name}}</div>
-                       <div class="span2">#</div>
-                       <div class="span2">#</div>
-                       <div class="span2">#</div>
-                       <div class="span2">#</div>
+                <div class="row">
+                    <div class="span3">
+                        <a class="accordion-toggle"
+                           data-toggle="collapse"
+                           data-parent="#accordion2"
+                           href="#{{district.shortname}}">
+                            {{district.name}}
+                       </a>
                    </div>
-               </a>
+                   <div class="span2">#</div>
+                   <div class="span2">#</div>
+                   <div class="span2">#</div>
+                   <div class="span2">site_count</div>
+               </div>
             </div>
-            <div id="{{district.shortname}}" class="accordion-body collapse">
+            <div id="{{district.shortname}}" class="accordion-body collapse collapsedistrict" distid="{{district.id}}">
                 <div class="accordion-inner">
                     DATA
                 </div>
