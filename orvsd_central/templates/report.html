@@ -13,37 +13,7 @@
         <div class='span12'>&nbsp;</div>
     </div>
         <div class="row">
-        <div class="span3"><h5>District</h5></div>
-        <div class="span2"><h5>Admins</h5></div>
-        <div class="span2"><h5>Teachers</h5></div>
-        <div class="span2"><h5>Users</h5></div>
-        <div class="span2"><h5>Schools</h5></div>
+        <div class="span6"><h5>District</h5></div>
     </div>
-    <div class="accordion" id="dist_accord">
-        {% for district in all_districts %}
-        <div class="accordion-group">
-            <div class="accordion-heading">
-                <div class="row">
-                    <div class="span3">
-                        <a class="accordion-toggle"
-                           data-toggle="collapse"
-                           data-parent="#accordion2"
-                           href="#{{district.shortname}}">
-                            {{district.name}}
-                       </a>
-                   </div>
-                   <div class="span2">#</div>
-                   <div class="span2">#</div>
-                   <div class="span2">#</div>
-                   <div class="span2">site_count</div>
-               </div>
-            </div>
-            <div id="{{district.shortname}}" class="accordion-body collapse collapsedistrict" distid="{{district.id}}">
-                <div class="accordion-inner">
-                    DATA
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+    {{datadump|safe}}
 {% endblock %}

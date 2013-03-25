@@ -4,6 +4,8 @@ from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager
 from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
 from models import District, School, Site, SiteDetail, Course, CourseDetail, User
+from sqlalchemy import func
+from sqlalchemy.sql.expression import desc
 
 import re
 import subprocess
@@ -189,6 +191,36 @@ def get_schools():
     return jsonify(schools = "")
 
 
+def init_report_data():
+    all_districts = District.query.order_by("name").all()
+    html = "<div class=\"accordion\" id=\"dist_accord\">\n"
+    template = """
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <div class="row">
+                <div class="span12">
+                    <a class="accordion-toggle"
+                        data-toggle="collapse"
+                        data-parent="#dist_accord"
+                        href="#%s">%s
+                     </a>
+                 </div>
+             </div>
+         </div>
+         <div id="%s" class="accordion-body collapse collapsedistrict" distid="%s">
+            <div class="accordion-inner">
+                DATA
+            </div>
+        </div>
+    </div>
+"""
+
+    for district in all_districts:
+        html += template % (district.shortname, district.name, district.shortname, district.id)
+    html += "</div>"
+    return html
+
+
 @app.route("/report", methods=['GET'])
 @login_required
 def report():
@@ -196,6 +228,8 @@ def report():
     all_schools = None
     all_sites = None
     all_courses = None
+
+    init_report_data()
 
     dist_count = District.query.count()
     school_count = School.query.count()
@@ -208,6 +242,7 @@ def report():
                                               school_count = school_count,
                                               site_count = site_count,
                                               course_count = course_count,
+                                              datadump = init_report_data(),
                                               user = current_user)
 
 
