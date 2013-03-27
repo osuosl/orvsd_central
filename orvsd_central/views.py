@@ -179,71 +179,68 @@ def logout():
     return redirect('/login')
 
 
+def build_accordion(objects, accordion_id, type, extra=None):
+    inner_t = app.jinja_env.get_template('accordion_inner.html')
+    outer_t = app.jinja_env.get_template('accordion.html')
+
+    inner = ""
+
+    for obj in objects:
+        inner += inner_t.render(accordion_id = accordion_id,
+                                inner_id = obj.shortname,
+                                type = type,
+                                link = obj.name,
+                                extra = None if not extra else extra % obj.id)
+
+    return outer_t.render(accordion_id = accordion_id,
+                          dump = inner)
+
+
+def district_details(schools):
+    admin_count = 0
+    teacher_count = 0
+    user_count = 0
+
+    for school in schools:
+        sites = Site.query.filter_by(school_id = school.id).all()
+        for site in sites:
+            details = SiteDetail.query.filter_by(site_id = site.id).order_by(SiteDetail.timemodified.desc()).first()
+            if details:
+                admin_count += details.adminusers
+                teacher_count += details.teachers
+                user_count += details.totalusers
+
+    return {'admins': admin_count, 'teachers': teacher_count, 'users': user_count}
+
+
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
     dist_id = request.form.get('distid')
     if dist_id:
-        schools_list = db.session.query(School.id, School.name).filter_by(district_id = dist_id).all()
-        schools = {}
-        for school in schools_list:
-            schools[school.id] = school.name
-        return jsonify(schools = schools)
-    return jsonify(schools = "")
+        schools = School.query.filter_by(district_id = dist_id).order_by("name").all()
+    else:
+        schools = School.query.order_by("name").all()
 
+    school_list = {}
 
-def init_report_data():
-    all_districts = District.query.order_by("name").all()
-    html = "<div class=\"accordion\" id=\"dist_accord\">\n"
-    template = """
-    <div class="accordion-group">
-        <div class="accordion-heading">
-            <div class="row">
-                <div class="span12">
-                    <a class="accordion-toggle"
-                        data-toggle="collapse"
-                        data-parent="#dist_accord"
-                        href="#%s">%s
-                     </a>
-                 </div>
-             </div>
-         </div>
-         <div id="%s" class="accordion-body collapse collapsedistrict" distid="%s">
-            <div class="accordion-inner">
-                DATA
-            </div>
-        </div>
-    </div>
-"""
+    for school in schools:
+        school_list[school.shortname] = {'name': school.name, 'id': school.id}
 
-    for district in all_districts:
-        html += template % (district.shortname, district.name, district.shortname, district.id)
-    html += "</div>"
-    return html
-
+    return jsonify(schools = school_list, counts = district_details(schools))
 
 @app.route("/report", methods=['GET'])
 @login_required
 def report():
     all_districts = District.query.order_by("name").all()
-    all_schools = None
-    all_sites = None
-    all_courses = None
 
-    init_report_data()
+    inner = ""
+    accord_id = "dist_accord"
+    dist_id = "distid=%s"
 
-    dist_count = District.query.count()
-    school_count = School.query.count()
-    course_count = Course.query.count()
-    site_count = SiteDetail.query.count()
+    data = build_accordion(all_districts, accord_id, "district", dist_id)
 
-    if request.method == "GET":
-        return render_template("report.html", all_districts = all_districts,
-                                              dist_count = dist_count,
-                                              school_count = school_count,
-                                              site_count = site_count,
-                                              course_count = course_count,
-                                              datadump = init_report_data(),
-                                              user = current_user)
+    return render_template("report.html", datadump = data,
+                                          user = current_user)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])

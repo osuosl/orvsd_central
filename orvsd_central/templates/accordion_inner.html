@@ -1,0 +1,24 @@
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <div class="row">
+                <div class="span12">
+                    <a class="accordion-toggle"
+                        data-toggle="collapse"
+                        data-parent="#{{ accordion_id }}"
+                        href="#{{ inner_id }}">{{ link }}</a>
+                 </div>
+             </div>
+         </div>
+         <div id="{{ inner_id }}" class="accordion-body collapse {{ type }}collapse" {{ extra }}>
+            <div class="accordion-inner">
+                <div class="row">
+                    <div class="span3 offset2 admins">Admins:</div>
+                    <div class="span3 teachers">Teachers:</div>
+                    <div class="span3 users">Users:</div>
+                </div>
+                <br />
+                <ul>
+                </ul>
+            </div>
+        </div>
+    </div>

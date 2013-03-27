@@ -1,13 +1,23 @@
 dump_schools = function(a, d) {
-    var out = a.find(".accordion-inner");
-    out.text("");
+    // Find the count details and update them
+    a.find(".admins").html("Admins: " + d.counts.admins);
+    a.find(".users").html("Users: " + d.counts.users);
+    a.find(".teachers").html("Teachers: " + d.counts.teachers);
+
+    // Clear the list
+    var out = a.find(".accordion-inner ul");
+    out.html("");
+
+    // Add to the lists
     $.each(d.schools, function(k, v) {
-            out.append(k + ": " + v + ", ");
+        var line = "<li><a href=\"/school/" + v.id + "\">" + v.name + "</a></li>";
+        out.append(line);
     });
 };
 
 $(function() {
-    $(".collapsedistrict").on("show", function() {
+    $(".districtcollapse").on("show", function() {
+        console.log($(this));
         var elem = $(this);
         $.ajax({
             type: "POST",
