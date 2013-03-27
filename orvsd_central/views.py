@@ -215,17 +215,22 @@ def district_details(schools):
 
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
+    # From the POST, we need the district id, or distid
     dist_id = request.form.get('distid')
+
+    # Given the distid, we get all the schools
     if dist_id:
         schools = School.query.filter_by(district_id = dist_id).order_by("name").all()
     else:
         schools = School.query.order_by("name").all()
 
+    # the dict to be jsonify'd
     school_list = {}
 
     for school in schools:
         school_list[school.shortname] = {'name': school.name, 'id': school.id}
 
+    # Returned the jsonify'd data of counts and schools for jvascript to parse
     return jsonify(schools = school_list, counts = district_details(schools))
 
 @app.route("/report", methods=['GET'])
