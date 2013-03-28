@@ -131,7 +131,8 @@ def view_school(school):
     return t.render(name = school.name,
                     admins = admins,
                     teachers = teachers,
-                    users = users)
+                    users = users,
+                    user = corrent_user)
 
 @app.route('/view/<category>/<id>', methods=['GET'])
 @login_required
@@ -143,7 +144,7 @@ def view_all_the_things(category, id):
         if not to_view:
             abort(404)
         dump = cats[category](to_view)
-        return render_template('view.html', content=dump)
+        return render_template('view.html', content = dump, user = current_user)
     abort(404)
 
 
@@ -178,8 +179,6 @@ def logout():
 @app.route("/report", methods=['GET', 'POST'])
 @login_required
 def report():
-    user = current_user
-
     all_districts = District.query.order_by("name").all()
 
     if request.method == "GET":
@@ -192,7 +191,8 @@ def report():
                                                        school_count=school_count,
                                                        course_count=course_count,
                                                        site_count=site_count,
-                                                       all_districts=all_districts)
+                                                       all_districts=all_districts,
+                                                       user = current_user)
 
     elif request.method == "POST":
         all_schools = School.query.order_by("name").all()
@@ -202,7 +202,8 @@ def report():
         return render_template("report.html", all_districts=all_districts,
                                               all_schools=all_schools,
                                               all_courses=all_courses,
-                                              all_sites=all_sites, user=user)
+                                              all_sites=all_sites,
+                                              user = current_user)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
@@ -224,7 +225,7 @@ def register():
             db.session.commit()
             message = form.user.data+" has been added successfully!\n"
 
-    return render_template('add_user.html', form=form, message=message)
+    return render_template('add_user.html', form=form, message=message, user = current_user)
 
 @app.route("/display/<category>")
 def remove(category):
@@ -273,7 +274,7 @@ def install_course():
 
     form.course.choices = choices
 
-    return render_template('install_course.html', form=form)
+    return render_template('install_course.html', form=form, user = current_user)
 
 @app.route('/install/course/output', methods=['POST'])
 def install_course_output():
@@ -327,7 +328,7 @@ def install_course_output():
 
         output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
 
-    return render_template('install_course_output.html', output=output)
+    return render_template('install_course_output.html', output=output, user = current_user)
 
 def get_obj_by_category(category):
     # Checking for case insensitive categories
