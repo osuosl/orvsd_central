@@ -10,20 +10,6 @@
 
         {% block head %}
         {% endblock %}
-
-        {% if user %}
-            Logged in as: {{user.name}}
-            </br>
-        {% endif %}
-        {% with message = get_flashed_messages() %}
-            {% if messages %}
-                <ul class = flashes>
-                {% for message in messages %}
-                <li>{{message}}</li>
-                {%endfor%}
-            {%endif%}
-        {%endwith%}
-        
     </head>
 
     <body>
