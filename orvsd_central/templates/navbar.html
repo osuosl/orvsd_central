@@ -46,7 +46,12 @@
             </li>
         </ul>
         <ul class="nav pull-right">
-            <li><a href="#">Log In</a></li>
+        {% if user %}
+            <li><a>Logged in as: {{user.name}}</a></li>
+            <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+        {% else %}
+            <li><a href="{{ url_for('login') }}">Log In</a></li>
+        {% endif %}
         </ul>
     </div>
 </div>
