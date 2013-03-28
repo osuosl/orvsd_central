@@ -105,6 +105,48 @@ def add_course():
 
     return render_template('add_course.html', form=form, msg=msg, user=user)
 
+
+def view_school(school):
+    # Info for the school's page
+    admins = 0
+    teachers = 0
+    users = 0
+
+    # Get the school's sites
+    sites = Site.query.filter_by(school_id = school.id).all()
+
+    # School view template
+    t = app.jinja_env.get_template('views/school.html')
+
+    # if we have sites, grab the details needed for the template
+    if sites:
+        for site in sites:
+            detail = SiteDetail.query.filter_by(site_id = site.id).order_by(SiteDetail.timemodified.desc()).first()
+            if detail:
+                admins += detail.adminusers
+                teachers += detail.teachers
+                users += detail.totalusers
+
+    # Return a pre-compiled template to be dumped into the view template
+    return t.render(name = school.name,
+                    admins = admins,
+                    teachers = teachers,
+                    users = users)
+
+@app.route('/view/<category>/<id>', methods=['GET'])
+@login_required
+def view_all_the_things(category, id):
+    cats = {'schools': view_school, 'districts': None, 'sites': None, 'courses': None}
+    obj = get_obj_by_category(category)
+    if obj:
+        to_view = obj.query.filter_by(id = id).first()
+        if not to_view:
+            abort(404)
+        dump = cats[category](to_view)
+        return render_template('view.html', content=dump)
+    abort(404)
+
+
 @app.route('/me')
 @login_required
 def home():
