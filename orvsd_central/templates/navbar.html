@@ -45,6 +45,15 @@
                 </ul>
             </li>
         </ul>
+        {% with message = get_flashed_messages() %}
+            {% if messages %}
+                <ul class = flashes>
+                {% for message in messages %}
+                    <li>{{message}}</li>
+                {%endfor%}
+                </ul>
+            {%endif%}
+        {%endwith%}
         <ul class="nav pull-right">
         {% if user %}
             <li><a>Logged in as: {{user.name}}</a></li>
