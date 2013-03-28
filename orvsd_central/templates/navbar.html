@@ -2,8 +2,21 @@
     <div class="navbar-inner">
         <ul class="nav">
             <li><a class="brand">ORVSD Central</a></li>
-            <li class="active">
+            <li>
                 <a href="{{ url_for('report') }}">Report</a>
+            </li>
+            <li class="dropdown">
+                <a  class="dropdown-toggle"
+                    data-toggle="dropdown"
+                    href="#">View
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="disabled"><a href="#">District</a></li>
+                    <li class="disabled"><a href="#">School</a></li>
+                    <li class="disabled"><a href="#">Site</a></li>
+                    <li class="disabled"><a href="#">Course</a></li>
+                </ul>
             </li>
             <li class="dropdown">
                 <a  class="dropdown-toggle"
@@ -11,11 +24,11 @@
                     href="#">Add
                     <b class="caret"></b>
                 </a>
-                <ul class="dropdown-menu">
-                    <li><a href="#">District</a></li>
-                    <li><a href="#">School</a></li>
-                    <li><a href="#">Site</a></li>
-                    <li><a href="#">Course</a></li>
+                <ul class="disabled dropdown-menu">
+                    <li class="disabled"><a href="#">District</a></li>
+                    <li class="disabled"><a href="#">School</a></li>
+                    <li class="disabled"><a href="#">Site</a></li>
+                    <li class="disabled"><a href="#">Course</a></li>
                 </ul>
             </li>
             <li class="dropdown">
@@ -25,10 +38,10 @@
                     <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="#">District</a></li>
-                    <li><a href="#">School</a></li>
-                    <li><a href="#">Site</a></li>
-                    <li><a href="#">Course</a></li>
+                    <li class="disabled"><a href="#">District</a></li>
+                    <li class="disabled"><a href="#">School</a></li>
+                    <li class="disabled"><a href="#">Site</a></li>
+                    <li class="disabled"><a href="#">Course</a></li>
                 </ul>
             </li>
         </ul>
