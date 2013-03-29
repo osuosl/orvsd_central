@@ -5,6 +5,7 @@
             <li>
                 <a href="{{ url_for('report') }}">Report</a>
             </li>
+            {% if user %}
             <li class="dropdown">
                 <a  class="dropdown-toggle"
                     data-toggle="dropdown"
@@ -18,6 +19,7 @@
                     <li class="disabled"><a href="#">Course</a></li>
                 </ul>
             </li>
+            {% if admin %}
             <li class="dropdown">
                 <a  class="dropdown-toggle"
                     data-toggle="dropdown"
@@ -44,6 +46,8 @@
                     <li class="disabled"><a href="#">Course</a></li>
                 </ul>
             </li>
+            {% endif %}
+            {% endif %}
         </ul>
         {% with message = get_flashed_messages() %}
             {% if messages %}
