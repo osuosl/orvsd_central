@@ -58,7 +58,7 @@ def logout():
 @app.route("/add_district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
-    user = current_user
+    user=current_user
     if request.method == "POST":
         #Add district to db.
         db.session.add(District(form.name.data, form.shortname.data,
@@ -71,7 +71,7 @@ def add_district():
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
-    user = current_user
+    user=current_user
     msg = ""
 
     if request.method == "POST":
@@ -94,7 +94,7 @@ def add_school():
 @app.route("/add_course", methods=['GET', 'POST'])
 def add_course():
     form = AddCourse()
-    user = current_user
+    user=current_user
     msg = ""
     if request.method == "POST":
         db.session.add(Course(int(form.serial.data), form.name.data,
@@ -132,7 +132,7 @@ def view_school(school):
                     admins = admins,
                     teachers = teachers,
                     users = users,
-                    user = corrent_user)
+                    user=current_user)
 
 @app.route('/view/<category>/<id>', methods=['GET'])
 @login_required
@@ -144,7 +144,7 @@ def view_all_the_things(category, id):
         if not to_view:
             abort(404)
         dump = cats[category](to_view)
-        return render_template('view.html', content = dump, user = current_user)
+        return render_template('view.html', content = dump, user=current_user)
     abort(404)
 
 
@@ -192,7 +192,7 @@ def report():
                                                        course_count=course_count,
                                                        site_count=site_count,
                                                        all_districts=all_districts,
-                                                       user = current_user)
+                                                       user=current_user)
 
     elif request.method == "POST":
         all_schools = School.query.order_by("name").all()
@@ -203,13 +203,13 @@ def report():
                                               all_schools=all_schools,
                                               all_courses=all_courses,
                                               all_sites=all_sites,
-                                              user = current_user)
+                                              user=current_user)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
 #@login_required
 def register():
-    #user = current_user
+    #user=current_user
     form = AddUser()
     message = ""
 
@@ -225,7 +225,7 @@ def register():
             db.session.commit()
             message = form.user.data+" has been added successfully!\n"
 
-    return render_template('add_user.html', form=form, message=message, user = current_user)
+    return render_template('add_user.html', form=form, message=message, user=current_user)
 
 @app.route("/display/<category>")
 def remove(category):
@@ -274,7 +274,7 @@ def install_course():
 
     form.course.choices = choices
 
-    return render_template('install_course.html', form=form, user = current_user)
+    return render_template('install_course.html', form=form, user=current_user)
 
 @app.route('/install/course/output', methods=['POST'])
 def install_course_output():
@@ -328,7 +328,7 @@ def install_course_output():
 
         output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
 
-    return render_template('install_course_output.html', output=output, user = current_user)
+    return render_template('install_course_output.html', output=output, user=current_user)
 
 def get_obj_by_category(category):
     # Checking for case insensitive categories
