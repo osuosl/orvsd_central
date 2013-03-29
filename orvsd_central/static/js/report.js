@@ -10,7 +10,7 @@ dump_schools = function(a, d) {
 
     // Add to the lists
     $.each(d.schools, function(k, v) {
-        var line = "<li><a href=\"/school/" + v.id + "\">" + v.name + "</a></li>";
+        var line = "<li><a href=\"/view/schools/" + v.id + "\">" + v.name + "</a></li>";
         out.append(line);
     });
 };
