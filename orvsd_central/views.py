@@ -58,7 +58,7 @@ def logout():
 @app.route("/add_district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
-    user=current_user
+    user = current_user
     if request.method == "POST":
         #Add district to db.
         db.session.add(District(form.name.data, form.shortname.data,
@@ -71,7 +71,7 @@ def add_district():
 @app.route("/add_school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
-    user=current_user
+    user = current_user
     msg = ""
 
     if request.method == "POST":
@@ -94,7 +94,7 @@ def add_school():
 @app.route("/add_course", methods=['GET', 'POST'])
 def add_course():
     form = AddCourse()
-    user=current_user
+    user = current_user
     msg = ""
     if request.method == "POST":
         db.session.add(Course(int(form.serial.data), form.name.data,
@@ -128,10 +128,10 @@ def view_school(school):
                 users += detail.totalusers
 
     # Return a pre-compiled template to be dumped into the view template
-    return t.render(name = school.name,
-                    admins = admins,
-                    teachers = teachers,
-                    users = users,
+    return t.render(name=school.name,
+                    admins=admins,
+                    teachers=teachers,
+                    users=users,
                     user=current_user)
 
 @app.route('/view/<category>/<id>', methods=['GET'])
@@ -144,7 +144,7 @@ def view_all_the_things(category, id):
         if not to_view:
             abort(404)
         dump = cats[category](to_view)
-        return render_template('view.html', content = dump, user=current_user)
+        return render_template('view.html', content=dump, user=current_user)
     abort(404)
 
 
