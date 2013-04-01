@@ -1,9 +1,12 @@
-from flask import request, render_template, flash, g, session, redirect, url_for, abort, jsonify
-from flask.ext.login import login_required, login_user, logout_user, current_user
+from flask import (request, render_template, flash, g, session, redirect,
+                   url_for, abort, jsonify)
+from flask.ext.login import (login_required, login_user, logout_user,
+                             current_user)
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager
 from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
-from models import District, School, Site, SiteDetail, Course, CourseDetail, User
+from models import (District, School, Site, SiteDetail,
+                    Course, CourseDetail, User)
 from sqlalchemy import func
 from sqlalchemy.sql.expression import desc
 
@@ -12,26 +15,31 @@ import subprocess
 import StringIO
 import urllib
 
+
 def no_perms():
     return "You do not have permission to be here!"
+
 
 @login_manager.unauthorized_handler
 def unauthorized():
     flash('You are not authorized to view this page, please login.')
     return redirect('/login')
 
+
 @app.route("/")
 @login_required
 def main_page():
     return redirect('/report')
 
+
 @login_manager.user_loader
 def load_user(userid):
     return User.query.filter_by(id=userid).first()
 
+
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    form=LoginForm(csrf_enabled=False)
+    form = LoginForm(csrf_enabled=False)
     if form.validate_on_submit():
         # login and validate the user...
         user = User.query.filter_by(name=form.name.data).first()
@@ -41,6 +49,7 @@ def login():
             return redirect("/report")
 
     return render_template("login.html", form=form)
+
 
 def get_user():
     # A user id is sent in, to check against the session
@@ -52,10 +61,12 @@ def get_user():
             return User.query.filter_by(id=session["user_id"]).first()
     return None
 
+
 @app.route("/logout")
 def logout():
     logout_user()
     return redirect("/")
+
 
 @app.route("/add_district", methods=['GET', 'POST'])
 def add_district():
@@ -63,11 +74,13 @@ def add_district():
     user = current_user
     if request.method == "POST":
         #Add district to db.
-        db.session.add(District(form.name.data, form.shortname.data,
-                        form.base_path.data))
+        db.session.add(District(form.name.data,
+                                form.shortname.data,
+                                form.base_path.data))
         db.session.commit()
 
     return render_template('add_district.html', form=form, user=user)
+
 
 @login_required
 @app.route("/add_school", methods=['GET', 'POST'])
@@ -79,19 +92,21 @@ def add_school():
     if request.method == "POST":
         #The district_id is supposed to be an integer
         #try:
-            #district = District.query.filter_by(id=int(form.district_id)).all()
+            #district = District.query.filter_by(id=int(form.district_id))
+            #                                          .all()
             #if len(district) == 1:
                 #Add School to db
         db.session.add(School(int(form.district_id.data),
-                        form.name.data, form.shortname.data,
-                        form.domain.data. form.license.data))
+                              form.name.data, form.shortname.data,
+                              form.domain.data. form.license.data))
         db.session.commit()
             #else:
             #    error_msg= "A district with that id doesn't exist!"
         #except:
         #    error_msg= "The entered district_id was not an integer!"
     return render_template('add_school.html', form=form,
-                        msg=msg, user=user)
+                           msg=msg, user=user)
+
 
 @app.route("/add_course", methods=['GET', 'POST'])
 def add_course():
@@ -100,8 +115,8 @@ def add_course():
     msg = ""
     if request.method == "POST":
         db.session.add(Course(int(form.serial.data), form.name.data,
-                            form.shortname.data, form.license.data,
-                            form.category.data))
+                              form.shortname.data, form.license.data,
+                              form.category.data))
         db.session.commit()
         msg = "Course: "+form.name.data+"added successfully!"
 
@@ -115,7 +130,7 @@ def view_school(school):
     users = 0
 
     # Get the school's sites
-    sites = Site.query.filter_by(school_id = school.id).all()
+    sites = Site.query.filter_by(school_id=school.id).all()
 
     # School view template
     t = app.jinja_env.get_template('views/school.html')
@@ -123,7 +138,10 @@ def view_school(school):
     # if we have sites, grab the details needed for the template
     if sites:
         for site in sites:
-            detail = SiteDetail.query.filter_by(site_id = site.id).order_by(SiteDetail.timemodified.desc()).first()
+            detail = SiteDetail.query.filter_by(site_id=site.id) \
+                                     .order_by(SiteDetail
+                                               .timemodified.desc()) \
+                                     .first()
             if detail:
                 admins += detail.adminusers
                 teachers += detail.teachers
@@ -136,13 +154,15 @@ def view_school(school):
                     users=users,
                     user=current_user)
 
+
 @app.route('/view/<category>/<id>', methods=['GET'])
 @login_required
 def view_all_the_things(category, id):
-    cats = {'schools': view_school, 'districts': None, 'sites': None, 'courses': None}
+    cats = {'schools': view_school, 'districts': None,
+            'sites': None, 'courses': None}
     obj = get_obj_by_category(category)
     if obj:
-        to_view = obj.query.filter_by(id = id).first()
+        to_view = obj.query.filter_by(id=id).first()
         if not to_view:
             abort(404)
         dump = cats[category](to_view)
@@ -156,7 +176,8 @@ def home():
     """
     Loads a users home information page
     """
-    return render_template('users/templates/profile.html', user=current_user) #not sure current_user works this way, write test
+    #not sure current_user works this way, write test
+    return render_template('users/templates/profile.html', user=current_user)
 
 """
 @app.route("/login", methods=['GET', 'POST'])
@@ -172,6 +193,8 @@ def login():
             return redirect("/users/me/")
     return render_template("login.html", form=form)
 """
+
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -186,14 +209,14 @@ def build_accordion(objects, accordion_id, type, extra=None):
     inner = ""
 
     for obj in objects:
-        inner += inner_t.render(accordion_id = accordion_id,
-                                inner_id = obj.shortname,
-                                type = type,
-                                link = obj.name,
-                                extra = None if not extra else extra % obj.id)
+        inner += inner_t.render(accordion_id=accordion_id,
+                                inner_id=obj.shortname,
+                                type=type,
+                                link=obj.name,
+                                extra=None if not extra else extra % obj.id)
 
-    return outer_t.render(accordion_id = accordion_id,
-                          dump = inner)
+    return outer_t.render(accordion_id=accordion_id,
+                          dump=inner)
 
 
 def district_details(schools):
@@ -202,15 +225,21 @@ def district_details(schools):
     user_count = 0
 
     for school in schools:
-        sites = Site.query.filter_by(school_id = school.id).all()
+        sites = Site.query.filter_by(school_id=school.id).all()
         for site in sites:
-            details = SiteDetail.query.filter_by(site_id = site.id).order_by(SiteDetail.timemodified.desc()).first()
+            details = SiteDetail.query.filter_by(site_id=site.id) \
+                                      .order_by(SiteDetail
+                                                .timemodified
+                                                .desc()) \
+                                      .first()
             if details:
                 admin_count += details.adminusers
                 teacher_count += details.teachers
                 user_count += details.totalusers
 
-    return {'admins': admin_count, 'teachers': teacher_count, 'users': user_count}
+    return {'admins': admin_count,
+            'teachers': teacher_count,
+            'users': user_count}
 
 
 @app.route('/report/get_schools', methods=['POST'])
@@ -220,7 +249,8 @@ def get_schools():
 
     # Given the distid, we get all the schools
     if dist_id:
-        schools = School.query.filter_by(district_id = dist_id).order_by("name").all()
+        schools = School.query.filter_by(district_id=dist_id) \
+                              .order_by("name").all()
     else:
         schools = School.query.order_by("name").all()
 
@@ -231,7 +261,8 @@ def get_schools():
         school_list[school.shortname] = {'name': school.name, 'id': school.id}
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return jsonify(schools = school_list, counts = district_details(schools))
+    return jsonify(schools=school_list, counts=district_details(schools))
+
 
 @app.route("/report", methods=['GET'])
 @login_required
@@ -248,12 +279,13 @@ def report():
 
     data = build_accordion(all_districts, accord_id, "district", dist_id)
 
-    return render_template("report.html", datadump=data,
-                                          dist_count=dist_count,
-                                          school_count=school_count,
-                                          site_count=site_count,
-                                          course_count=course_count,
-                                          user=current_user)
+    return render_template("report.html",
+                           datadump=data,
+                           dist_count=dist_count,
+                           school_count=school_count,
+                           site_count=site_count,
+                           course_count=course_count,
+                           user=current_user)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
@@ -265,17 +297,21 @@ def register():
 
     if request.method == "POST":
         if form.password.data != form.confirm_pass.data:
-            message="The passwords provided did not match!\n"
-        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$', form.email.data):
-            message="Invalid email address!\n"
+            message = "The passwords provided did not match!\n"
+        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
+                          form.email.data):
+            message = "Invalid email address!\n"
         else:
-            #Add user to db
+            # Add user to db
             db.session.add(User(name=form.user.data,
-                email = form.email.data, password=form.password.data))
+                                email=form.email.data,
+                                password=form.password.data))
             db.session.commit()
             message = form.user.data+" has been added successfully!\n"
 
-    return render_template('add_user.html', form=form, message=message, user=current_user)
+    return render_template('add_user.html', form=form,
+                           message=message, user=current_user)
+
 
 @app.route("/display/<category>")
 def remove(category):
@@ -287,10 +323,11 @@ def remove(category):
             # fancy way to get the properties of an object
             properties = objects[0].get_properties()
             return render_template('removal.html', category=category,
-                                    objects=objects, properties=properties,
-                                    user=user)
+                                   objects=objects, properties=properties,
+                                   user=user)
 
     abort(404)
+
 
 @app.route("/remove/<category>", methods=['POST'])
 def remove_objects(category):
@@ -306,6 +343,7 @@ def remove_objects(category):
 
     return redirect('display/'+category)
 
+
 @app.route('/install/course', methods=['GET'])
 def install_course():
 
@@ -319,12 +357,14 @@ def install_course():
 
     for course in all_courses:
         choices.append((course.course_id,
-                   "%s - Version: %s - Moodle Version: %s" %
-                   (course.course.name, course.version, course.moodle_version)))
+                        "%s - Version: %s - Moodle Version: %s" %
+                        (course.course.name, course.version,
+                         course.moodle_version)))
 
     form.course.choices = choices
 
     return render_template('install_course.html', form=form, user=current_user)
+
 
 @app.route('/install/course/output', methods=['POST'])
 def install_course_output():
@@ -332,19 +372,21 @@ def install_course_output():
     Displays the output for any course installs
     """
 
-    # An array of unicode strings will be passed, they need to be integers for the query
+    # An array of unicode strings will be passed, they need to be integers
+    # for the query
     selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
     # The site to install the courses
     site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
-                request.form.get('site'),
-                app.config['INSTALL_COURSE_WS_TOKEN'],
-                app.config['INSTALL_COURSE_WS_FUNCTION']
-            )
-    site=str(site.encode('utf-8'))
+           request.form.get('site'),
+           app.config['INSTALL_COURSE_WS_TOKEN'],
+           app.config['INSTALL_COURSE_WS_FUNCTION'])
+    site = str(site.encode('utf-8'))
 
     # The CourseDetail objects of info needed to generate the url
-    courses = CourseDetail.query.filter(CourseDetail.course_id.in_(selected_courses)).all()
+    courses = CourseDetail.query.filter(CourseDetail
+                                        .course_id.in_(selected_courses))\
+                                .all()
 
     # Appended to buy all the courses being installed
     output = ''
@@ -354,8 +396,8 @@ def install_course_output():
     #
     # Currently this will break ao our db is not setup correctly yet
     for course in courses:
-        # To get the file path we need the text input, the lowercase of source, and
-        # the filename
+        # To get the file path we need the text input, the lowercase of
+        # source, and the filename
         fp = app.config['INSTALL_COURSE_FILE_PATH']
         fp += course.source.lower() + '/'
 
@@ -378,11 +420,14 @@ def install_course_output():
 
         output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
 
-    return render_template('install_course_output.html', output=output, user=current_user)
+    return render_template('install_course_output.html',
+                           output=output,
+                           user=current_user)
+
 
 def get_obj_by_category(category):
     # Checking for case insensitive categories
-    categories = {'districts' : District, 'schools' : School,
-                  'sites' : Site, 'courses' : Course }
+    categories = {'districts': District, 'schools': School,
+                  'sites': Site, 'courses': Course}
 
     return categories.get(category.lower())
