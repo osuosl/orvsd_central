@@ -37,11 +37,11 @@ sys.path.append('./')
 from orvsd_central import db
 target_metadata = {}
 
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -60,19 +60,16 @@ def run_migrations_offline():
     engines = {}
     for name in re.split(r',\s*', db_names):
         engines[name] = rec = {}
-        rec['url'] = context.config.get_section_option(name,
-                                            "sqlalchemy.url")
+        rec['url'] = context.config.get_section_option(name, "sqlalchemy.url")
 
     for name, rec in engines.items():
         logger.info("Migrating database %s" % name)
         file_ = "%s.sql" % name
         logger.info("Writing output to %s" % file_)
-        context.configure(
-                    url=rec['url'],
-                    output_buffer=open(file_, 'w')
-                )
+        context.configure(url=rec['url'], output_buffer=open(file_, 'w'))
         with context.begin_transaction():
             context.run_migrations(engine_name=name)
+
 
 def run_migrations_online():
     """Run migrations in 'online' mode.
@@ -88,10 +85,9 @@ def run_migrations_online():
     engines = {}
     for name in re.split(r',\s*', db_names):
         engines[name] = rec = {}
-        rec['engine'] = engine_from_config(
-                                    context.config.get_section(name),
-                                    prefix='sqlalchemy.',
-                                    poolclass=pool.NullPool)
+        rec['engine'] = engine_from_config(context.config.get_section(name),
+                                           prefix='sqlalchemy.',
+                                           poolclass=pool.NullPool)
 
     for name, rec in engines.items():
         engine = rec['engine']
@@ -105,12 +101,10 @@ def run_migrations_online():
     try:
         for name, rec in engines.items():
             logger.info("Migrating database %s" % name)
-            context.configure(
-                        connection=rec['connection'],
-                        upgrade_token="%s_upgrades",
-                        downgrade_token="%s_downgrades",
-                        target_metadata=target_metadata.get(name)
-                    )
+            context.configure(connection=rec['connection'],
+                              upgrade_token="%s_upgrades",
+                              downgrade_token="%s_downgrades",
+                              target_metadata=target_metadata.get(name))
             context.run_migrations(engine_name=name)
 
         if USE_TWOPHASE:
