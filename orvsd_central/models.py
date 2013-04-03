@@ -208,7 +208,7 @@ class SiteDetail(db.Model):
         self.timemodified = timemodified
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" %
+        return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % \
         (self.siteversion, self.siterelease, self.adminemail,
          self.totalusers, self.adminusers, self.teachers,
          self.activeusers, self.totalcourses, self.timemodified)
@@ -241,7 +241,7 @@ class Course(db.Model):
         self.category = category
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s')>" %
+        return "<Site('%s','%s','%s','%s','%s','%s')>" % \
         (self.name, self.shortname, self.filename,
          self.license, self.category, self.version)
 
@@ -277,6 +277,6 @@ class CourseDetail(db.Model):
         self.source = source
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" %
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % \
         (self.course_id, self.filename, self.version, self.updated,
          self.active, self.moodle_version, self.source)
