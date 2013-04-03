@@ -128,11 +128,10 @@ def view_school(school):
                 users += detail.totalusers
 
     # Return a pre-compiled template to be dumped into the view template
-    return t.render(name=school.name,
-                    admins=admins,
-                    teachers=teachers,
-                    users=users,
-                    user=current_user)
+    return t.render(name = school.name,
+                    admins = admins,
+                    teachers = teachers,
+                    users = users)
 
 @app.route('/view/<category>/<id>', methods=['GET'])
 @login_required
@@ -144,7 +143,7 @@ def view_all_the_things(category, id):
         if not to_view:
             abort(404)
         dump = cats[category](to_view)
-        return render_template('view.html', content=dump, user=current_user)
+        return render_template('view.html', content=dump)
     abort(404)
 
 
@@ -179,6 +178,8 @@ def logout():
 @app.route("/report", methods=['GET', 'POST'])
 @login_required
 def report():
+    user = current_user
+
     all_districts = District.query.order_by("name").all()
 
     if request.method == "GET":
@@ -191,8 +192,7 @@ def report():
                                                        school_count=school_count,
                                                        course_count=course_count,
                                                        site_count=site_count,
-                                                       all_districts=all_districts,
-                                                       user=current_user)
+                                                       all_districts=all_districts)
 
     elif request.method == "POST":
         all_schools = School.query.order_by("name").all()
@@ -202,14 +202,13 @@ def report():
         return render_template("report.html", all_districts=all_districts,
                                               all_schools=all_schools,
                                               all_courses=all_courses,
-                                              all_sites=all_sites,
-                                              user=current_user)
+                                              all_sites=all_sites, user=user)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
 #@login_required
 def register():
-    #user=current_user
+    #user = current_user
     form = AddUser()
     message = ""
 
@@ -225,7 +224,7 @@ def register():
             db.session.commit()
             message = form.user.data+" has been added successfully!\n"
 
-    return render_template('add_user.html', form=form, message=message, user=current_user)
+    return render_template('add_user.html', form=form, message=message)
 
 @app.route("/display/<category>")
 def remove(category):
@@ -274,7 +273,7 @@ def install_course():
 
     form.course.choices = choices
 
-    return render_template('install_course.html', form=form, user=current_user)
+    return render_template('install_course.html', form=form)
 
 @app.route('/install/course/output', methods=['POST'])
 def install_course_output():
@@ -328,7 +327,7 @@ def install_course_output():
 
         output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
 
-    return render_template('install_course_output.html', output=output, user=current_user)
+    return render_template('install_course_output.html', output=output)
 
 def get_obj_by_category(category):
     # Checking for case insensitive categories
@@ -336,3 +335,23 @@ def get_obj_by_category(category):
                   'sites' : Site, 'courses' : Course }
 
     return categories.get(category.lower())
+
+
+@app.route("/users", methods=['GET', 'POST'])
+#@login_required
+def users():
+    msg = ""
+    # This view for now only needs to return the user list
+    # POST will be used for removing users
+    if request.method == "POST":
+        selected_users = request.form.get_list('modified')
+
+        for user_id in selected_users:
+            user = User.query.filter_by(id=user_id).first()
+            db.session.delete(user)
+        db.session.commit()
+
+    all_users = User.query.order_by("name").all()
+
+    return render_template("users.html", all_users=all_users, msg=msg,
+                           user=current_user)
