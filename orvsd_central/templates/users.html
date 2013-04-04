@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<script type="text/javascript" src="{{url_for('static',filename='js/users.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<form action="/users" method="POST">
+    <table class="table">
+        <tr>
+            <th>Username</th>
+            <th>Permissions</th>
+            <th>Remove?</th>
+        </tr>
+        {% for user in all_users %}
+        <tr>
+            <td>{{user.name}}</td>
+            <td>{{user.role}}</td>
+            <td><input type="button" id="{{user.id}}" name="{{user.name}}" class="user" value="Delete User"></input></td>
+        </tr>
+        {% endfor %}
+    </table>
+</form>
+{% endblock %}
+
