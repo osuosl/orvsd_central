@@ -5,6 +5,7 @@
         {% endblock %}
 
         <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap.css') }}" />
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}" />
         <script type="text/javascript" src="{{url_for('static',filename='js/jquery.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
 
@@ -13,17 +14,21 @@
     </head>
 
     <body>
+    <div id="wrap">
         {% include 'navbar.html' %}
         <div class="container">
             <div id="content">
                 {%block content%}
                 {%endblock%}
             </div>
-
-            <div id="footer">
-                {%block footer%}
-                {%endblock%}
-            </div>
+            <div id="push"></div>
         </div>
+    </div>
+    <div id="footer">
+        <div class="container">
+            {%block footer%}
+            {%endblock%}
+        </div>
+    </div>
     </body>
 </html>
