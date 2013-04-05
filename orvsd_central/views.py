@@ -1,4 +1,4 @@
-from flask import request, render_template, flash, g, session, redirect, url_for, abort
+from flask import request, render_template, flash, g, session, redirect, url_for, abort, jsonify
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager
@@ -363,4 +363,6 @@ def delete_user():
     db.session.delete(user)
     db.session.commit()
 
-    return redirect("/users")
+    flash(user.name + " deleted successfully!")
+
+    return jsonify('')
