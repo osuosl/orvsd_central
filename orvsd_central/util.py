@@ -70,7 +70,7 @@ class Util():
                         if d['location'][:3] == 'php':
                             location = 'platform'
                         else:
-                            location = '.'.split(d['location'])[0]
+                            location = d['location']
                     else:
                         location = 'unknown'
 
