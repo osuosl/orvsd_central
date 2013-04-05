@@ -13,10 +13,10 @@
             <th>Remove?</th>
         </tr>
         {% for user in all_users %}
-        <tr>
+        <tr id={{user.id}}>
             <td>{{user.name}}</td>
             <td>{{user.role}}</td>
-            <td><input type="button" id="{{user.id}}" name="{{user.name}}" class="user" value="Delete User"></input></td>
+            <td><input type="button" data-user_id="{{user.id}}" data-user_name="{{user.name}}" class="user" value="Delete User"></input></td>
         </tr>
         {% endfor %}
     </table>
