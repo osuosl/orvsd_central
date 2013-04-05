@@ -355,3 +355,12 @@ def users():
 
     return render_template("users.html", all_users=all_users, msg=msg,
                            user=current_user)
+
+
+@app.route("/delete_user", methods=["POST"])
+def delete_user():
+    user = User.query.filter_by(id=request.form.get('user_id')).first()
+    db.session.delete(user)
+    db.session.commit()
+
+    return redirect("/users")
