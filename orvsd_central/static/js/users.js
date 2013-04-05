@@ -8,7 +8,10 @@ $(function() {
             $.ajax({
                 type: "POST",
                 url: "/delete_user",
-                data: {'user_id':user_id}
+                data: {'user_id':user_id},
+                success: function() {
+                    $('#' + user_id).remove();
+                }
             });
         }
     });
