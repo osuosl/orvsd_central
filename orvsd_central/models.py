@@ -209,9 +209,9 @@ class SiteDetail(db.Model):
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % \
-        (self.siteversion, self.siterelease, self.adminemail,
-         self.totalusers, self.adminusers, self.teachers,
-         self.activeusers, self.totalcourses, self.timemodified)
+               (self.siteversion, self.siterelease, self.adminemail,
+                self.totalusers, self.adminusers, self.teachers,
+                self.activeusers, self.totalcourses, self.timemodified)
 
 
 class Course(db.Model):
@@ -242,8 +242,8 @@ class Course(db.Model):
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % \
-        (self.name, self.shortname, self.filename,
-         self.license, self.category, self.version)
+               (self.name, self.shortname, self.filename,
+                self.license, self.category, self.version)
 
     def get_properties(self):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
@@ -278,5 +278,5 @@ class CourseDetail(db.Model):
 
     def __repr__(self):
         return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % \
-        (self.course_id, self.filename, self.version, self.updated,
-         self.active, self.moodle_version, self.source)
+               (self.course_id, self.filename, self.version, self.updated,
+                self.active, self.moodle_version, self.source)
