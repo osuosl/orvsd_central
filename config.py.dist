@@ -32,3 +32,8 @@ INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
 SITEINFO_DATABASE_HOST = "applegate.orvsd.org"
 SITEINFO_DATABASE_USER = "siteinfo"
 SITEINFO_DATABASE_PASS = ""
+
+#google oauth required info
+GOOGLE_CLIENT_ID = 'CLIENT ID HERE'
+GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
+REDIRECT_URI = "/oauth2callback"
