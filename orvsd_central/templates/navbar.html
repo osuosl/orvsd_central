@@ -1,0 +1,70 @@
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <ul class="nav">
+            <li><a class="brand" style="padding-left: 40px">ORVSD Central</a></li>
+            {% if user %}
+            <li>
+                <a href="{{ url_for('report') }}">Report</a>
+            </li>
+            <li class="dropdown">
+                <a  class="dropdown-toggle"
+                    data-toggle="dropdown"
+                    href="#">View
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="disabled"><a href="#">Districts</a></li>
+                    <li class="disabled"><a href="#">Schools</a></li>
+                    <li class="disabled"><a href="#">Sites</a></li>
+                    <li class="disabled"><a href="#">Courses</a></li>
+                </ul>
+            </li>
+            {% if admin %}
+            <li class="dropdown">
+                <a  class="dropdown-toggle"
+                    data-toggle="dropdown"
+                    href="#">Add
+                    <b class="caret"></b>
+                </a>
+                <ul class="disabled dropdown-menu">
+                    <li class="disabled"><a href="#">Districts</a></li>
+                    <li class="disabled"><a href="#">Schools</a></li>
+                    <li class="disabled"><a href="#">Sites</a></li>
+                    <li class="disabled"><a href="#">Courses</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a  class="dropdown-toggle"
+                    data-toggle="dropdown"
+                    href="#">Modify/Remove
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="disabled"><a href="#">Districts</a></li>
+                    <li class="disabled"><a href="#">Schools</a></li>
+                    <li class="disabled"><a href="#">Sites</a></li>
+                    <li class="disabled"><a href="#">Courses</a></li>
+                </ul>
+            </li>
+            {% endif %}
+            {% endif %}
+        </ul>
+        {% with message = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for message in messages %}
+                    <li>{{message}}</li>
+                {%endfor%}
+                </ul>
+            {%endif%}
+        {%endwith%}
+        <ul class="nav pull-right">
+        {% if user %}
+            <li><a>Logged in as: {{user.name}}</a></li>
+            <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+        {% else %}
+            <li><a href="{{ url_for('login') }}">Log In</a></li>
+        {% endif %}
+        </ul>
+    </div>
+</div>

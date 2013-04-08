@@ -3,38 +3,34 @@
         {% block title %}
         <title>ORVSD Central</title>
         {% endblock %}
-
+        <link rel="icon"
+              type="image/png"
+              href="{{ url_for('static',filename='img/ORVSDCentral_icon.png') }}">
         <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap.css') }}" />
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}" />
         <script type="text/javascript" src="{{url_for('static',filename='js/jquery.min.js') }}"></script>
-        <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
 
         {% block head %}
         {% endblock %}
-
-        {% if user %}
-            Logged in as: {{user.name}}
-            </br>
-        {% endif %}
-        {% with message = get_flashed_messages() %}
-            {% if messages %}
-                <ul class = flashes>
-                {% for message in messages %}
-                <li>{{message}}</li>
-                {%endfor%}
-            {%endif%}
-        {%endwith%}
-        
     </head>
 
-    <body class=container>
-        <div id="content">
-            {%block content%}
-            {%endblock%}
+    <body>
+    <div id="wrap">
+        {% include 'navbar.html' %}
+        <div class="container">
+            <div id="content">
+                {%block content%}
+                {%endblock%}
+            </div>
+            <div id="push"></div>
         </div>
-
-        <div id="footer">
+    </div>
+    <div id="footer">
+        <div class="container">
             {%block footer%}
             {%endblock%}
         </div>
+    </div>
     </body>
 </html>

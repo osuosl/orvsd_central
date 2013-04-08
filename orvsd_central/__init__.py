@@ -12,9 +12,10 @@ login_manager = LoginManager()
 login_manager.setup_app(app)
 
 
-import models, views
+import models
+import views
+
 
 @app.before_request
 def before_request():
     g.db = db
-

@@ -3,10 +3,22 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
-sites_courses = db.Table('sites_courses', db.Model.metadata,
-    db.Column('site_id', db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_sites_courses_site_id')),
-    db.Column('course_id', db.Integer, db.ForeignKey('courses.id', use_alter=True, name='fk_sites_courses_course_id'))
-)
+sites_courses = db.Table('sites_courses',
+                         db.Model.metadata,
+                         db.Column('site_id',
+                                   db.Integer,
+                                   db.ForeignKey('sites.id',
+                                                 use_alter=True,
+                                                 name=
+                                                 'fk_sites_courses_site_id')),
+                         db.Column('course_id',
+                                   db.Integer,
+                                   db.ForeignKey('courses.id',
+                                                 use_alter=True,
+                                                 name=
+                                                 'fk_sites_courses_course_id'))
+                         )
+
 
 class User(db.Model):
     """
@@ -24,6 +36,7 @@ class User(db.Model):
         self.name = name
         self.email = email
         self.password = generate_password_hash(password)
+
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
@@ -49,10 +62,11 @@ class User(db.Model):
         return '<User %r>' % (self.name)
 
 
-"""
-Districts have many schools
-"""
 class District(db.Model):
+    """
+    Districts have many schools
+    """
+
     __tablename__ = 'districts'
     id = db.Column(db.Integer, primary_key=True)
     # Full name of the district
@@ -66,20 +80,26 @@ class District(db.Model):
         self.name = name
         self.shortname = shortname
         self.base_path = base_path
+
     def __repr__(self):
         return "<Disctrict('%s')>" % (self.name)
 
     def get_properties(self):
         return ['id', 'name', 'shortname', 'base_path']
 
+
+class School(db.Model):
     """
     Schools belong to one district, have many sites and  many courses
     """
-class School(db.Model):
+
     __tablename__ = 'schools'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning district
-    district_id = db.Column(db.Integer, db.ForeignKey('districts.id', use_alter=True, name='fk_school_to_district_id'))
+    district_id = db.Column(db.Integer,
+                            db.ForeignKey('districts.id',
+                                          use_alter=True,
+                                          name='fk_school_to_district_id'))
     # school name
     name = db.Column(db.String(255))
     # short name or abbreviation
@@ -89,8 +109,9 @@ class School(db.Model):
     # list of tokens indicating licenses for some courses - courses with
     # license tokens in this list can be installed in this school
     license = db.Column(db.String(255))
-
-    district = db.relationship("District", backref=db.backref('schools', order_by=id)) #NEED TO FIND FLASK FOR THIS
+    # NEED TO FIND FLASK FOR THIS
+    district = db.relationship("District",
+                               backref=db.backref('schools', order_by=id))
 
     def __init__(self, name, shortname, domain, license):
         self.name = name
@@ -101,14 +122,18 @@ class School(db.Model):
     def get_properties(self):
         return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license']
 
+
 class Site(db.Model):
     __tablename__ = 'sites'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning school
-    school_id = db.Column(db.Integer, db.ForeignKey('schools.id', use_alter=True, name="fk_sites_school_id"))
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id',
+                                                    use_alter=True,
+                                                    name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
     name = db.Column(db.String(255))
-    sitetype = db.Column(db.Enum('moodle','drupal', name='site_types')) # (from siteinfo)
+    # (from siteinfo)
+    sitetype = db.Column(db.Enum('moodle', 'drupal', name='site_types'))
     # moodle or drupal's base_url - (from siteinfo)
     baseurl = db.Column(db.String(255))
     # site's path on disk - (from siteinfo)
@@ -119,9 +144,12 @@ class Site(db.Model):
     location = db.Column(db.String(255))
 
     site_details = db.relationship("SiteDetail", backref=db.backref('sites'))
-    courses = db.relationship("Course", secondary='sites_courses', backref='sites')
+    courses = db.relationship("Course",
+                              secondary='sites_courses',
+                              backref='sites')
 
-    def __init__(self, name, sitetype, baseurl, basepath, jenkins_cron_job, location):
+    def __init__(self, name, sitetype, baseurl,
+                 basepath, jenkins_cron_job, location):
         self.name = name
         self.sitetype = sitetype
         self.baseurl = baseurl
@@ -129,23 +157,32 @@ class Site(db.Model):
         self.jenkins_cron_job = jenkins_cron_job
         self.location = location
 
-
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s')>" % (self.name, self.sitetype, self.baseurl, self.basepath, self.jenkins_cron_job)
+        return "<Site('%s','%s','%s','%s','%s')>" % (self.name,
+                                                     self.sitetype,
+                                                     self.baseurl,
+                                                     self.basepath,
+                                                     self.jenkins_cron_job)
 
     def get_properties(self):
-        return ['id', 'school_id', 'name', 'sitetype', 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
+        return ['id', 'school_id', 'name', 'sitetype',
+                'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
-"""
-Site_details belong to one site. This data is updated from the
-siteinfo tables, except the date - a new record is added with each
-update. See siteinfo notes.
-"""
+
 class SiteDetail(db.Model):
+    """
+    Site_details belong to one site. This data is updated from the
+    siteinfo tables, except the date - a new record is added with each
+    update. See siteinfo notes.
+    """
+
     __tablename__ = 'site_details'
     id = db.Column(db.Integer, primary_key=True)
     # points to the owning site
-    site_id = db.Column(db.Integer, db.ForeignKey('sites.id', use_alter=True, name='fk_site_details_site_id'))
+    site_id = db.Column(db.Integer, db.ForeignKey('sites.id',
+                                                  use_alter=True,
+                                                  name=
+                                                  'fk_site_details_site_id'))
     courses = db.Column(db.Text())
     siteversion = db.Column(db.String(255))
     siterelease = db.Column(db.String(255))
@@ -157,7 +194,9 @@ class SiteDetail(db.Model):
     totalcourses = db.Column(db.Integer)
     timemodified = db.Column(db.DateTime)
 
-    def __init__(self, siteversion, siterelease, adminemail, totalusers, adminusers, teachers, activeusers, totalcourses, timemodified):
+    def __init__(self, siteversion, siterelease, adminemail,
+                 totalusers, adminusers, teachers, activeusers,
+                 totalcourses, timemodified):
         self.siteversion = siteversion
         self.siterelease = siterelease
         self.adminemail = adminemail
@@ -169,12 +208,17 @@ class SiteDetail(db.Model):
         self.timemodified = timemodified
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % (self.siteversion, self.siterelease, self.adminemail, self.totalusers, self.adminusers, self.teachers, self.activeusers, self.totalcourses, self.timemodified)
+        return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % \
+               (self.siteversion, self.siterelease, self.adminemail,
+                self.totalusers, self.adminusers, self.teachers,
+                self.activeusers, self.totalcourses, self.timemodified)
 
-"""
-Courses belong to many schools
-"""
+
 class Course(db.Model):
+    """
+    Courses belong to many schools
+    """
+
     __tablename__ = 'courses'
     id = db.Column(db.Integer, primary_key=True)
     serial = db.Column(db.Integer)
@@ -185,7 +229,9 @@ class Course(db.Model):
     # moodle category for this class (probably "default")
     category = db.Column(db.String(255))
 
-    course_details = db.relationship("CourseDetail", backref=db.backref('course', order_by=id))
+    course_details = db.relationship("CourseDetail",
+                                     backref=db.backref('course',
+                                     order_by=id))
 
     def __init__(self, serial, name, shortname, license=None, category=None):
         self.serial = serial
@@ -195,15 +241,21 @@ class Course(db.Model):
         self.category = category
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s')>" % (self.name, self.shortname, self.filename, self.license, self.category, self.version)
+        return "<Site('%s','%s','%s','%s','%s','%s')>" % \
+               (self.name, self.shortname, self.filename,
+                self.license, self.category, self.version)
 
     def get_properties(self):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
 
+
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
     id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id', use_alter=True, name='fk_course_details_site_id'))
+    course_id = db.Column(db.Integer,
+                          db.ForeignKey('courses.id',
+                                        use_alter=True,
+                                        name='fk_course_details_site_id'))
     # just the name, with extension, no path
     filename = db.Column(db.String(255))
     # course version number (could be a string, ask client on format)
@@ -214,8 +266,8 @@ class CourseDetail(db.Model):
     moodle_version = db.Column(db.String(255))
     source = db.Column(db.String(255))
 
-
-    def __init__(self, course_id, serial, filename, version, updated, active, moodle_version, source):
+    def __init__(self, course_id, serial, filename, version,
+                 updated, active, moodle_version, source):
         self.course_id = course_id
         self.filename = filename
         self.version = version
@@ -225,5 +277,6 @@ class CourseDetail(db.Model):
         self.source = source
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % (self.course_id, self.filename, self.version, self.updated, self.active, self.moodle_version, self.source)
-
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % \
+               (self.course_id, self.filename, self.version, self.updated,
+                self.active, self.moodle_version, self.source)

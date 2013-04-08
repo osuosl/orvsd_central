@@ -3,14 +3,17 @@ Utility class containing useful methods not tied to specific models or views
 """
 from oursql import connect, DictCursor
 from orvsd_central import db, app
-from models import District, School, Site, SiteDetail, Course, CourseDetail, User
+from models import (District, School, Site, SiteDetail,
+                    Course, CourseDetail, User)
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 import json
 import re
 import datetime
 
+
 class Util():
+
     def gather_siteinfo(self):
         user = app.config['SITEINFO_DATABASE_USER']
         password = app.config['SITEINFO_DATABASE_PASS']
@@ -23,9 +26,9 @@ class Util():
 
         # find all the databases with a siteinfo table
         find = ("SELECT table_schema, table_name "
-                  "FROM information_schema.tables "
-                 "WHERE table_name =  'siteinfo' "
-                    "OR table_name = 'mdl_siteinfo';")
+                "FROM information_schema.tables "
+                "WHERE table_name =  'siteinfo' "
+                "OR table_name = 'mdl_siteinfo';")
 
         curs.execute(find)
         check = curs.fetchall()
@@ -67,7 +70,7 @@ class Util():
                         if d['location'][:3] == 'php':
                             location = 'platform'
                         else:
-                            location = '.'.split(d['location'])[0]
+                            location = d['location']
                     else:
                         location = 'unknown'
 
@@ -126,14 +129,20 @@ class Util():
                         if d['courses'][:2] != '[{':
                             continue
 
-                        """ @TODO: create the correct association model for this to work
+                        """
+                        @TODO: create the correct association
+                               model for this to work
+
                         courses = json.loads(d['courses'])
                         associated_courses = []
 
                         for i, course in enumerate(courses):
                             if course['serial'] != '0':
                                 course_serial = course['serial'][:4]
-                                orvsd_course = Course.query.filter_by(serial=course_serial).first()
+                                orvsd_course = Course.query
+                                                     .filter_by(serial=
+                                                                course_serial)
+                                                     .first()
                                 if orvsd_course:
                                     # store this association
                                     # delete this course from the json string
@@ -148,6 +157,3 @@ class Util():
 
                     db.session.add(site_details)
                     db.session.commit()
-
-
-

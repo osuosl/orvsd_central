@@ -1,148 +1,25 @@
 {% extends 'base.html' %}
 
-{% block js %}
-<script type="text/javascript">
-    $(function() {
-
-    });
-</script>
-{% endblock %}
-
 {% block title %}
     <title>Report</title>
 {% endblock %}
 
-{% block content %}
-    <div class='row'>
-        <form name="filter_options" action="/report" method="POST">
-            <div class='span3'><h4>Districts</h4></div>
-            <div class='span3'><h4>Schools</h4></div>
-            <div class='span3'><h4>Sites</h4></div>
-            <div class='span3'><h4>Courses</h4></div>
-            <div class='span3'>
-                <select name="all_districts">
-                    <option selected="True" value="All">All</option>
-                    {% for district in all_districts %}
-                        <option value="{{district.name}}">{{district.name}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class='span3'>
-                <select name="all_schools">
-                    <option selected="True" value="All">All</option>
-                    {% for school in all_schools %}
-                        <option value="{{school.name}}">{{school.name}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class='span3'>
-                <select name="all_sites">
-                    <option selected="True" value="All">All</option>
-                    {% for site in all_sites %}
-                        <option value="{{site.sitename}}">{{site.sitename}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class='span3'>
-                <select name="all_courses">
-                    <option selected="True" value="All">All</option>
-                    {% for course in all_courses %}
-                        <option value="{{course.name}}">{{course.name}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class='span12'>
-                <input type="submit" class='btn btn-primary' value="Submit"></input>
-                <a href="report" class='btn'>Overview</a>
-            </div>
-        </form>
-        <div class='span12'>&nbsp;</div>
-        <div class='span12'><h3>Districts</h3></div>
-        <table class='table table-striped table-hover table-condensed table-bordered'>
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th># Sites</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for district in all_districts %}
-            <tr>
-                <td>{{district.name}}</td>
-                <td>{{district.sites|count}}</td>
-            </td>
-            {% endfor %}
-            </tbody>
-        </table>
-
-        <div class='span12'><h3>Sites</h3></div>
-        <table class='table table-striped table-hover table-condensed table-bordered'>
-            <thead>
-            <tr>
-                <th>Site Id</th>
-                <th>Admin Email</th>
-                <th>Total Users</th>
-                <th># Admins</th>
-                <th># Teachers</th>
-                <th># Courses</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for site in all_sites %}
-            <tr>
-                <td>{{site.site_id}}</td>
-                <td>{{site.adminemail}}</td>
-                <td>{{site.totalusers}}</td>
-                <td>{{site.adminusers}}</td>
-                <td>{{site.teachers}}</td>
-                <td>{{site.totalcourses}}</td>
-                <td>NULL</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-
-        <div class='span12'><h3>Schools</h3></div>
-        <table class='table table-striped table-hover table-condensed table-bordered'>
-            <thead>
-            <tr>
-                <th>School Name</th>
-                <th>Domain</th>
-                <th>License</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for school in all_schools %}
-            <tr>
-                <td>{{school.name}}</td>
-                <td>{{school.domain}}</td>
-                <td>{{school.license}}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-
-        <div class='span12'><h3>Courses</h3></div>
-        <table class='table table-striped table-hover table-condensed table-bordered'>
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th>Shortname</th>
-                <th>Category</th>
-                <th>License</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for course in all_courses %}
-            <tr>
-                <td>{{course.name}}</td>
-                <td>{{course.shortname}}</td>
-                <td>{{course.category}}</td>
-                <td>{{course.license}}</td>
-            </td>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+{% block head %}
+    <script type="text/javascript" src="{{url_for('static', filename='js/report.js') }}"></script>
 {% endblock %}
 
+{% block content %}
+    <div class='row'>
+        <div class='span12'>&nbsp;</div>
+    </div>
+    <div class="row pagination-centered">
+        <div class="span3"><strong>Districts:</strong> {{ dist_count }}</div>
+        <div class="span3"><strong>Schools:</strong> {{ school_count }}</div>
+        <div class="span3"><strong>Sites:</strong> {{ site_count }}</div>
+        <div class="span3"><strong>Courses:</strong> {{ course_count }}</div>
+    </div>
+     <div class='row'>
+        <div class='span12'>&nbsp;</div>
+    </div>
+    {{datadump|safe}}
+{% endblock %}

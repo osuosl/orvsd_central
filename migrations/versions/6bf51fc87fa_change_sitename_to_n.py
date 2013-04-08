@@ -15,14 +15,14 @@ import sqlalchemy as sa
 
 
 def upgrade(engine_name):
-    op.alter_column(table_name='sites', column_name='sitename', name='name', existing_type=sa.String(255))
+    op.alter_column(table_name='sites',
+                    column_name='sitename',
+                    name='name',
+                    existing_type=sa.String(255))
 
 
 def downgrade(engine_name):
     eval("downgrade_%s" % engine_name)()
-
-
-
 
 
 def upgrade_engine1():
@@ -31,4 +31,3 @@ def upgrade_engine1():
 
 def downgrade_engine1():
     pass
-
