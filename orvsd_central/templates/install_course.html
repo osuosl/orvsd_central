@@ -7,9 +7,15 @@
 {% block content %}
 
 <form name='install_course' method='POST' action="{{ url_for('install_course_output') }}">
-    <div>Site: {{form.site}}</div>
-    <div>Course: {{form.course}}</div>
-    <div><input type='submit' value='Install'></div>
+    <fieldset>
+        <legend>Add Course</legend>
+        <label class="control-label" for="site">Site</label>
+        {{form.site}}
+        <label class="control-label" for="course">Course(s)</label>
+        {{form.course}}
+        <button class="btn" type='submit'>Install</button>
+    </fieldset>
 </form>
+
 
 {% endblock %}
