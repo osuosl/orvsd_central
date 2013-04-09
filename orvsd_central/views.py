@@ -65,10 +65,10 @@ def get_user():
 
 
 @app.route("/google_login")
-def google_login():
+def google_login():    
     access_token = session.get('access_token')
     if access_token is None:
-        callback = url_for('authorized', _external=True)
+        callback=url_for('authorized', _external=True)
         return google.authorize(callback=callback)
     else:
         access_token = access_token
