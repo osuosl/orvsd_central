@@ -14,10 +14,6 @@ login_manager = LoginManager()
 login_manager.setup_app(app)
 
 
-import models
-import views
-
-
 oauth = OAuth()
 google = oauth.remote_app(
     'google',
@@ -37,9 +33,6 @@ google = oauth.remote_app(
 
 import models
 import views
-
-
-import models, views
 
 
 @app.before_request
