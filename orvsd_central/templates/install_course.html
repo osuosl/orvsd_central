@@ -4,6 +4,10 @@
     <title>Install Courses</title>
 {% endblock %}
 
+{% block head %}
+    <link type="text/css" rel="stylesheet" href="{{url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
 {% block content %}
 
 <form name='install_course' method='POST' action="{{ url_for('install_course_output') }}">
