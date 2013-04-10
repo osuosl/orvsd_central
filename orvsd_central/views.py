@@ -9,8 +9,8 @@ from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func
 from sqlalchemy.sql.expression import desc
-from models import District, School, Site, \
-    SiteDetail, Course, CourseDetail, User
+from models import (District, School, Site, SiteDetail,
+                    Course, CourseDetail, User)
 import urllib2
 import json
 import re
@@ -82,7 +82,7 @@ def google_login():
             if e.code == 401:
                 session.pop('access_token', None)
                 flash('There was a problem with your Google \
-                    login information.  Please try again.')
+                      login information.  Please try again.')
                 return redirect(url_for('login'))
             return res.read()
         obj = json.loads(res.read())
@@ -96,7 +96,7 @@ def google_login():
             return redirect(url_for('report'))
         else:
             flash("This google account was not recognized \
-                as having access. Sorry.")
+                  as having access. Sorry.")
             return redirect(url_for('login'))
 
 
