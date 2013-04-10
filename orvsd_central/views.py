@@ -3,13 +3,16 @@ from flask import (request, render_template, flash, g, session, redirect,
 from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db, app, login_manager
+from orvsd_central import db, app, login_manager, google
 from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func
 from sqlalchemy.sql.expression import desc
-
+from models import (District, School, Site, SiteDetail,
+                    Course, CourseDetail, User)
+import urllib2
+import json
 import re
 import subprocess
 import StringIO
@@ -60,6 +63,54 @@ def get_user():
     if 'user_id' in session:
             return User.query.filter_by(id=session["user_id"]).first()
     return None
+
+
+@app.route("/google_login")
+def google_login():
+    access_token = session.get('access_token')
+    if access_token is None:
+        callback = url_for('authorized', _external=True)
+        return google.authorize(callback=callback)
+    else:
+        access_token = access_token
+        headers = {'Authorization': 'OAuth '+access_token}
+        req = urllib2.Request('https://www.googleapis.com/oauth2/v1/userinfo',
+                              None, headers)
+        try:
+            res = urllib2.urlopen(req)
+        except urllib2.URLError, e:
+            if e.code == 401:
+                session.pop('access_token', None)
+                flash('There was a problem with your Google \
+                      login information.  Please try again.')
+                return redirect(url_for('login'))
+            return res.read()
+        obj = json.loads(res.read())
+        email = obj['email']
+        user = User.query.filter_by(email=email).first()
+        #pop access token so it isn't sitting around in our
+        #session any longer than nescessary
+        session.pop('access_token', None)
+        if user is not None:
+            login_user(user)
+            return redirect(url_for('report'))
+        else:
+            flash("This google account was not recognized \
+                  as having access. Sorry.")
+            return redirect(url_for('login'))
+
+
+@app.route(app.config['REDIRECT_URI'])
+@google.authorized_handler
+def authorized(resp):
+    access_token = resp['access_token']
+    session['access_token'] = access_token
+    return redirect(url_for('google_login'))
+
+
+@google.tokengetter
+def get_access_token():
+    return session.get('access_token')
 
 
 @app.route("/logout")
