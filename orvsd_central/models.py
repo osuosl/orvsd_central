@@ -228,17 +228,20 @@ class Course(db.Model):
     license = db.Column(db.String(255))
     # moodle category for this class (probably "default")
     category = db.Column(db.String(255))
+    source = db.Column(db.String(255))
 
     course_details = db.relationship("CourseDetail",
                                      backref=db.backref('course',
                                      order_by=id))
 
-    def __init__(self, serial, name, shortname, license=None, category=None):
+    def __init__(self, serial, name, shortname,
+                 license=None, category=None, source=None):
         self.serial = serial
         self.name = name
         self.shortname = shortname
         self.license = license
         self.category = category
+        self.source = source
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % \
@@ -264,17 +267,15 @@ class CourseDetail(db.Model):
     updated = db.Column(db.DateTime)
     active = db.Column(db.Boolean)
     moodle_version = db.Column(db.String(255))
-    source = db.Column(db.String(255))
 
     def __init__(self, course_id, serial, filename, version,
-                 updated, active, moodle_version, source):
+                 updated, active, moodle_version):
         self.course_id = course_id
         self.filename = filename
         self.version = version
         self.updated = updated
         self.active = active
         self.moodle_version = moodle_version
-        self.source = source
 
     def __repr__(self):
         return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % \
