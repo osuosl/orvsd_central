@@ -403,16 +403,26 @@ def install_course():
     # Get all the available course modules
     all_courses = CourseDetail.query.all()
 
+    all_sites = Site.query.order_by('name').all()
+
     # Generate the list of choices for the template
     choices = []
+    sites = []
 
+    # Create the courses list
     for course in all_courses:
         choices.append((course.course_id,
                         "%s - Version: %s - Moodle Version: %s" %
                         (course.course.name, course.version,
                          course.moodle_version)))
 
+    # Create the sites list
+    for site in all_sites:
+        sites.append((site.id, site.name))
+
+    # Add the lists to the form
     form.course.choices = choices
+    form.site.choices = sites
 
     return render_template('install_course.html', form=form, user=current_user)
 
@@ -432,7 +442,7 @@ def install_course_output():
            request.form.get('site'),
            app.config['INSTALL_COURSE_WS_TOKEN'],
            app.config['INSTALL_COURSE_WS_FUNCTION'])
-    site = str(site.encode('utf-8'))
+    site = str(Site.query.filter_by(id=request.form.get('site')).baseurl)
 
     # The CourseDetail objects of info needed to generate the url
     courses = CourseDetail.query.filter(CourseDetail
