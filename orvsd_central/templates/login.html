@@ -9,6 +9,6 @@
     Username: {{ form.name }}</br>
     Password: {{ form.password }}</br>
     <input type="submit" value="Login"></input>
+    <a class='zocial google' href={{url_for('google_login')}}>Login with Google</a>
 </form>
-<a class='zocial google' href={{url_for('google_login')}}>Login with Google</a>
 {% endblock %}
