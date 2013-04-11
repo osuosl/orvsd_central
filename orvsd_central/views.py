@@ -395,6 +395,13 @@ def remove_objects(category):
     return redirect('display/'+category)
 
 
+@app.route('/get_site_by/<int:id>', methods=['GET'])
+def course_by_id(id):
+    address = Site.query.filter_by(id=id).first().baseurl
+
+    return jsonify(address=address)
+
+
 @app.route('/install/course', methods=['GET'])
 def install_course():
 

@@ -6,6 +6,7 @@
 
 {% block head %}
     <link type="text/css" rel="stylesheet" href="{{url_for('static', filename='css/course_install.css') }}">
+    <script src="{{url_for('static', filename='js/install_course.js') }}" type="text/javascript" ></script>
 {% endblock %}
 
 {% block content %}
@@ -14,7 +15,12 @@
     <fieldset>
         <legend>Add Course</legend>
         <label class="control-label" for="site">Site</label>
-        {{form.site}}
+        <div class="row">
+            <div class="span7">
+                {{form.site}}
+            </div>
+            <div class="span5" id="address"></div>
+        </div>
         <label class="control-label" for="course">Course(s)</label>
         {{form.course}}<br/><br/>
         <button class="btn" type='submit'>Install</button>
