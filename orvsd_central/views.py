@@ -133,9 +133,10 @@ def home():
 
 
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
-    return redirect("/")
+    return redirect(url_for("/login"))
 
 
 """
@@ -334,13 +335,6 @@ def view_all_the_things(category, id):
         dump = cats[category](to_view)
         return render_template('view.html', content=dump, user=current_user)
     abort(404)
-
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect('/login')
 
 
 def build_accordion(objects, accordion_id, type, extra=None):
