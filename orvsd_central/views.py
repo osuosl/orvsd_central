@@ -55,12 +55,6 @@ def unauthorized():
     return redirect('/login')
 
 
-@app.route("/")
-@login_required
-def main_page():
-    return redirect('/report')
-
-
 @login_manager.user_loader
 def load_user(userid):
     return User.query.filter_by(id=userid).first()
@@ -430,6 +424,12 @@ def get_schools():
 """
 REPORT
 """
+
+
+@app.route('/')
+@login_required
+def root():
+    return redirect(url_for('report'))
 
 
 @app.route("/report", methods=['GET'])
