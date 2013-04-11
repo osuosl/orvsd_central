@@ -19,8 +19,6 @@ import StringIO
 import urllib
 
 
-def no_perms():
-    return "You do not have permission to be here!"
 
 
 @login_manager.unauthorized_handler
