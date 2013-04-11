@@ -19,6 +19,29 @@ import StringIO
 import urllib
 
 
+@app.route("/register", methods=['GET', 'POST'])
+#@login_required
+def register():
+    #user=current_user
+    form = AddUser()
+    message = ""
+
+    if request.method == "POST":
+        if form.password.data != form.confirm_pass.data:
+            message = "The passwords provided did not match!\n"
+        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
+                          form.email.data):
+            message = "Invalid email address!\n"
+        else:
+            # Add user to db
+            db.session.add(User(name=form.user.data,
+                                email=form.email.data,
+                                password=form.password.data))
+            db.session.commit()
+            message = form.user.data+" has been added successfully!\n"
+
+    return render_template('add_user.html', form=form,
+                           message=message, user=current_user)
 
 
 @login_manager.unauthorized_handler
@@ -326,29 +349,6 @@ def report():
                            user=current_user)
 
 
-@app.route("/add_user", methods=['GET', 'POST'])
-#@login_required
-def register():
-    #user=current_user
-    form = AddUser()
-    message = ""
-
-    if request.method == "POST":
-        if form.password.data != form.confirm_pass.data:
-            message = "The passwords provided did not match!\n"
-        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
-                          form.email.data):
-            message = "Invalid email address!\n"
-        else:
-            # Add user to db
-            db.session.add(User(name=form.user.data,
-                                email=form.email.data,
-                                password=form.password.data))
-            db.session.commit()
-            message = form.user.data+" has been added successfully!\n"
-
-    return render_template('add_user.html', form=form,
-                           message=message, user=current_user)
 
 
 @app.route("/display/<category>")
