@@ -52,17 +52,6 @@ def login():
     return render_template("login.html", form=form)
 
 
-def get_user():
-    # A user id is sent in, to check against the session
-    # and based on the result of querying that id we
-    # return a user (whether it be a sqlachemy obj or an
-    # obj named guest
-
-    if 'user_id' in session:
-            return User.query.filter_by(id=session["user_id"]).first()
-    return None
-
-
 @app.route("/google_login")
 def google_login():
     access_token = session.get('access_token')
@@ -480,3 +469,13 @@ def get_obj_by_category(category):
                   'sites': Site, 'courses': Course}
 
     return categories.get(category.lower())
+
+
+def get_user():
+    # A user id is sent in, to check against the session
+    # and based on the result of querying that id we
+    # return a user (whether it be a sqlachemy obj or an
+    # obj named guest
+
+    if 'user_id' in session:
+            return User.query.filter_by(id=session["user_id"]).first()
