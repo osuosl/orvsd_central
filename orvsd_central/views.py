@@ -128,6 +128,16 @@ def get_access_token():
     return session.get('access_token')
 
 
+@app.route('/me')
+@login_required
+def home():
+    """
+    Loads a users home information page
+    """
+    #not sure current_user works this way, write test
+    return render_template('users/templates/profile.html', user=current_user)
+
+
 @app.route("/logout")
 def logout():
     logout_user()
@@ -331,15 +341,6 @@ def view_all_the_things(category, id):
         return render_template('view.html', content=dump, user=current_user)
     abort(404)
 
-
-@app.route('/me')
-@login_required
-def home():
-    """
-    Loads a users home information page
-    """
-    #not sure current_user works this way, write test
-    return render_template('users/templates/profile.html', user=current_user)
 
 """
 @app.route("/login", methods=['GET', 'POST'])
