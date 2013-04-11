@@ -106,7 +106,7 @@ def logout():
     return redirect("/")
 
 
-@app.route("/add_district", methods=['GET', 'POST'])
+@app.route("/add/district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
     user = current_user
@@ -121,7 +121,7 @@ def add_district():
 
 
 @login_required
-@app.route("/add_school", methods=['GET', 'POST'])
+@app.route("/add/school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
     user = current_user
@@ -146,7 +146,7 @@ def add_school():
                            msg=msg, user=user)
 
 
-@app.route("/add_course", methods=['GET', 'POST'])
+@app.route("/add/course", methods=['GET', 'POST'])
 def add_course():
     form = AddCourse()
     user = current_user
