@@ -22,7 +22,12 @@
             <div class="span5" id="address"></div>
         </div>
         <label class="control-label" for="course">Course(s)</label>
-        {{form.course}}<br/><br/>
+        <div class="row">
+            <div class="span7">
+                {{form.course}}
+            </div>
+            <div class="span5" id="selected-courses"></div>
+        </div>
         <button class="btn" type='submit'>Install</button>
     </fieldset>
 </form>
