@@ -19,6 +19,11 @@ import StringIO
 import urllib
 
 
+"""
+ACCESS
+"""
+
+
 @app.route("/register", methods=['GET', 'POST'])
 #@login_required
 def register():
@@ -129,6 +134,11 @@ def logout():
     return redirect("/")
 
 
+"""
+ADD
+"""
+
+
 @app.route("/add/district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
@@ -182,6 +192,11 @@ def add_course():
         msg = "Course: "+form.name.data+"added successfully!"
 
     return render_template('add_course.html', form=form, msg=msg, user=user)
+
+
+"""
+INSTALL
+"""
 
 
 @app.route('/install/course', methods=['GET'])
@@ -263,6 +278,11 @@ def install_course_output():
     return render_template('install_course_output.html',
                            output=output,
                            user=current_user)
+
+
+"""
+VIEW
+"""
 
 
 def view_school(school):
@@ -406,6 +426,11 @@ def get_schools():
     return jsonify(schools=school_list, counts=district_details(schools))
 
 
+"""
+REPORT
+"""
+
+
 @app.route("/report", methods=['GET'])
 @login_required
 def report():
@@ -430,6 +455,9 @@ def report():
                            user=current_user)
 
 
+"""
+REMOVE
+"""
 
 
 @app.route("/display/<category>")
@@ -463,6 +491,9 @@ def remove_objects(category):
     return redirect('display/'+category)
 
 
+"""
+HELPERS
+"""
 
 
 def get_obj_by_category(category):
