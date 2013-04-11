@@ -336,22 +336,6 @@ def view_all_the_things(category, id):
     abort(404)
 
 
-"""
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    form = LoginForm(csrf_enabled=False)
-
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-
-        if user and check_password_hash(user.password, form.password.data):
-            login_user(user)
-            flash("Successful Login!")
-            return redirect("/users/me/")
-    return render_template("login.html", form=form)
-"""
-
-
 @app.route("/logout")
 @login_required
 def logout():
