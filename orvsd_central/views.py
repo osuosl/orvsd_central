@@ -413,21 +413,21 @@ def install_course():
     all_sites = Site.query.filter_by(sitetype='moodle').order_by('name').all()
 
     # Generate the list of choices for the template
-    choices = []
+    courses = []
     sites = []
 
     # Create the courses list
     for course in all_courses:
-        choices.append((course.course_id,
-                        "%s - Version: %s" %
-                        (course.course.name, course.version,)))
+        courses.append((course.course_id,
+                         "%s - Version: %s" %
+                         (course.course.name, course.version,)))
 
     # Create the sites list
     for site in all_sites:
         sites.append((site.id, site.name))
 
     # Add the lists to the form
-    form.course.choices = choices
+    form.course.choices = courses
     form.site.choices = sites
 
     return render_template('install_course.html', form=form, user=current_user)
