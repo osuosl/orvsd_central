@@ -1,7 +1,7 @@
 $(function() {
     $('#site').change(function() {
-        var gah = $('#site option:selected').val();
-        $.get('/get_site_by/' + gah, function(data) {
+        var site_id = $('#site option:selected').val();
+        $.get('/get_site_by/' + site_id, function(data) {
             $('#address').html("Address: <i>" + data.address + "</i>");
         });
     });
