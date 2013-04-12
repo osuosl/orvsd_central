@@ -408,9 +408,9 @@ def install_course():
     form = InstallCourse()
 
     # Get all the available course modules
-    all_courses = CourseDetail.query.all()
+    all_courses = CourseDetail.query.filter_by(moodle_version='2.2').all()
 
-    all_sites = Site.query.order_by('name').all()
+    all_sites = Site.query.filter_by(sitetype='moodle').order_by('name').all()
 
     # Generate the list of choices for the template
     choices = []
@@ -419,9 +419,8 @@ def install_course():
     # Create the courses list
     for course in all_courses:
         choices.append((course.course_id,
-                        "%s - Version: %s - Moodle Version: %s" %
-                        (course.course.name, course.version,
-                         course.moodle_version)))
+                        "%s - Version: %s" %
+                        (course.course.name, course.version,)))
 
     # Create the sites list
     for site in all_sites:
