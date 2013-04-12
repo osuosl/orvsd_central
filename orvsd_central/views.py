@@ -450,18 +450,18 @@ def install_course_output():
            app.config['INSTALL_COURSE_WS_FUNCTION'])
     site = str(Site.query.filter_by(id=request.form.get('site')).baseurl)
 
-    # The CourseDetail objects of info needed to generate the url
+    # The CourseDetail objects needed to generate the url
     courses = CourseDetail.query.filter(CourseDetail
                                         .course_id.in_(selected_courses))\
                                 .all()
 
-    # Appended to buy all the courses being installed
+    # Course installation results
     output = ''
 
     # Loop through the courses, generate the command to be run, run it, and
     # append the ouput to output
     #
-    # Currently this will break ao our db is not setup correctly yet
+    # Currently this will break as our db is not setup correctly yet
     for course in courses:
         # To get the file path we need the text input, the lowercase of
         # source, and the filename
