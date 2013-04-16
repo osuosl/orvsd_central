@@ -11,7 +11,12 @@ Welcome to ORVSD Central's documentation!
 
    orvsd_central
 
+Generating Documentation
+------------------------
 
+From within the documentation folder run:
+
+    make html
 
 Indices and tables
 ------------------
