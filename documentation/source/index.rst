@@ -6,15 +6,15 @@
 Welcome to ORVSD Central's documentation!
 =========================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
+
+   orvsd_central
 
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
