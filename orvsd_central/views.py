@@ -50,17 +50,6 @@ def register():
                            message=message, user=current_user)
 
 
-@login_manager.unauthorized_handler
-def unauthorized():
-    flash('You are not authorized to view this page, please login.')
-    return redirect('/login')
-
-
-@login_manager.user_loader
-def load_user(userid):
-    return User.query.filter_by(id=userid).first()
-
-
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     form = LoginForm(csrf_enabled=False)
@@ -116,11 +105,6 @@ def authorized(resp):
     access_token = resp['access_token']
     session['access_token'] = access_token
     return redirect(url_for('google_login'))
-
-
-@google.tokengetter
-def get_access_token():
-    return session.get('access_token')
 
 
 @app.route('/me')
@@ -338,23 +322,6 @@ def view_all_the_things(category, id):
     abort(404)
 
 
-def build_accordion(objects, accordion_id, type, extra=None):
-    inner_t = app.jinja_env.get_template('accordion_inner.html')
-    outer_t = app.jinja_env.get_template('accordion.html')
-
-    inner = ""
-
-    for obj in objects:
-        inner += inner_t.render(accordion_id=accordion_id,
-                                inner_id=obj.shortname,
-                                type=type,
-                                link=obj.name,
-                                extra=None if not extra else extra % obj.id)
-
-    return outer_t.render(accordion_id=accordion_id,
-                          dump=inner)
-
-
 def district_details(schools):
     admin_count = 0
     teacher_count = 0
@@ -405,12 +372,6 @@ REPORT
 """
 
 
-@app.route('/')
-@login_required
-def root():
-    return redirect(url_for('report'))
-
-
 @app.route("/report", methods=['GET'])
 @login_required
 def report():
@@ -433,6 +394,12 @@ def report():
                            site_count=site_count,
                            course_count=course_count,
                            user=current_user)
+
+
+@app.route('/')
+@login_required
+def root():
+    return redirect(url_for('report'))
 
 
 """
@@ -474,6 +441,38 @@ def remove_objects(category):
 """
 HELPERS
 """
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    flash('You are not authorized to view this page, please login.')
+    return redirect('/login')
+
+
+@login_manager.user_loader
+def load_user(userid):
+    return User.query.filter_by(id=userid).first()
+
+
+@google.tokengetter
+def get_access_token():
+    return session.get('access_token')
+
+
+def build_accordion(objects, accordion_id, type, extra=None):
+    inner_t = app.jinja_env.get_template('accordion_inner.html')
+    outer_t = app.jinja_env.get_template('accordion.html')
+
+    inner = ""
+
+    for obj in objects:
+        inner += inner_t.render(accordion_id=accordion_id,
+                                inner_id=obj.shortname,
+                                type=type,
+                                link=obj.name,
+                                extra=None if not extra else extra % obj.id)
+
+    return outer_t.render(accordion_id=accordion_id,
+                          dump=inner)
 
 
 def get_obj_by_category(category):
