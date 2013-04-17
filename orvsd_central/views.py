@@ -1,9 +1,12 @@
 from flask import (request, render_template, flash, g, session, redirect,
-                   url_for, abort, jsonify)
+                   url_for, abort, jsonify, current_app)
 from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
+from flask.ext.principal import (identity_loaded, RoleNeed, UserNeed,
+                                 AnonymousIdentity, identity_changed, Identity)
 from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db, app, login_manager, google
+from orvsd_central import (db, app, login_manager, google, add_permission,
+                           load_permission, view_permission)
 from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
@@ -21,6 +24,22 @@ import urllib
 
 def no_perms():
     return "You do not have permission to be here!"
+
+#Helper funct for roles
+@identity_loaded.connect_via(app)
+def on_identity_loaded(sender, identity):
+    identity.user = current_user
+
+    if hasattr(current_user, 'id'):
+        identity.provides.add(UserNeed(current_user.id))
+
+    if hasattr(current_user, 'role'):
+        if(current_user.role < 3):
+            identity.provides.add(RoleNeed('view'))
+        if(current_user.role < 2):
+            identity.provides.add(RoleNeed('add'))
+        if(current_user.role < 1):
+            identity.provides.add(RoleNeed('load'))
 
 
 @login_manager.unauthorized_handler
@@ -48,6 +67,8 @@ def login():
         user = User.query.filter_by(name=form.name.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
+            identity_changed.send(current_app._get_current_object(), 
+                                  identity=Identity(user.id))
             flash("Logged in successfully.")
             return redirect("/report")
 
@@ -93,6 +114,8 @@ def google_login():
         session.pop('access_token', None)
         if user is not None:
             login_user(user)
+            identity_changed.send(current_app._get_current_object(),
+                                  identity=Identity(user.id))
             return redirect(url_for('report'))
         else:
             flash("This google account was not recognized \
@@ -114,8 +137,11 @@ def get_access_token():
 
 
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
+    identity_changed(current_app._get_curent_object(),
+                     identity=AnonymousIdentity())
     return redirect("/")
 
 
@@ -135,6 +161,7 @@ def add_district():
 
 @login_required
 @app.route("/add_school", methods=['GET', 'POST'])
+@add_permission.require()
 def add_school():
     form = AddSchool()
     user = current_user
@@ -160,6 +187,7 @@ def add_school():
 
 
 @app.route("/add_course", methods=['GET', 'POST'])
+@add_permission.require()
 def add_course():
     form = AddCourse()
     user = current_user
@@ -174,6 +202,8 @@ def add_course():
     return render_template('add_course.html', form=form, msg=msg, user=user)
 
 
+@login_required
+@view_permission.require()
 def view_school(school):
     # Info for the school's page
     admins = 0
@@ -208,6 +238,7 @@ def view_school(school):
 
 @app.route('/view/<category>/<id>', methods=['GET'])
 @login_required
+@view_permission.require()
 def view_all_the_things(category, id):
     cats = {'schools': view_school, 'districts': None,
             'sites': None, 'courses': None}
@@ -294,6 +325,8 @@ def district_details(schools):
 
 
 @app.route('/report/get_schools', methods=['POST'])
+@login_required
+@view_permission.require()
 def get_schools():
     # From the POST, we need the district id, or distid
     dist_id = request.form.get('distid')
@@ -317,6 +350,7 @@ def get_schools():
 
 @app.route("/report", methods=['GET'])
 @login_required
+@view_permission.require()
 def report():
     all_districts = District.query.order_by("name").all()
     dist_count = len(all_districts)
@@ -340,7 +374,8 @@ def report():
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
-#@login_required
+@login_required
+@add_permission.require()
 def register():
     #user=current_user
     form = AddUser()
@@ -396,6 +431,8 @@ def remove_objects(category):
 
 
 @app.route('/install/course', methods=['GET'])
+@login_required
+@add_permission.require()
 def install_course():
 
     form = InstallCourse()
@@ -418,6 +455,8 @@ def install_course():
 
 
 @app.route('/install/course/output', methods=['POST'])
+@login_required
+@add_permission.require()
 def install_course_output():
     """
     Displays the output for any course installs

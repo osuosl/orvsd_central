@@ -2,6 +2,7 @@ from flask import Flask, render_template, g
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.oauth import OAuth
+from flask.ext.principal import Principal, Permission, RoleNeed
 
 
 app = Flask(__name__)
@@ -12,6 +13,12 @@ db.init_app(app)
 
 login_manager = LoginManager()
 login_manager.setup_app(app)
+
+
+principals = Principal(app)
+add_permission = Permission(RoleNeed('add'))
+load_permission = Permission(RoleNeed('load'))
+view_permission = Permission(RoleNeed('view'))
 
 
 oauth = OAuth()
