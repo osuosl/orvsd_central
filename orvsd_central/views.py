@@ -25,6 +25,7 @@ import urllib
 def no_perms():
     return "You do not have permission to be here!"
 
+
 #Helper funct for roles
 @identity_loaded.connect_via(app)
 def on_identity_loaded(sender, identity):
@@ -67,7 +68,7 @@ def login():
         user = User.query.filter_by(name=form.name.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
-            identity_changed.send(current_app._get_current_object(), 
+            identity_changed.send(current_app._get_current_object(),
                                   identity=Identity(user.id))
             flash("Logged in successfully.")
             return redirect("/report")
