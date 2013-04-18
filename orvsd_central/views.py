@@ -189,85 +189,80 @@ INSTALL
 """
 
 
-@app.route('/install/course', methods=['GET'])
+@app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
 
-    form = InstallCourse()
+    if request.method == 'GET':
+        form = InstallCourse()
 
-    # Get all the available course modules
-    all_courses = CourseDetail.query.all()
+        # Get all the available course modules
+        all_courses = CourseDetail.query.all()
 
-    # Generate the list of choices for the template
-    choices = []
+        # Generate the list of choices for the template
+        choices = []
 
-    for course in all_courses:
-        choices.append((course.course_id,
-                        "%s - Version: %s - Moodle Version: %s" %
-                        (course.course.name, course.version,
-                         course.moodle_version)))
+        for course in all_courses:
+            choices.append((course.course_id,
+                            "%s - Version: %s - Moodle Version: %s" %
+                            (course.course.name, course.version,
+                             course.moodle_version)))
 
-    form.course.choices = choices
+        form.course.choices = choices
 
-    return render_template('install_course.html', form=form, user=current_user)
+        return render_template('install_course.html', form=form, user=current_user)
 
+    elif request.method == 'POST':
+        # An array of unicode strings will be passed, they need to be integers
+        # for the query
+        selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-@app.route('/install/course/output', methods=['POST'])
-def install_course_output():
-    """
-    Displays the output for any course installs
-    """
+        # The site to install the courses
+        site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+               request.form.get('site'),
+               app.config['INSTALL_COURSE_WS_TOKEN'],
+               app.config['INSTALL_COURSE_WS_FUNCTION'])
+        site = str(site.encode('utf-8'))
 
-    # An array of unicode strings will be passed, they need to be integers
-    # for the query
-    selected_courses = [int(cid) for cid in request.form.getlist('course')]
+        # The CourseDetail objects of info needed to generate the url
+        courses = CourseDetail.query.filter(CourseDetail
+                                            .course_id.in_(selected_courses))\
+                                    .all()
 
-    # The site to install the courses
-    site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
-           request.form.get('site'),
-           app.config['INSTALL_COURSE_WS_TOKEN'],
-           app.config['INSTALL_COURSE_WS_FUNCTION'])
-    site = str(site.encode('utf-8'))
+        # Appended to buy all the courses being installed
+        output = ''
 
-    # The CourseDetail objects of info needed to generate the url
-    courses = CourseDetail.query.filter(CourseDetail
-                                        .course_id.in_(selected_courses))\
-                                .all()
+        # Loop through the courses, generate the command to be run, run it, and
+        # append the ouput to output
+        #
+        # Currently this will break ao our db is not setup correctly yet
+        for course in courses:
+            # To get the file path we need the text input, the lowercase of
+            # source, and the filename
+            fp = app.config['INSTALL_COURSE_FILE_PATH']
+            fp += course.source.lower() + '/'
 
-    # Appended to buy all the courses being installed
-    output = ''
+            data = {'filepath': fp,
+                    'file': course.filename,
+                    'courseid': course.course_id,
+                    'coursename': course.course.name,
+                    'shortname': course.course.shortname,
+                    'category': '1',
+                    'firstname': 'orvsd',
+                    'lastname': 'central',
+                    'city': 'none',
+                    'username': 'admin',
+                    'email': 'a@a.aa',
+                    'pass': 'testo123'}
 
-    # Loop through the courses, generate the command to be run, run it, and
-    # append the ouput to output
-    #
-    # Currently this will break ao our db is not setup correctly yet
-    for course in courses:
-        # To get the file path we need the text input, the lowercase of
-        # source, and the filename
-        fp = app.config['INSTALL_COURSE_FILE_PATH']
-        fp += course.source.lower() + '/'
+            postdata = urllib.urlencode(data)
 
-        data = {'filepath': fp,
-                'file': course.filename,
-                'courseid': course.course_id,
-                'coursename': course.course.name,
-                'shortname': course.course.shortname,
-                'category': '1',
-                'firstname': 'orvsd',
-                'lastname': 'central',
-                'city': 'none',
-                'username': 'admin',
-                'email': 'a@a.aa',
-                'pass': 'testo123'}
+            resp = urllib.urlopen(site, data=postdata)
 
-        postdata = urllib.urlencode(data)
+            output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
 
-        resp = urllib.urlopen(site, data=postdata)
-
-        output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
-
-    return render_template('install_course_output.html',
-                           output=output,
-                           user=current_user)
+        return render_template('install_course_output.html',
+                               output=output,
+                               user=current_user)
 
 
 """
