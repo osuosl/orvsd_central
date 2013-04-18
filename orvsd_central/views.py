@@ -209,7 +209,8 @@ def install_course():
 
         form.course.choices = choices
 
-        return render_template('install_course.html', form=form, user=current_user)
+        return render_template('install_course.html',
+                               form=form, user=current_user)
 
     elif request.method == 'POST':
         # An array of unicode strings will be passed, they need to be integers
@@ -270,14 +271,19 @@ VIEW
 """
 
 
-def view_school(school):
+@app.route('/view/school/<id>', methods=['GET'])
+@login_required
+def view_school(school_id):
+
+    school = School.query.filter_by(id=school_id).first()
+
     # Info for the school's page
     admins = 0
     teachers = 0
     users = 0
 
     # Get the school's sites
-    sites = Site.query.filter_by(school_id=school.id).all()
+    sites = Site.query.filter_by(school_id=school_id).all()
 
     # School view template
     t = app.jinja_env.get_template('views/school.html')
@@ -295,26 +301,10 @@ def view_school(school):
                 users += detail.totalusers
 
     # Return a pre-compiled template to be dumped into the view template
-    return t.render(name=school.name,
-                    admins=admins,
-                    teachers=teachers,
-                    users=users,
-                    user=current_user)
+    template = t.render(name=school.name, admins=admins, teachers=teachers,
+                        users=users, user=current_user)
 
-
-@app.route('/view/<category>/<id>', methods=['GET'])
-@login_required
-def view_all_the_things(category, id):
-    cats = {'schools': view_school, 'districts': None,
-            'sites': None, 'courses': None}
-    obj = get_obj_by_category(category)
-    if obj:
-        to_view = obj.query.filter_by(id=id).first()
-        if not to_view:
-            abort(404)
-        dump = cats[category](to_view)
-        return render_template('view.html', content=dump, user=current_user)
-    abort(404)
+    return render_template('view.html', content=template, user=current_user)
 
 
 def district_details(schools):
@@ -436,6 +426,7 @@ def remove_objects(category):
 """
 HELPERS
 """
+
 
 @login_manager.unauthorized_handler
 def unauthorized():
