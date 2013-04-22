@@ -6,9 +6,14 @@
 
 {% block content %}
 <form method="POST">
-    Username: {{ form.name }}</br>
-    Password: {{ form.password }}</br>
-    <input type="submit" value="Login"></input>
-    <a class='zocial google' href={{url_for('google_login')}}>Login with Google</a>
+    <fieldset>
+        <legend>Login</legend>
+        <label>Username</label>
+        {{ form.name }}
+        <label>Password</label>
+        {{ form.password }}<br />
+        <button type="submit" class="btn">Login</button>
+        <a class='zocial google' href={{url_for('google_login')}}>Login with Google</a>
+    </fieldset>
 </form>
 {% endblock %}
