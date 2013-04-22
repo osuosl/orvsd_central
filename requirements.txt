@@ -13,3 +13,4 @@ distribute
 wsgiref
 alembic
 pycurl
+sphinx
