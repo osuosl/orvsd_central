@@ -7,7 +7,7 @@ from orvsd_central import db, app, login_manager, google
 from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
@@ -407,28 +407,41 @@ def install_course():
 
     form = InstallCourse()
 
-    # Get all the available course modules
-    all_courses = CourseDetail.query.filter_by(moodle_version='2.2').all()
+    # Query all moodle 2.2 courses
+    courses = CourseDetail.query.filter_by(moodle_version='2.2').all()
 
-    all_sites = Site.query.filter_by(sitetype='moodle').order_by('name').all()
+    # Query all moodle sites
+    sites = Site.query.filter_by(sitetype='moodle').all()
+    moodle_22_sites = []
+
+    # For all sites query the SiteDetail to see if it's a moodle 2.2 site
+    for site in sites:
+        details = db.session.query(SiteDetail) \
+                            .filter(and_(SiteDetail.site_id==site.id,
+                                         SiteDetail.siterelease \
+                                                   .like('2.2%'))) \
+                            .order_by(SiteDetail.timemodified.desc()).first()
+
+        if details:
+            moodle_22_sites.append(site)
 
     # Generate the list of choices for the template
-    courses = []
-    sites = []
+    courses_info = []
+    sites_info = []
 
     # Create the courses list
-    for course in all_courses:
-        courses.append((course.course_id,
-                         "%s - Version: %s" %
-                         (course.course.name, course.version,)))
+    for course in courses:
+        courses_info.append((course.course_id,
+                             "%s - Version: %s" %
+                             (course.course.name, course.version,)))
 
     # Create the sites list
-    for site in all_sites:
-        sites.append((site.id, site.name))
+    for site in moodle_22_sites:
+        sites_info.append((site.id, site.name))
 
     # Add the lists to the form
-    form.course.choices = courses
-    form.site.choices = sites
+    form.course.choices = courses_info
+    form.site.choices = sites_info
 
     return render_template('install_course.html', form=form, user=current_user)
 
