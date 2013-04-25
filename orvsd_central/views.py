@@ -457,6 +457,18 @@ def get_user():
 
 
 def district_details(schools):
+    """
+    district_details adds up the number of teachers, users, and admins of all
+    the district's school's sites.
+
+    Args:
+        schools (list): list of schools to total the users, teachers, and
+         admins.
+
+    Returns:
+        dict. The total admins, teachers, and users of the schools
+    """
+
     admin_count = 0
     teacher_count = 0
     user_count = 0
