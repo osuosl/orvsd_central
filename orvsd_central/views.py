@@ -307,29 +307,6 @@ def view_school(school_id):
     return render_template('view.html', content=template, user=current_user)
 
 
-def district_details(schools):
-    admin_count = 0
-    teacher_count = 0
-    user_count = 0
-
-    for school in schools:
-        sites = Site.query.filter_by(school_id=school.id).all()
-        for site in sites:
-            details = SiteDetail.query.filter_by(site_id=site.id) \
-                                      .order_by(SiteDetail
-                                                .timemodified
-                                                .desc()) \
-                                      .first()
-            if details:
-                admin_count += details.adminusers
-                teacher_count += details.teachers
-                user_count += details.totalusers
-
-    return {'admins': admin_count,
-            'teachers': teacher_count,
-            'users': user_count}
-
-
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
     # From the POST, we need the district id, or distid
@@ -477,3 +454,26 @@ def get_user():
 
     if 'user_id' in session:
             return User.query.filter_by(id=session["user_id"]).first()
+
+
+def district_details(schools):
+    admin_count = 0
+    teacher_count = 0
+    user_count = 0
+
+    for school in schools:
+        sites = Site.query.filter_by(school_id=school.id).all()
+        for site in sites:
+            details = SiteDetail.query.filter_by(site_id=site.id) \
+                                      .order_by(SiteDetail
+                                                .timemodified
+                                                .desc()) \
+                                      .first()
+            if details:
+                admin_count += details.adminusers
+                teacher_count += details.teachers
+                user_count += details.totalusers
+
+    return {'admins': admin_count,
+            'teachers': teacher_count,
+            'users': user_count}
