@@ -404,6 +404,12 @@ def course_by_id(id):
 
 @app.route('/install/course', methods=['GET'])
 def install_course():
+    """
+    Displays a form for the admin user to pick courses to install on a site
+
+    Returns:
+        Rendered template
+    """
 
     form = InstallCourse()
 
