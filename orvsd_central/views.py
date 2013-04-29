@@ -31,15 +31,17 @@ def no_perms():
 def on_identity_loaded(sender, identity):
     identity.user = current_user
 
+    # adds the current user as a UserNeed to our current permission
     if hasattr(current_user, 'id'):
         identity.provides.add(UserNeed(current_user.id))
-
+    # adds permissions depending on the role a user has
+    # 3 is steve, 2 is helpdesk, 1 is admin
     if hasattr(current_user, 'role'):
-        if(current_user.role < 3):
+        if(current_user.role < 3):  # give steve view permission
             identity.provides.add(RoleNeed('view'))
-        if(current_user.role < 2):
+        if(current_user.role < 2):  # give helpdesk add permission
             identity.provides.add(RoleNeed('add'))
-        if(current_user.role < 1):
+        if(current_user.role < 1):  # give admin load permission
             identity.provides.add(RoleNeed('load'))
 
 
@@ -204,7 +206,6 @@ def add_course():
 
 
 @login_required
-@view_permission.require()
 def view_school(school):
     # Info for the school's page
     admins = 0
