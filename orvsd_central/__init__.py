@@ -18,6 +18,15 @@ login_manager.setup_app(app)
 principals = Principal(app)
 add_permission = Permission(RoleNeed('add'))
 load_permission = Permission(RoleNeed('load'))
+
+# add permission is used to manually add data into the db
+add_permission = Permission(RoleNeed('add'))
+
+# load permission is used for future use, as we currently have
+# no features specific to admin that helpdesk does not also have
+load_permission = Permission(RoleNeed('load'))
+
+# give permission to view information
 view_permission = Permission(RoleNeed('view'))
 
 
