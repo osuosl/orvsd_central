@@ -4,7 +4,8 @@ from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager, google
-from forms import LoginForm, AddDistrict, AddSchool, AddUser, InstallCourse
+from forms import (LoginForm, AddDistrict, AddSchool, AddUser,
+                   InstallCourse, AddCourse)
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func
@@ -19,25 +20,34 @@ import StringIO
 import urllib
 
 
-def no_perms():
-    return "You do not have permission to be here!"
+"""
+ACCESS
+"""
 
 
-@login_manager.unauthorized_handler
-def unauthorized():
-    flash('You are not authorized to view this page, please login.')
-    return redirect('/login')
+@app.route("/register", methods=['GET', 'POST'])
+#@login_required
+def register():
+    #user=current_user
+    form = AddUser()
+    message = ""
 
+    if request.method == "POST":
+        if form.password.data != form.confirm_pass.data:
+            message = "The passwords provided did not match!\n"
+        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
+                          form.email.data):
+            message = "Invalid email address!\n"
+        else:
+            # Add user to db
+            db.session.add(User(name=form.user.data,
+                                email=form.email.data,
+                                password=form.password.data))
+            db.session.commit()
+            message = form.user.data+" has been added successfully!\n"
 
-@app.route("/")
-@login_required
-def main_page():
-    return redirect('/report')
-
-
-@login_manager.user_loader
-def load_user(userid):
-    return User.query.filter_by(id=userid).first()
+    return render_template('add_user.html', form=form,
+                           message=message, user=current_user)
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -52,17 +62,6 @@ def login():
             return redirect("/report")
 
     return render_template("login.html", form=form)
-
-
-def get_user():
-    # A user id is sent in, to check against the session
-    # and based on the result of querying that id we
-    # return a user (whether it be a sqlachemy obj or an
-    # obj named guest
-
-    if 'user_id' in session:
-            return User.query.filter_by(id=session["user_id"]).first()
-    return None
 
 
 @app.route("/google_login")
@@ -108,18 +107,29 @@ def authorized(resp):
     return redirect(url_for('google_login'))
 
 
-@google.tokengetter
-def get_access_token():
-    return session.get('access_token')
+@app.route('/me')
+@login_required
+def home():
+    """
+    Loads a users home information page
+    """
+    #not sure current_user works this way, write test
+    return render_template('users/templates/profile.html', user=current_user)
 
 
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
-    return redirect("/")
+    return redirect(url_for("/login"))
 
 
-@app.route("/add_district", methods=['GET', 'POST'])
+"""
+ADD
+"""
+
+
+@app.route("/add/district", methods=['GET', 'POST'])
 def add_district():
     form = AddDistrict()
     user = current_user
@@ -134,7 +144,7 @@ def add_district():
 
 
 @login_required
-@app.route("/add_school", methods=['GET', 'POST'])
+@app.route("/add/school", methods=['GET', 'POST'])
 def add_school():
     form = AddSchool()
     user = current_user
@@ -159,7 +169,7 @@ def add_school():
                            msg=msg, user=user)
 
 
-@app.route("/add_course", methods=['GET', 'POST'])
+@app.route("/add/course", methods=['GET', 'POST'])
 def add_course():
     form = AddCourse()
     user = current_user
@@ -174,14 +184,106 @@ def add_course():
     return render_template('add_course.html', form=form, msg=msg, user=user)
 
 
-def view_school(school):
+"""
+INSTALL
+"""
+
+
+@app.route('/install/course', methods=['GET', 'POST'])
+def install_course():
+
+    if request.method == 'GET':
+        form = InstallCourse()
+
+        # Get all the available course modules
+        all_courses = CourseDetail.query.all()
+
+        # Generate the list of choices for the template
+        choices = []
+
+        for course in all_courses:
+            choices.append((course.course_id,
+                            "%s - Version: %s - Moodle Version: %s" %
+                            (course.course.name, course.version,
+                             course.moodle_version)))
+
+        form.course.choices = choices
+
+        return render_template('install_course.html',
+                               form=form, user=current_user)
+
+    elif request.method == 'POST':
+        # An array of unicode strings will be passed, they need to be integers
+        # for the query
+        selected_courses = [int(cid) for cid in request.form.getlist('course')]
+
+        # The site to install the courses
+        site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+               request.form.get('site'),
+               app.config['INSTALL_COURSE_WS_TOKEN'],
+               app.config['INSTALL_COURSE_WS_FUNCTION'])
+        site = str(site.encode('utf-8'))
+
+        # The CourseDetail objects of info needed to generate the url
+        courses = CourseDetail.query.filter(CourseDetail
+                                            .course_id.in_(selected_courses))\
+                                    .all()
+
+        # Appended to buy all the courses being installed
+        output = ''
+
+        # Loop through the courses, generate the command to be run, run it, and
+        # append the ouput to output
+        #
+        # Currently this will break ao our db is not setup correctly yet
+        for course in courses:
+            # To get the file path we need the text input, the lowercase of
+            # source, and the filename
+            fp = app.config['INSTALL_COURSE_FILE_PATH']
+            fp += course.source.lower() + '/'
+
+            data = {'filepath': fp,
+                    'file': course.filename,
+                    'courseid': course.course_id,
+                    'coursename': course.course.name,
+                    'shortname': course.course.shortname,
+                    'category': '1',
+                    'firstname': 'orvsd',
+                    'lastname': 'central',
+                    'city': 'none',
+                    'username': 'admin',
+                    'email': 'a@a.aa',
+                    'pass': 'testo123'}
+
+            postdata = urllib.urlencode(data)
+
+            resp = urllib.urlopen(site, data=postdata)
+
+            output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
+
+        return render_template('install_course_output.html',
+                               output=output,
+                               user=current_user)
+
+
+"""
+VIEW
+"""
+
+
+@app.route('/view/school/<id>', methods=['GET'])
+@login_required
+def view_school(school_id):
+
+    school = School.query.filter_by(id=school_id).first()
+
     # Info for the school's page
     admins = 0
     teachers = 0
     users = 0
 
     # Get the school's sites
-    sites = Site.query.filter_by(school_id=school.id).all()
+    sites = Site.query.filter_by(school_id=school_id).all()
 
     # School view template
     t = app.jinja_env.get_template('views/school.html')
@@ -199,98 +301,10 @@ def view_school(school):
                 users += detail.totalusers
 
     # Return a pre-compiled template to be dumped into the view template
-    return t.render(name=school.name,
-                    admins=admins,
-                    teachers=teachers,
-                    users=users,
-                    user=current_user)
+    template = t.render(name=school.name, admins=admins, teachers=teachers,
+                        users=users, user=current_user)
 
-
-@app.route('/view/<category>/<id>', methods=['GET'])
-@login_required
-def view_all_the_things(category, id):
-    cats = {'schools': view_school, 'districts': None,
-            'sites': None, 'courses': None}
-    obj = get_obj_by_category(category)
-    if obj:
-        to_view = obj.query.filter_by(id=id).first()
-        if not to_view:
-            abort(404)
-        dump = cats[category](to_view)
-        return render_template('view.html', content=dump, user=current_user)
-    abort(404)
-
-
-@app.route('/me')
-@login_required
-def home():
-    """
-    Loads a users home information page
-    """
-    #not sure current_user works this way, write test
-    return render_template('users/templates/profile.html', user=current_user)
-
-"""
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    form = LoginForm(csrf_enabled=False)
-
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-
-        if user and check_password_hash(user.password, form.password.data):
-            login_user(user)
-            flash("Successful Login!")
-            return redirect("/users/me/")
-    return render_template("login.html", form=form)
-"""
-
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect('/login')
-
-
-def build_accordion(objects, accordion_id, type, extra=None):
-    inner_t = app.jinja_env.get_template('accordion_inner.html')
-    outer_t = app.jinja_env.get_template('accordion.html')
-
-    inner = ""
-
-    for obj in objects:
-        inner += inner_t.render(accordion_id=accordion_id,
-                                inner_id=obj.shortname,
-                                type=type,
-                                link=obj.name,
-                                extra=None if not extra else extra % obj.id)
-
-    return outer_t.render(accordion_id=accordion_id,
-                          dump=inner)
-
-
-def district_details(schools):
-    admin_count = 0
-    teacher_count = 0
-    user_count = 0
-
-    for school in schools:
-        sites = Site.query.filter_by(school_id=school.id).all()
-        for site in sites:
-            details = SiteDetail.query.filter_by(site_id=site.id) \
-                                      .order_by(SiteDetail
-                                                .timemodified
-                                                .desc()) \
-                                      .first()
-            if details:
-                admin_count += details.adminusers
-                teacher_count += details.teachers
-                user_count += details.totalusers
-
-    return {'admins': admin_count,
-            'teachers': teacher_count,
-            'users': user_count}
+    return render_template('view.html', content=template, user=current_user)
 
 
 @app.route('/report/get_schools', methods=['POST'])
@@ -313,6 +327,11 @@ def get_schools():
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
     return jsonify(schools=school_list, counts=district_details(schools))
+
+
+"""
+REPORT
+"""
 
 
 @app.route("/report", methods=['GET'])
@@ -339,29 +358,15 @@ def report():
                            user=current_user)
 
 
-@app.route("/add_user", methods=['GET', 'POST'])
-#@login_required
-def register():
-    #user=current_user
-    form = AddUser()
-    message = ""
+@app.route('/')
+@login_required
+def root():
+    return redirect(url_for('report'))
 
-    if request.method == "POST":
-        if form.password.data != form.confirm_pass.data:
-            message = "The passwords provided did not match!\n"
-        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
-                          form.email.data):
-            message = "Invalid email address!\n"
-        else:
-            # Add user to db
-            db.session.add(User(name=form.user.data,
-                                email=form.email.data,
-                                password=form.password.data))
-            db.session.commit()
-            message = form.user.data+" has been added successfully!\n"
 
-    return render_template('add_user.html', form=form,
-                           message=message, user=current_user)
+"""
+REMOVE
+"""
 
 
 @app.route("/display/<category>")
@@ -395,85 +400,42 @@ def remove_objects(category):
     return redirect('display/'+category)
 
 
-@app.route('/install/course', methods=['GET'])
-def install_course():
-
-    form = InstallCourse()
-
-    # Get all the available course modules
-    all_courses = CourseDetail.query.all()
-
-    # Generate the list of choices for the template
-    choices = []
-
-    for course in all_courses:
-        choices.append((course.course_id,
-                        "%s - Version: %s - Moodle Version: %s" %
-                        (course.course.name, course.version,
-                         course.moodle_version)))
-
-    form.course.choices = choices
-
-    return render_template('install_course.html', form=form, user=current_user)
+"""
+HELPERS
+"""
 
 
-@app.route('/install/course/output', methods=['POST'])
-def install_course_output():
-    """
-    Displays the output for any course installs
-    """
+@login_manager.unauthorized_handler
+def unauthorized():
+    flash('You are not authorized to view this page, please login.')
+    return redirect('/login')
 
-    # An array of unicode strings will be passed, they need to be integers
-    # for the query
-    selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-    # The site to install the courses
-    site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
-           request.form.get('site'),
-           app.config['INSTALL_COURSE_WS_TOKEN'],
-           app.config['INSTALL_COURSE_WS_FUNCTION'])
-    site = str(site.encode('utf-8'))
+@login_manager.user_loader
+def load_user(userid):
+    return User.query.filter_by(id=userid).first()
 
-    # The CourseDetail objects of info needed to generate the url
-    courses = CourseDetail.query.filter(CourseDetail
-                                        .course_id.in_(selected_courses))\
-                                .all()
 
-    # Appended to buy all the courses being installed
-    output = ''
+@google.tokengetter
+def get_access_token():
+    return session.get('access_token')
 
-    # Loop through the courses, generate the command to be run, run it, and
-    # append the ouput to output
-    #
-    # Currently this will break ao our db is not setup correctly yet
-    for course in courses:
-        # To get the file path we need the text input, the lowercase of
-        # source, and the filename
-        fp = app.config['INSTALL_COURSE_FILE_PATH']
-        fp += course.source.lower() + '/'
 
-        data = {'filepath': fp,
-                'file': course.filename,
-                'courseid': course.course_id,
-                'coursename': course.course.name,
-                'shortname': course.course.shortname,
-                'category': '1',
-                'firstname': 'orvsd',
-                'lastname': 'central',
-                'city': 'none',
-                'username': 'admin',
-                'email': 'a@a.aa',
-                'pass': 'testo123'}
+def build_accordion(objects, accordion_id, type, extra=None):
+    inner_t = app.jinja_env.get_template('accordion_inner.html')
+    outer_t = app.jinja_env.get_template('accordion.html')
 
-        postdata = urllib.urlencode(data)
+    inner = ""
 
-        resp = urllib.urlopen(site, data=postdata)
+    for obj in objects:
+        inner += inner_t.render(accordion_id=accordion_id,
+                                inner_id=obj.shortname,
+                                type=type,
+                                link=obj.name,
+                                extra=None if not extra else extra % obj.id)
 
-        output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
-
-    return render_template('install_course_output.html',
-                           output=output,
-                           user=current_user)
+    return outer_t.render(accordion_id=accordion_id,
+                          dump=inner)
 
 
 def get_obj_by_category(category):
@@ -482,3 +444,48 @@ def get_obj_by_category(category):
                   'sites': Site, 'courses': Course}
 
     return categories.get(category.lower())
+
+
+def get_user():
+    # A user id is sent in, to check against the session
+    # and based on the result of querying that id we
+    # return a user (whether it be a sqlachemy obj or an
+    # obj named guest
+
+    if 'user_id' in session:
+            return User.query.filter_by(id=session["user_id"]).first()
+
+
+def district_details(schools):
+    """
+    district_details adds up the number of teachers, users, and admins of all
+    the district's school's sites.
+
+    Args:
+        schools (list): list of schools to total the users, teachers, and
+         admins.
+
+    Returns:
+        dict. The total admins, teachers, and users of the schools
+    """
+
+    admin_count = 0
+    teacher_count = 0
+    user_count = 0
+
+    for school in schools:
+        sites = Site.query.filter_by(school_id=school.id).all()
+        for site in sites:
+            details = SiteDetail.query.filter_by(site_id=site.id) \
+                                      .order_by(SiteDetail
+                                                .timemodified
+                                                .desc()) \
+                                      .first()
+            if details:
+                admin_count += details.adminusers
+                teacher_count += details.teachers
+                user_count += details.totalusers
+
+    return {'admins': admin_count,
+            'teachers': teacher_count,
+            'users': user_count}
