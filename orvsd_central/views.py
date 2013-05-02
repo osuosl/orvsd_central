@@ -50,7 +50,9 @@ def login():
             login_user(user)
             flash("Logged in successfully.")
             return redirect("/report")
-
+        else:
+            flash("Username/Password combo was not recognized.  "
+                  "Please try again.")
     return render_template("login.html", form=form)
 
 

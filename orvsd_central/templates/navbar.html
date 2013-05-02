@@ -49,7 +49,7 @@
             {% endif %}
             {% endif %}
         </ul>
-        {% with message = get_flashed_messages() %}
+        {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <ul class="flashes">
                 {% for message in messages %}
