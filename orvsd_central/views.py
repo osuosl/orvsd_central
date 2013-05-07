@@ -193,6 +193,13 @@ INSTALL
 
 @app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
+    """
+    Displays a form for the admin user to pick courses to install on a site
+
+    Returns:
+        Rendered template
+    """
+
 
     if request.method == 'GET':
         form = InstallCourse()
