@@ -197,19 +197,37 @@ def install_course():
     if request.method == 'GET':
         form = InstallCourse()
 
-        # Get all the available course modules
-        all_courses = CourseDetail.query.all()
+        # Query all moodle 2.2 courses
+        courses = CourseDetail.query.filter_by(moodle_version='2.2').all()
+
+        # Query all moodle sites
+        sites = Site.query.filter_by(sitetype='moodle').all()
+        moodle_22_sites = []
+
+        # For all sites query the SiteDetail to see if it's a moodle 2.2 site
+        for site in sites:
+            details = db.session.query(SiteDetail) \
+                                .filter(and_(SiteDetail.site_id == site.id,
+                                             SiteDetail.siterelease
+                                                       .like('2.2%'))) \
+                                .order_by(SiteDetail.timemodified.desc()).first()
+
+            if details:
+                moodle_22_sites.append(site)
 
         # Generate the list of choices for the template
-        choices = []
+        courses_info = []
+        sites_info = []
 
-        for course in all_courses:
-            choices.append((course.course_id,
-                            "%s - Version: %s - Moodle Version: %s" %
-                            (course.course.name, course.version,
-                             course.moodle_version)))
+        # Create the courses list
+        for course in courses:
+            courses_info.append((course.course_id,
+                                 "%s - Version: %s" %
+                                 (course.moodle_version)))
 
-        form.course.choices = choices
+        # Create the sites list
+        for site in moodle_22_sites:
+            sites_info.append((site.id, site.name))
 
         return render_template('install_course.html',
                                form=form, user=current_user)
