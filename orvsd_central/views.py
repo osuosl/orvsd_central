@@ -363,8 +363,9 @@ def report():
 @app.route('/')
 @login_required
 def root():
-    return redirect(url_for('report'))
-
+    if not current_user.is_anonymous():
+        return redirect(url_for('report'))
+    return redirect(url_for('login'))
 
 """
 REMOVE
