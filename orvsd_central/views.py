@@ -255,14 +255,16 @@ def install_course():
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-         # The CourseDetail objects needed to generate the url
+        # The CourseDetail objects needed to generate the url
         courses = CourseDetail.query.filter(CourseDetail
                                             .course_id.in_(selected_courses))\
                                         .all()
 
-
         site_ids = [site_id for site_id in request.form.getlist('site')]
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
+
+        # Course installation results
+        output = ''
 
         for site_url in site_urls:
             # The site to install the courses
