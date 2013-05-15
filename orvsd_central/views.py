@@ -446,8 +446,8 @@ def install_course():
         sites_info.append((site.id, site.name))
 
     # Add the lists to the form
-    form.course.choices = courses_info
-    form.site.choices = sites_info
+    form.course.choices = sorted(courses_info, key=lambda x: x[1])
+    form.site.choices = sorted(sites_info, key=lambda x: x[1])
 
     return render_template('install_course.html', form=form, user=current_user)
 
