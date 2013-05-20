@@ -8,7 +8,7 @@ from forms import (LoginForm, AddDistrict, AddSchool, AddUser,
                    InstallCourse, AddCourse)
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
@@ -229,8 +229,8 @@ def install_course():
         # Create the courses list
         for course in courses:
             courses_info.append((course.course_id,
-                                 "%s - Version: %s" %
-                                 (course.moodle_version)))
+                                 "%s - v%s" %
+                                 (course.course.name, course.version)))
 
         # Create the sites list
         for site in moodle_22_sites:
@@ -391,6 +391,7 @@ def root():
     if not current_user.is_anonymous():
         return redirect(url_for('report'))
     return redirect(url_for('login'))
+
 
 """
 REMOVE
