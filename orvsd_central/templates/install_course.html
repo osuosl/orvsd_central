@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<form name='install_course' method='POST', action="{{ url_for('install_course_output') }}">
+<form name='install_course' method='POST' action="{{ url_for('install_course') }}">
     <div>Site: {{form.site}}</div>
     <div>Course: {{form.course}}</div>
     <div><input type='submit' value='Install'></div>
