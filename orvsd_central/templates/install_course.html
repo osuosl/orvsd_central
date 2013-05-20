@@ -6,6 +6,7 @@
 
 {% block head %}
     <link type="text/css" rel="stylesheet" href="{{url_for('static', filename='css/install_course.css') }}">
+    <script src="{{url_for('static', filename='js/install_course.js') }}" type="text/javascript" ></script>
 {% endblock %}
 
 {% block content %}
@@ -24,6 +25,7 @@
             <div class="span7">
                 {{form.course}}
             </div>
+            <div class="span5" id="selected-courses"></div>
         </div>
         <button class="btn" type='submit'>Install</button>
     </fieldset>
