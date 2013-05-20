@@ -236,6 +236,9 @@ def install_course():
         for site in moodle_22_sites:
             sites_info.append((site.id, site.name))
 
+        form.course.choices = sorted(courses_info, key=lambda x: x[1])
+        form.site.choices = sorted(sites_info, key=lambda x: x[1])
+
         return render_template('install_course.html',
                                form=form, user=current_user)
 
