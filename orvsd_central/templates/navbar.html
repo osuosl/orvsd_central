@@ -51,9 +51,9 @@
         </ul>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <ul class="flashes nav navbar-text">
+                <ul class="flashes nav">
                 {% for message in messages %}
-                    <li>{{message}}</li>
+                    <li><p class='navbar-text'>{{message}}</p></li>
                 {%endfor%}
                 </ul>
             {%endif%}
