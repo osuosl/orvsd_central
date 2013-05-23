@@ -115,8 +115,17 @@ def home():
     """
     Loads a users home information page
     """
-    #not sure current_user works this way, write test
-    return render_template('users/templates/profile.html', user=current_user)
+    return render_template('profile.html', user=current_user)
+
+
+@app.route('/users')
+@login_required
+def view_users():
+    """
+    Displays a list of users, and their info
+    """
+    all_users = User.query.all()
+    return render_template('users.html', all_users=all_users)
 
 
 @app.route("/logout")
