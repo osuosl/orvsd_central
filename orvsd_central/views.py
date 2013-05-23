@@ -192,7 +192,6 @@ INSTALL
 
 @app.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
-    print site_id
     address = Site.query.filter_by(id=site_id).first().baseurl
     return jsonify(address=address)
 
