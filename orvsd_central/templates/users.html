@@ -4,15 +4,22 @@
 
 <table class='table table-striped table-hover'>
 
-    <th>Username</th><th>Email</th><th>Role</th><th>Remove?</th>
+    <th>Username</th><th>Email</th><th>Role</th>
+    {% if user.role == 0 %}
+        <th>Remove?</th>
+    {% endif %}
 
-    {% for user in all_users %}
+    {% for _user in all_users %}
 
         <tr>
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.role }}</td>
-            <td><i class='icon-remove-circle'></i></td>
+            <td>{{ _user.name }}</td>
+            <td>{{ _user.email }}</td>
+            <td>{{ _user.role }}</td>
+            {% if user.role == 0 %}
+                <td>
+                    <a href={{ url_for('report') }}><i class='icon-remove-circle'></i></a>
+                </td>
+            {% endif %}
         </tr>
 
     {% endfor %}

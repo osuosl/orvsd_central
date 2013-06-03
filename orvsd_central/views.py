@@ -125,7 +125,8 @@ def view_users():
     Displays a list of users, and their info
     """
     all_users = User.query.all()
-    return render_template('users.html', all_users=all_users)
+    return render_template('users.html', all_users=all_users,
+                           user=current_user)
 
 
 @app.route("/logout")
