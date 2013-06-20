@@ -274,7 +274,7 @@ def install_course():
             # To get the file path we need the text input, the lowercase of
             # source, and the filename
             fp = app.config['INSTALL_COURSE_FILE_PATH']
-            fp += course.source.lower() + '/'
+            fp += course.course.source.lower() + '/'
 
             data = {'filepath': fp,
                     'file': course.filename,
