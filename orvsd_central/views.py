@@ -12,12 +12,11 @@ from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-import urllib2
 import json
 import re
 import subprocess
 import StringIO
-import urllib
+import requests
 
 
 """
@@ -251,9 +250,11 @@ def install_course():
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
+        site_url = Site.query.filter_by(id=request.form.get('site')).first().baseurl
+
         # The site to install the courses
-        site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
-               request.form.get('site'),
+        site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+               site_url,
                app.config['INSTALL_COURSE_WS_TOKEN'],
                app.config['INSTALL_COURSE_WS_FUNCTION'])
         site = str(site.encode('utf-8'))
@@ -289,11 +290,9 @@ def install_course():
                     'email': 'a@a.aa',
                     'pass': 'testo123'}
 
-            postdata = urllib.urlencode(data)
+            resp = requests.post(site, data=data)
 
-            resp = urllib.urlopen(site, data=postdata)
-
-            output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
+            output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
 
         return render_template('install_course_output.html',
                                output=output,
