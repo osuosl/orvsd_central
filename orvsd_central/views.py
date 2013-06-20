@@ -263,9 +263,6 @@ def install_course():
         site_ids = [site_id for site_id in request.form.getlist('site')]
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
 
-        # Course installation results
-        output = ''
-
         for site_url in site_urls:
             # The site to install the courses
             site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
