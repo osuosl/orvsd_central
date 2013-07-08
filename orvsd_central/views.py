@@ -18,6 +18,7 @@ import re
 import subprocess
 import StringIO
 import urllib
+import itertools
 
 
 """
@@ -492,3 +493,15 @@ def district_details(schools):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+
+#ORVSD Central API
+
+@app.route("/1/sites/<baseurl>")
+def get_site_by_url(baseurl):
+    sites = Site.query.filter_by(baseurl=baseurl).all()
+    site_dicts = [site.__dict__ for site in sites]
+    # _sa_instance_state contains unformatted data of each Site
+    # object, so we dispose of it.
+    [site.pop('_sa_instance_state', None) for site in site_dicts]
+    return jsonify(sites=site_dicts)
