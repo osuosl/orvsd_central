@@ -18,6 +18,8 @@ import re
 import subprocess
 import StringIO
 import requests
+import urllib
+import itertools
 
 
 """
