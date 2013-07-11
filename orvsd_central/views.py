@@ -524,3 +524,15 @@ def district_details(schools):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+@app.route("/1/site/<site_id>/courses")
+def get_courses_by_site(site_id):
+    #SiteDetails hold the course information we are looking for
+    site_details = SiteDetail.query.filter_by(site_id=site_id) \
+                                   .order_by(SiteDetail
+                                             .timemodified
+                                             .desc()) \
+                                   .first()
+
+    data2 = [val for val in eval(site_details.courses)]
+    return jsonify(courses=data2)
