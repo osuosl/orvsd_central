@@ -504,9 +504,12 @@ def get_site_by_url(baseurl):
     site = Site.query.filter_by(baseurl=baseurl).first()
     if site:
         site_details = SiteDetail.query.filter_by(site_id=site.id) \
-                            .order_by("timemodified").first()
+                                       .order_by(SiteDetail
+                                                 .timemodified
+                                                 .desc()) \
+                                       .first()
         site_dict, site_details_dict = site.__dict__, site_details.__dict__
         fullsite = dict(site_dict.items() + site_details_dict.items())
         [fullsite.pop(key) for key in keys_to_remove]
-        return jsonify(fullsite)
+        return jsonify(content=fullsite)
     return "Site with baseurl: " + baseurl + " not found."
