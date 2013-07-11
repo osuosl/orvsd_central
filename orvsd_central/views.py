@@ -492,3 +492,10 @@ def district_details(schools):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+@app.route("/1/sites/<baseurl>/moodle")
+def get_moodle_sites(baseurl):
+    school_id = Site.query.filter_by(baseurl=baseurl).first().school_id
+    moodle_sites = Site.query.filter_by(school_id=school_id).all()
+    data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
+    return jsonify(content=data)
