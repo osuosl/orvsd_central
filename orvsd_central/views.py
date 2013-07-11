@@ -858,4 +858,4 @@ def get_courses_by_site(site_id):
                                    .first()
 
     data2 = [val for val in eval(site_details.courses)]
-    return jsonify(courses=data2)
+    return jsonify(content=data2)
