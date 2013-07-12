@@ -2,7 +2,7 @@ Flask
 Flask-Login
 Flask-OAuth
 Flask-SQLAlchemy
-Flask-WTF==0.8.4
+Flask-WTF
 Jinja2
 Mako
 MarkupSafe
@@ -22,6 +22,7 @@ httplib2
 kombu
 lxml
 oauth2
+pycurl
 python-dateutil
 requests
 six
