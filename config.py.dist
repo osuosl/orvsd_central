@@ -40,3 +40,11 @@ SITEINFO_DATABASE_PASS = ""
 GOOGLE_CLIENT_ID = 'CLIENT ID HERE'
 GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
+
+# Celery config info
+CELERY_BROKER_URL = 'sqla+sqlite:///' + os.path.join(_basedir,
+                                                          'db/celerydb.dqlite' %
+                                                          DATABASE_TYPE)
+CELERY_RESULT_BACKEND = 'sqla+sqlite:///' + os.path.join(_basedir,
+                                                          'db/celerydb.sqlite' %
+                                                          DATABASE_TYPE)
