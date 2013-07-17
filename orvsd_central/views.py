@@ -12,11 +12,7 @@ from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-<<<<<<< HEAD
 import celery
-=======
-from tasks import celery
->>>>>>> celery: Fixed config and implemented tasks.
 import json
 import re
 import subprocess
@@ -313,14 +309,19 @@ def install_course_to_site(course, site):
 
     resp = requests.post(site, data=data)
 
-<<<<<<< HEAD
     # Unfortunately the response object to turned into unicode
     # when returned by the celery job, so we must send the
     # data we need, instead of the whole object.
     return resp.text
-=======
-    return "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
->>>>>>> celery: Fixed config and implemented tasks.
+
+@app.route('/celery/status/<celery_id>')
+def get_task_status(celery_id):
+    status = db.session.query("status") \
+                       .from_statement("SELECT status "
+                           "FROM celery_taskmeta WHERE id=:celery_id") \
+                           .params(celery_id=celery_id).first()
+    return status
+
 """
 VIEW
 """
