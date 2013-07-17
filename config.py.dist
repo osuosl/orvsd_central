@@ -43,8 +43,9 @@ REDIRECT_URI = "/oauth2callback"
 
 # Celery config info
 CELERY_BROKER_URL = 'sqla+sqlite:///' + os.path.join(_basedir,
-                                                          'db/celerydb.dqlite' %
-                                                          DATABASE_TYPE)
-CELERY_RESULT_BACKEND = 'sqla+sqlite:///' + os.path.join(_basedir,
-                                                          'db/celerydb.sqlite' %
-                                                          DATABASE_TYPE)
+                                                      'db/orvsd_%s.db' %
+                                                      DATABASE_TYPE)
+CELERY_RESULT_BACKEND = 'database'
+CELERY_RESULT_DBURI = 'sqlite:///' + os.path.join(_basedir,
+                                                      'db/orvsd_%s.db' %
+                                                      DATABASE_TYPE)
