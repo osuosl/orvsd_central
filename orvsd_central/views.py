@@ -314,14 +314,6 @@ def install_course_to_site(course, site):
     # data we need, instead of the whole object.
     return resp.text
 
-@app.route('/celery/status/<celery_id>')
-def get_task_status(celery_id):
-    status = db.session.query("status") \
-                       .from_statement("SELECT status "
-                           "FROM celery_taskmeta WHERE id=:celery_id") \
-                           .params(celery_id=celery_id).first()
-    return status
-
 """
 VIEW
 """
@@ -574,3 +566,12 @@ def get_moodle_sites(baseurl):
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
     return jsonify(content=data)
+
+
+@app.route('/celery/status/<celery_id>')
+def get_task_status(celery_id):
+    status = db.session.query("status") \
+                       .from_statement("SELECT status "
+                           "FROM celery_taskmeta WHERE id=:celery_id") \
+                           .params(celery_id=celery_id).first()
+    return jsonify(status=status)
