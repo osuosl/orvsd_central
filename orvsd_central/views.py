@@ -304,7 +304,7 @@ VIEW
 """
 
 
-@app.route('/view/school/<id>', methods=['GET'])
+@app.route('/view/schools/<int:school_id>', methods=['GET'])
 @login_required
 def view_school(school_id):
 
