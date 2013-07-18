@@ -536,3 +536,10 @@ def get_courses_by_site(site_id):
 
     data2 = [val for val in eval(site_details.courses)]
     return jsonify(content=data2)
+
+@app.route("/1/sites/<baseurl>/moodle")
+def get_moodle_sites(baseurl):
+    school_id = Site.query.filter_by(baseurl=baseurl).first().school_id
+    moodle_sites = Site.query.filter_by(school_id=school_id).all()
+    data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
+    return jsonify(content=data)
