@@ -1,3 +1,4 @@
+BeautifulSoup4
 Flask
 Flask-Login
 Flask-OAuth
