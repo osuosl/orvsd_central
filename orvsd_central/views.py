@@ -13,11 +13,15 @@ from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from tasks import celery
+from bs4 import BeautifulSoup as Soup
+import os
 import json
 import re
 import subprocess
 import StringIO
 import requests
+import zipfile
+import datetime
 
 
 """
@@ -226,6 +230,9 @@ def install_course():
             if details:
                 moodle_22_sites.append(site)
 
+        testsite = Site.query.filter_by(id=503).first()
+        moodle_22_sites.append(testsite)
+
         # Generate the list of choices for the template
         courses_info = []
         sites_info = []
@@ -299,7 +306,7 @@ def install_course_to_site(course, site):
             'city': 'none',
             'username': 'admin',
             'email': 'a@a.aa',
-            'pass': 'testo123'}
+            'pass': 'adminpass'}
 
     resp = requests.post(site, data=data)
 
@@ -538,3 +545,48 @@ def get_task_status(celery_id):
                            "FROM celery_taskmeta WHERE id=:celery_id") \
                            .params(celery_id=celery_id).first()
     return jsonify(status=status)
+
+
+#TODO:
+'''
+1. Comment more
+2. Separate into seperate functions
+3. Fix hacks/messy code with elementtree
+4. Note whether or not course_id is reliably being found.
+'''
+@app.route("/courses/update", methods=['GET', 'POST'])
+def update_courselist():
+    num_courses = 0
+    project_folder = "/home/vagrant/orvsd_central/"
+    base_path = "/data/moodle2-masters/flvs/"
+    if request.method == "POST":
+        # Get a list of all moodle course files
+        for files in os.listdir(base_path):
+            course = CourseDetail.query.filter_by(filename=files).first()
+            # Check to see if it exists in the database already
+            if not course:
+                # Unzip the file to get the manifest (All course backups are zip files)
+                zip = zipfile.ZipFile(base_path+files)
+                xmlfile = file(zip.extract("moodle_backup.xml"), "r")
+                xml = Soup(xmlfile.read(), "xml")
+                info = xml.moodle_backup.information
+                course_id = Course.query.filter_by(name=info.original_course_fullname.string).first() or \
+                            Course.query.filter_by(shortname=info.original_course_shortname.string).first()
+                courseid = None if not course_id else course_id.id
+                new_course_detail = CourseDetail(course_id=courseid,
+                                                 serial=None,
+                                                 filename=files,
+                                                 version=None,
+                                                 updated=datetime.datetime.now(),
+                                                 active=True,
+                                                 moodle_version=info.moodle_release.string)
+                db.session.add(new_course_detail)
+                num_courses += 1
+
+                #Get rid of moodle_backup.xml
+                os.remove(project_folder+"moodle_backup.xml")
+
+        if num_courses > 0:
+            flash(str(num_courses) + ' new courses added successfully!')
+            db.session.commit()
+    return render_template('update_courses.html')
