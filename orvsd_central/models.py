@@ -268,7 +268,7 @@ class CourseDetail(db.Model):
     active = db.Column(db.Boolean)
     moodle_version = db.Column(db.String(255))
 
-    def __init__(self, course_id, serial, filename, version,
+    def __init__(self, course_id, filename, version,
                  updated, active, moodle_version):
         self.course_id = course_id
         self.filename = filename
@@ -279,5 +279,5 @@ class CourseDetail(db.Model):
 
     def __repr__(self):
         return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % \
-               (self.course_id, self.filename, self.version, self.updated,
-                self.active, self.moodle_version, self.source)
+               (self.course_id, self.filename, self.version,
+                self.updated, self.active, self.moodle_version)
