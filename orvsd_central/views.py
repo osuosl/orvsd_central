@@ -598,9 +598,14 @@ def create_course_from_moodle_backup(base_path, file_name):
     else:
         course_id = old_course.id
 
+    regex = re.findall(r'_v(\d)_', file_name)
+
+    # Regex will only be a list if it has a value in it
+    version = regex[0] if list(regex) else None
+
     new_course_detail = CourseDetail(course_id=course_id,
                                          filename=file_name,
-                                         version=None,
+                                         version=version,
                                          updated=datetime.datetime.now(),
                                          active=True,
                                          moodle_version=info.moodle_release.string)
