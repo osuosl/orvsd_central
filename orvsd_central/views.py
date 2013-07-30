@@ -557,7 +557,6 @@ def get_task_status(celery_id):
 @app.route("/courses/update", methods=['GET', 'POST'])
 def update_courselist():
     num_courses = 0
-    project_folder = "/home/vagrant/orvsd_central/"
     base_path = "/data/moodle2-masters/flvs/"
     if request.method == "POST":
         # Get a list of all moodle course files
@@ -565,28 +564,49 @@ def update_courselist():
             course = CourseDetail.query.filter_by(filename=files).first()
             # Check to see if it exists in the database already
             if not course:
-                # Unzip the file to get the manifest (All course backups are zip files)
-                zip = zipfile.ZipFile(base_path+files)
-                xmlfile = file(zip.extract("moodle_backup.xml"), "r")
-                xml = Soup(xmlfile.read(), "xml")
-                info = xml.moodle_backup.information
-                course_id = Course.query.filter_by(name=info.original_course_fullname.string).first() or \
-                            Course.query.filter_by(shortname=info.original_course_shortname.string).first()
-                courseid = None if not course_id else course_id.id
-                new_course_detail = CourseDetail(course_id=courseid,
-                                                 serial=None,
-                                                 filename=files,
-                                                 version=None,
-                                                 updated=datetime.datetime.now(),
-                                                 active=True,
-                                                 moodle_version=info.moodle_release.string)
-                db.session.add(new_course_detail)
+                create_course_from_moodle_backup(base_path, files)
                 num_courses += 1
-
-                #Get rid of moodle_backup.xml
-                os.remove(project_folder+"moodle_backup.xml")
 
         if num_courses > 0:
             flash(str(num_courses) + ' new courses added successfully!')
-            db.session.commit()
     return render_template('update_courses.html')
+
+def create_course_from_moodle_backup(base_path, file_name):
+    # Needed to delete extracted xml once operation is done
+    project_folder = "/home/vagrant/orvsd_central/"
+
+    # Unzip the file to get the manifest (All course backups are zip files)
+    zip = zipfile.ZipFile(base_path+file_name)
+    xmlfile = file(zip.extract("moodle_backup.xml"), "r")
+    xml = Soup(xmlfile.read(), "xml")
+    info = xml.moodle_backup.information
+    old_course = Course.query.filter_by(name=info.original_course_fullname.string).first() or \
+                Course.query.filter_by(shortname=info.original_course_shortname.string).first()
+
+    if not old_course:
+        # Create a course since one is unable to be found with that name.
+        new_course = Course(serial=1000 + Course.query.count(),
+                            name=info.original_course_fullname.string,
+                            shortname=info.original_course_shortname.string)
+        db.session.add(new_course)
+
+        # Until the session is committed, the new_course does not yet have
+        # an id.
+        db.session.commit()
+
+        course_id = new_course.id
+    else:
+        course_id = old_course.id
+
+    new_course_detail = CourseDetail(course_id=course_id,
+                                         filename=file_name,
+                                         version=None,
+                                         updated=datetime.datetime.now(),
+                                         active=True,
+                                         moodle_version=info.moodle_release.string)
+
+    db.session.add(new_course_detail)
+    db.session.commit()
+
+    #Get rid of moodle_backup.xml
+    os.remove(project_folder+"moodle_backup.xml")
