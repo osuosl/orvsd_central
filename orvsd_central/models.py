@@ -142,6 +142,7 @@ class Site(db.Model):
     jenkins_cron_job = db.Column(db.DateTime)
     # what machine is this on, or is it in the moodle cloud?
     location = db.Column(db.String(255))
+    api_key = db.Column(db.String(40))
 
     site_details = db.relationship("SiteDetail", backref=db.backref('sites'))
     courses = db.relationship("Course",
