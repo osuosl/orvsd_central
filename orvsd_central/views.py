@@ -608,7 +608,8 @@ def create_course_from_moodle_backup(base_path, file_name):
                                          version=version,
                                          updated=datetime.datetime.now(),
                                          active=True,
-                                         moodle_version=info.moodle_release.string)
+                                         moodle_version=info.moodle_release.string,
+                                         moodle_course_id=info.original_course_id.string)
 
     db.session.add(new_course_detail)
     db.session.commit()
