@@ -278,6 +278,6 @@ class CourseDetail(db.Model):
         self.moodle_version = moodle_version
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % \
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s')>" % \
                (self.course_id, self.filename, self.version,
                 self.updated, self.active, self.moodle_version)
