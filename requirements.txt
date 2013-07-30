@@ -12,5 +12,4 @@ argparse
 distribute
 wsgiref
 alembic
-pycurl
 sphinx
