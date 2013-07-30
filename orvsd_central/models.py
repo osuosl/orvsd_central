@@ -269,8 +269,8 @@ class CourseDetail(db.Model):
     moodle_version = db.Column(db.String(255))
     moodle_course_id = db.Column(db.Integer)
 
-    def __init__(self, course_id, serial, filename, version,
-                 updated, active, moodle_version, moodle_course_id):
+    def __init__(self, course_id, filename, version, updated,
+                 active, moodle_version, moodle_course_id):
         self.course_id = course_id
         self.filename = filename
         self.version = version
@@ -280,7 +280,7 @@ class CourseDetail(db.Model):
         self.moodle_course_id = moodle_course_id
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
-               (self.course_id, self.filename, self.version, self.updated,
-                self.active, self.moodle_version, self.source,
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % \
+               (self.course_id, self.filename, self.version,
+                self.updated, self.active, self.moodle_version,
                 self.moodle_course_version)
