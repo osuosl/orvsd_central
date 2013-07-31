@@ -2,6 +2,8 @@ from orvsd_central import db
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+import hashlib
+import time
 
 sites_courses = db.Table('sites_courses',
                          db.Model.metadata,
@@ -148,6 +150,9 @@ class Site(db.Model):
     courses = db.relationship("Course",
                               secondary='sites_courses',
                               backref='sites')
+
+    def generate_new_key(self):
+        self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
     def __init__(self, name, sitetype, baseurl,
                  basepath, jenkins_cron_job, location):
