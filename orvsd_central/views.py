@@ -499,8 +499,6 @@ def district_details(schools):
 
 @app.route("/1/sites/<baseurl>")
 def get_site_by_url(baseurl):
-    # These are keys with inaccurate/unserializable values
-    keys_to_remove = ['id', '_sa_instance_state', 'timemodified']
     site = Site.query.filter_by(baseurl=baseurl).first()
     if site:
         site_details = SiteDetail.query.filter_by(site_id=site.id) \
@@ -508,8 +506,9 @@ def get_site_by_url(baseurl):
                                                  .timemodified
                                                  .desc()) \
                                        .first()
-        site_dict, site_details_dict = site.__dict__, site_details.__dict__
-        fullsite = dict(site_dict.items() + site_details_dict.items())
-        [fullsite.pop(key) for key in keys_to_remove]
-        return jsonify(content=fullsite)
+
+        site_info = dict(site.serialize().items() + \
+                    site_details.serialize().items())
+
+        return jsonify(content=site_info)
     return "Site with baseurl: " + baseurl + " not found."
