@@ -168,6 +168,14 @@ class Site(db.Model):
         return ['id', 'school_id', 'name', 'sitetype',
                 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'name' : self.name,
+                 'sitetype' : self.sitetype,
+                 'baseurl' : self.baseurl,
+                 'basepath' : self.basepath,
+                 'jenkins_cron_job' : self.jenkins_cron_job,
+                 'location' : self.location }
 
 class SiteDetail(db.Model):
     """
@@ -212,6 +220,20 @@ class SiteDetail(db.Model):
                (self.siteversion, self.siterelease, self.adminemail,
                 self.totalusers, self.adminusers, self.teachers,
                 self.activeusers, self.totalcourses, self.timemodified)
+
+    def serialize(self):
+        return { 'id' : self.id,
+                 'site_id' : self.site_id,
+                 'courses' : self.courses,
+                 'siteversion' : self.siteversion,
+                 'siterelease' : self.siterelease,
+                 'adminemail' : self.adminemail,
+                 'totalusers' : self.totalusers,
+                 'adminusers' : self.adminusers,
+                 'teachers' : self.teachers,
+                 'activeusers' : self.activeusers,
+                 'totalcourses' : self.totalcourses,
+                 'timemodified' : self.timemodified }
 
 
 class Course(db.Model):
