@@ -5,6 +5,7 @@ _basedir = os.path.abspath(os.path.dirname(__file__))
 DATABASE_TYPE = 'test'
 
 DEBUG = False
+SSL = True
 
 SECRET_KEY = "ay98r0u2q9305jr2or@QTG%#QH^KWTRTGrqy43"
 

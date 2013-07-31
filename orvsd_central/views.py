@@ -4,7 +4,9 @@ from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager, google, celery
-from forms import LoginForm, AddUser, InstallCourse
+from forms import (LoginForm, AddDistrict, AddSchool, AddUser,
+                   InstallCourse, AddCourse)
+from functools import wraps
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func, and_
@@ -54,7 +56,18 @@ def requires_role(role):
 """
 ACCESS
 """
+def ssl_required(fn):
+    @wraps(fn)
+    def decorated_view(*args, **kwargs):
+        if app.config.get("SSL"):
+            if request.is_secure:
+                return fn(*args, **kwargs)
+            else:
+                return redirect(request.url.replace("http://", "https://"))
 
+        return fn(*args, **kwargs)
+
+    return decorated_view
 
 @app.route("/register", methods=['GET', 'POST'])
 @requires_role('admin')
