@@ -18,6 +18,7 @@ import re
 import subprocess
 import StringIO
 import urllib
+import itertools
 
 
 """
@@ -492,3 +493,22 @@ def district_details(schools):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+
+#ORVSD Central API
+
+@app.route("/1/sites/<baseurl>")
+def get_site_by_url(baseurl):
+    site = Site.query.filter_by(baseurl=baseurl).first()
+    if site:
+        site_details = SiteDetail.query.filter_by(site_id=site.id) \
+                                       .order_by(SiteDetail
+                                                 .timemodified
+                                                 .desc()) \
+                                       .first()
+
+        site_info = dict(site.serialize().items() + \
+                    site_details.serialize().items())
+
+        return jsonify(content=site_info)
+    return "Site with baseurl: " + baseurl + " not found."
