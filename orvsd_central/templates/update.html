@@ -10,17 +10,18 @@
 
 {% block content %}
     <div class='row'>
+        <h1 align="center"> Edit Your Model </h2>
         <div class='span12'>&nbsp;</div>
     </div>
     <div class="row pagination-centered">
-        <select id="object_list">
+        <select id="object_list" class="span6">
             {% for obj in objects %}
             <option value={{obj['id']}} class="object">{{obj[identifier]}}</option>
             {% endfor %}
         </select>
     </div>
      <div class='row'>
-        <h2> Edit your model here: </h2>
+        </br>
         <div id="form" class='span12'>&nbsp;</div>
     </div>
 {% endblock %}
