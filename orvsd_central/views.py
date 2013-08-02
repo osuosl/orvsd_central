@@ -429,7 +429,7 @@ def update(category):
         objects = obj.query.all()
         if objects:
             return render_template("update.html", objects=objects,
-                                    category=category, identifier=identifier)
+                                    identifier=identifier)
 
     abort(404)
 

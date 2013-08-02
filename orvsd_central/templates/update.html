@@ -5,21 +5,10 @@
 {% endblock %}
 
 {% block head %}
-    <script type="text/javascript" src="{{url_for('static', filename='js/report.js') }}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/update_models.js') }}"></script>
 {% endblock %}
 
 {% block content %}
-    <script type="text/javascript">
-    $(document).on("ready", function() {
-        $("#object_list").on("change", function() {
-            var url = "/" + "{{category}}" + "/" + $(this).val() + "/update"; 
-            $.get(url, function(data) {
-                $("#form").empty();
-                $("#form").html(data);
-            });
-        });
-    });
-    </script>
     <div class='row'>
         <div class='span12'>&nbsp;</div>
     </div>
