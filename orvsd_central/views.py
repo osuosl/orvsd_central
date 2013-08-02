@@ -369,6 +369,59 @@ def root():
     return redirect(url_for('login'))
 
 """
+UPDATE
+"""
+
+@app.route("/<category>/update")
+@login_required
+def update(category):
+    obj = get_obj_by_category(category)
+
+    identifier = get_obj_identifier(category)
+    if obj:
+        objects = obj.query.all()
+        if objects:
+            return render_template("update.html", objects=objects,
+                                    category=category, identifier=identifier)
+
+    abort(404)
+
+@app.route("/<category>/<id>/update", methods=["GET", "POST"])
+def update_single(category, id):
+    obj = get_obj_by_category(category)
+
+    if request.method == "POST":
+        modified_obj = obj.query.filter_by(id=request.form["id"]).first()
+
+        inputs = {}
+        [inputs.update( {key : string_to_type(request.form[key])})
+                        for key in modified_obj.serialize().keys()]
+
+        db.session.query(obj).filter_by(id=request.form["id"]).update(inputs)
+        db.session.commit()
+
+        return redirect('/' + category + '/update')
+
+    if obj:
+        selected = obj.query.filter_by(id=id).first()
+        if selected:
+            return render_template("update_form.html", obj=selected,
+                                    attrs=selected.serialize().keys(), category=category)
+
+    abort(404)
+
+def string_to_type(string):
+    if string == "True":
+        return True
+    elif string == "False":
+        return False
+    try:
+        return float(string)
+    except ValueError:
+        if string.isdigit():
+            return int(string)
+    return string
+"""
 REMOVE
 """
 
@@ -445,10 +498,17 @@ def build_accordion(objects, accordion_id, type, extra=None):
 def get_obj_by_category(category):
     # Checking for case insensitive categories
     categories = {'districts': District, 'schools': School,
-                  'sites': Site, 'courses': Course}
+                  'sites': Site, 'courses': Course, 'users': User,
+                  'coursedetails': CourseDetail}
 
     return categories.get(category.lower())
 
+def get_obj_identifier(category):
+    categories = {'districts': 'name', 'schools': 'name',
+                  'sites': 'name', 'courses': 'name', 'users': 'name',
+                  'coursedetails': 'filename'}
+
+    return categories.get(category.lower())
 
 def get_user():
     # A user id is sent in, to check against the session

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Update {{category|capitalize}}</title>
+{% endblock %}
+
+{% block head %}
+    <script type="text/javascript" src="{{url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <script type="text/javascript">
+    $(document).on("ready", function() {
+        $("#object_list").on("change", function() {
+            var url = "/" + "{{category}}" + "/" + $(this).val() + "/update"; 
+            $.get(url, function(data) {
+                $("#form").empty();
+                $("#form").html(data);
+            });
+        });
+    });
+    </script>
+    <div class='row'>
+        <div class='span12'>&nbsp;</div>
+    </div>
+    <div class="row pagination-centered">
+        <select id="object_list">
+            {% for obj in objects %}
+            <option value={{obj['id']}} class="object">{{obj[identifier]}}</option>
+            {% endfor %}
+        </select>
+    </div>
+     <div class='row'>
+        <h2> Edit your model here: </h2>
+        <div id="form" class='span12'>&nbsp;</div>
+    </div>
+{% endblock %}
