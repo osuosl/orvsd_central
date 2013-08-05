@@ -386,35 +386,49 @@ def update(category):
 
     abort(404)
 
-@app.route("/<category>/<id>/update", methods=["GET", "POST"])
-def update_single(category, id):
+@app.route("/<category>/<id>", methods=["GET"])
+def get_object(category, id):
     obj = get_obj_by_category(category)
-
-    if request.method == "POST":
-        modified_obj = obj.query.filter_by(id=request.form["id"]).first()
-
-        inputs = {}
-        [inputs.update( {key : string_to_type(request.form[key])})
-                        for key in modified_obj.serialize().keys()]
-
-        db.session.query(obj).filter_by(id=request.form["id"]).update(inputs)
-        db.session.commit()
-
-        return redirect('/' + category + '/update')
-
     if obj:
-        selected = obj.query.filter_by(id=id).first()
-        if selected:
-            return render_template("update_form.html", obj=selected,
-                                    attrs=selected.serialize().keys(), category=category)
+        modified_obj = obj.query.filter_by(id=id).first()
+        if modified_obj:
+            return jsonify(modified_obj.serialize())
 
     abort(404)
 
+@app.route("/<category>/<id>/update", methods=["POST"])
+def update_object(category, id):
+    obj = get_obj_by_category(category)
+    if obj:
+            modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+            if modified_obj:
+                if "Update" in request.form:
+                    inputs = {}
+                    # Here we update our dict with new
+                    [inputs.update( {key : string_to_type(request.form.get(key))})
+                                    for key in modified_obj.serialize().keys()]
+
+                    db.session.query(obj).filter_by(id=request.form.get("id")).update(inputs)
+                    db.session.commit()
+                    return "Model updated sucessfully!"
+                elif "Delete" in request.form:
+                    db.session.delete(modified_obj)
+                    db.session.commit()
+                    return "Model deleted successfully."
+
+    abort(404)
+
+
+
 def string_to_type(string):
-    if string == "True":
+    # Have to watch out for the format of true/false/null
+    # with javascript strings.
+    if string == "true":
         return True
-    elif string == "False":
+    elif string == "false":
         return False
+    elif string == "null":
+        return None
     try:
         return float(string)
     except ValueError:

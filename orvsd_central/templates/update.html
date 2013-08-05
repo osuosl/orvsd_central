@@ -10,8 +10,8 @@
 {% endblock %}
 
 {% block content %}
-    <div class='row'>
-        <h1 align="center"> Edit Your Model </h2>
+    <div class='row pagination-centered'>
+        <h1> Edit Your Model </h1>
         <div class='span12'>&nbsp;</div>
     </div>
     <div class="row pagination-centered">
@@ -23,6 +23,23 @@
     </div>
      <div class='row'>
         </br>
-        <div id="form" class='span12'>&nbsp;</div>
+        <div class='span12'>
+            <div class="form-horizontal">
+                <div id="form" class="row-fluid">
+
+                <!-- Embed things here -->
+
+                </div>
+            </div>
+            <p id="message" align="center"> </p> 
+            <div class="row pagination-centered">
+                <div class="span6">
+                    <input id="update" type="submit" name="Update" value="Update" class="btn btn-primary btn-large span2">
+                </div>
+                <div class="span6">
+                    <input id="delete" type="submit" name="Delete" value="Delete" class="btn btn-danger btn-large span2">
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
