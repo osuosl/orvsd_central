@@ -245,8 +245,8 @@ class Course(db.Model):
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % \
-               (self.name, self.shortname, self.filename,
-                self.license, self.category, self.version)
+               (self.serial, self.name, self.shortname,
+                self.license, self.category, self.source)
 
     def get_properties(self):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
