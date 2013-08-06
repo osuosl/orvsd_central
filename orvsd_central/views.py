@@ -281,7 +281,7 @@ def install_course():
                                output=output,
                                user=current_user)
 
-@app.route("/1/course/install", methods="POST")
+@app.route("/1/course/install", methods=["POST"])
 def install_course_api():
     # An array of unicode strings will be passed, they need to be integers
     # for the query
