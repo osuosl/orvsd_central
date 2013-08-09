@@ -283,4 +283,4 @@ class CourseDetail(db.Model):
         return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
                (self.course_id, self.filename, self.version, self.updated,
                 self.active, self.moodle_version, self.source,
-                self.moodle_course_version)
+                self.moodle_course_id)
