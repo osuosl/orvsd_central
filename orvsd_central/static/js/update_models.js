@@ -22,7 +22,8 @@ $(document).on("ready", function() {
         for (var key_name in pairs) {
             data[key_name] = $("#"+key_name).val();
         }
-        $.post(url + "/update", data).done(function(resp) {
+        console.log($(this).attr("name"));
+        $.post(url + "/" + $(this).attr("name"), data).done(function(resp) {
             $("#message").html(resp);
         });
     });
