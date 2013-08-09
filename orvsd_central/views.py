@@ -13,11 +13,15 @@ from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 import celery
+from bs4 import BeautifulSoup as Soup
+import os
 import json
 import re
 import subprocess
 import StringIO
 import requests
+import zipfile
+import datetime
 
 
 """
@@ -226,6 +230,9 @@ def install_course():
             if details:
                 moodle_22_sites.append(site)
 
+        testsite = Site.query.filter_by(id=503).first()
+        moodle_22_sites.append(testsite)
+
         # Generate the list of choices for the template
         courses_info = []
         sites_info = []
@@ -299,11 +306,12 @@ def install_course_to_site(course, site):
             'city': 'none',
             'username': 'admin',
             'email': 'a@a.aa',
-            'pass': 'testo123'}
+            'pass': 'adminpass'}
 
     resp = requests.post(site, data=data)
 
     return "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
+
 """
 VIEW
 """
@@ -536,3 +544,86 @@ def get_moodle_sites(baseurl):
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
     return jsonify(content=data)
+
+@app.route('/celery/status/<celery_id>')
+def get_task_status(celery_id):
+    status = db.session.query("status") \
+                       .from_statement("SELECT status "
+                           "FROM celery_taskmeta WHERE id=:celery_id") \
+                           .params(celery_id=celery_id).first()
+    return jsonify(status=status)
+
+
+#TODO:
+'''
+1. Comment more
+2. Separate into seperate functions
+3. Fix hacks/messy code with elementtree
+4. Note whether or not course_id is reliably being found.
+'''
+@app.route("/courses/update", methods=['GET', 'POST'])
+def update_courselist():
+    num_courses = 0
+    base_path = "/data/moodle2-masters/flvs/"
+    if request.method == "POST":
+        # Get a list of all moodle course files
+        for root, sub_folders, files in os.walk(base_path):
+            for file in files:
+                full_file_path = os.path.join(root, file)
+                file_path = full_file_path.replace(base_path, '')
+                course = CourseDetail.query.filter_by(filename=file_path).first()
+                # Check to see if it exists in the database already
+
+                if not course and os.path.isfile(full_file_path):
+                    create_course_from_moodle_backup(base_path, file_path)
+                    num_courses += 1
+
+        if num_courses > 0:
+            flash(str(num_courses) + ' new courses added successfully!')
+    return render_template('update_courses.html')
+
+def create_course_from_moodle_backup(base_path, file_name):
+    # Needed to delete extracted xml once operation is done
+    project_folder = "/home/vagrant/orvsd_central/"
+
+    # Unzip the file to get the manifest (All course backups are zip files)
+    zip = zipfile.ZipFile(base_path+file_name)
+    xmlfile = file(zip.extract("moodle_backup.xml"), "r")
+    xml = Soup(xmlfile.read(), "xml")
+    info = xml.moodle_backup.information
+    old_course = Course.query.filter_by(name=info.original_course_fullname.string).first() or \
+                Course.query.filter_by(shortname=info.original_course_shortname.string).first()
+
+    if not old_course:
+        # Create a course since one is unable to be found with that name.
+        new_course = Course(serial=1000 + Course.query.count(),
+                            name=info.original_course_fullname.string,
+                            shortname=info.original_course_shortname.string)
+        db.session.add(new_course)
+
+        # Until the session is committed, the new_course does not yet have
+        # an id.
+        db.session.commit()
+
+        course_id = new_course.id
+    else:
+        course_id = old_course.id
+
+    regex = re.findall(r'_v(\d)_', file_name)
+
+    # Regex will only be a list if it has a value in it
+    version = regex[0] if list(regex) else None
+
+    new_course_detail = CourseDetail(course_id=course_id,
+                                         filename=file_name,
+                                         version=version,
+                                         updated=datetime.datetime.now(),
+                                         active=True,
+                                         moodle_version=info.moodle_release.string,
+                                         moodle_course_id=info.original_course_id.string)
+
+    db.session.add(new_course_detail)
+    db.session.commit()
+
+    #Get rid of moodle_backup.xml
+    os.remove(project_folder+"moodle_backup.xml")
