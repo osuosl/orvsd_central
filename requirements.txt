@@ -20,11 +20,8 @@ distribute
 httplib2
 kombu
 oauth2
-pycurl
 python-dateutil
 requests
 six
 wsgiref
-alembic
 sphinx
-pycurl
