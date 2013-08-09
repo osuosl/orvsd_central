@@ -18,7 +18,6 @@ import re
 import subprocess
 import StringIO
 import urllib
-import itertools
 
 
 """
@@ -511,4 +510,4 @@ def get_site_by_url(baseurl):
                     site_details.serialize().items())
 
         return jsonify(content=site_info)
-    return "Site with baseurl: " + baseurl + " not found."
+    return jsonify(content={'error': 'Site not found'})
