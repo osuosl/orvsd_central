@@ -27,6 +27,10 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(_basedir, 'migrations')
 
 # Moodle course install web service definitions
 INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
+INSTALL_COURSE_FIRST_NAME = ""
+INSTALL_COURSE_LAST_NAME = ""
+INSTALL_COURSE_USERNAME = ""
+INSTALL_COURSE_PASSWORD = ""
 INSTALL_COURSE_WS_TOKEN = ""
 INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
 

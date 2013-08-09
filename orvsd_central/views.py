@@ -294,12 +294,12 @@ def install_course_to_site(course, site):
             'coursename': course.course.name,
             'shortname': course.course.shortname,
             'category': '1',
-            'firstname': 'orvsd',
-            'lastname': 'central',
+            'firstname': app.config['INSTALL_COURSE_FIRST_NAME'],
+            'lastname': app.config['INSTALL_COURSE_LAST_NAME'],
             'city': 'none',
-            'username': 'admin',
+            'username': app.config['INSTALL_COURSE_USERNAME'],
             'email': 'a@a.aa',
-            'pass': 'testo123'}
+            'pass': app.config['INSTALL_COURSE_PASSWORD']}
 
     resp = requests.post(site, data=data)
 
