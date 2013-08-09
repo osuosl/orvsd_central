@@ -597,12 +597,16 @@ def update_courselist():
     base_path = "/data/moodle2-masters/flvs/"
     if request.method == "POST":
         # Get a list of all moodle course files
-        for files in os.listdir(base_path):
-            course = CourseDetail.query.filter_by(filename=files).first()
-            # Check to see if it exists in the database already
-            if not course:
-                create_course_from_moodle_backup(base_path, files)
-                num_courses += 1
+        for root, sub_folders, files in os.walk(base_path):
+            for file in files:
+                full_file_path = os.path.join(root, file)
+                file_path = full_file_path.replace(base_path, '')
+                course = CourseDetail.query.filter_by(filename=file_path).first()
+                # Check to see if it exists in the database already
+
+                if not course and os.path.isfile(full_file_path):
+                    create_course_from_moodle_backup(base_path, file_path)
+                    num_courses += 1
 
         if num_courses > 0:
             flash(str(num_courses) + ' new courses added successfully!')
