@@ -213,7 +213,9 @@ def install_course():
         form = InstallCourse()
 
         # Query all moodle 2.2 courses
-        courses = CourseDetail.query.filter_by(moodle_version='2.2').all()
+        courses = db.session.query(CourseDetail).filter(
+                                   CourseDetail.moodle_version.like("2.5%")).all()
+
 
         # Query all moodle sites
         sites = Site.query.filter_by(sitetype='moodle').all()
@@ -230,18 +232,24 @@ def install_course():
             if details:
                 moodle_22_sites.append(site)
 
-        testsite = Site.query.filter_by(id=503).first()
-        moodle_22_sites.append(testsite)
-
         # Generate the list of choices for the template
         courses_info = []
         sites_info = []
 
+        listed_courses = []
         # Create the courses list
         for course in courses:
-            courses_info.append((course.course_id,
-                                 "%s - v%s" %
-                                 (course.course.name, course.version)))
+            if course.course_id not in listed_courses:
+                if course.version:
+                    courses_info.append((course.course_id,
+                                        "%s - v%s" %
+                                        (course.course.name, course.version)))
+                else:
+                    courses_info.append((course.course_id,
+                                    "%s" %
+                                    (course.course.name)))
+                listed_courses.append(course.course_id)
+
 
         # Create the sites list
         for site in moodle_22_sites:
@@ -268,9 +276,11 @@ def install_course():
         site = str(site.encode('utf-8'))
 
         # The CourseDetail objects needed to generate the url
-        courses = CourseDetail.query.filter(CourseDetail
-                                            .course_id.in_(selected_courses))\
-                                    .all()
+        courses = []
+        for cid in selected_courses:
+            courses.append(CourseDetail.query.filter_by(course_id=cid)
+                                             .order_by(CourseDetail.updated.desc())
+                                             .first())
 
         # Course installation results
         output = ''
@@ -293,7 +303,7 @@ def install_course_to_site(course, site):
     # To get the file path we need the text input, the lowercase of
     # source, and the filename
     fp = app.config['INSTALL_COURSE_FILE_PATH']
-    fp += course.course.source.lower() + '/'
+    fp += 'flvs/'
 
     data = {'filepath': fp,
             'file': course.filename,
@@ -311,6 +321,7 @@ def install_course_to_site(course, site):
     resp = requests.post(site, data=data)
 
     return "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
+
 
 """
 VIEW
