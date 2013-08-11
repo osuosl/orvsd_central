@@ -231,18 +231,27 @@ def install_course():
             if details is not None:
                 moodle_22_sites.append(site)
 
-        testsite = Site.query.filter_by(id=503).first()
-        moodle_22_sites.append(testsite)
-
         # Generate the list of choices for the template
         courses_info = []
         sites_info = []
 
+        listed_courses = []
         # Create the courses list
         for course in courses:
             courses_info.append(
                 (course.course_id, "%s - v%s"
                 % (course.course.name, course.version)))
+
+            if course.course_id not in listed_courses:
+                if course.version:
+                    courses_info.append((course.course_id,
+                                        "%s - v%s" %
+                                        (course.course.name, course.version)))
+                else:
+                    courses_info.append((course.course_id,
+                                    "%s" %
+                                    (course.course.name)))
+                listed_courses.append(course.course_id)
 
         # Create the sites list
         for site in moodle_22_sites:
@@ -299,7 +308,7 @@ def install_course_to_site(course, site):
     # To get the file path we need the text input, the lowercase of
     # source, and the filename
     fp = app.config['INSTALL_COURSE_FILE_PATH']
-    fp += course.course.source.lower() + '/'
+    fp += 'flvs/'
 
     data = {'filepath': fp,
             'file': course.filename,
@@ -320,6 +329,7 @@ def install_course_to_site(course, site):
     # when returned by the celery job, so we must send the
     # data we need, instead of the whole object.
     return resp.text
+
 
 """
 VIEW
