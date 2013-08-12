@@ -19,9 +19,10 @@ celery
 distribute
 httplib2
 kombu
+lxml
 oauth2
 python-dateutil
 requests
 six
-wsgiref
 sphinx
+wsgiref
