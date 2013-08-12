@@ -575,30 +575,36 @@ def get_task_status(celery_id):
 @app.route("/courses/update", methods=['GET', 'POST'])
 def update_courselist():
     num_courses = 0
-    base_path = "/data/moodle2-masters/flvs/"
+    base_path = "/data/moodle2-masters/"
+    print SiteDetail.__dict__.keys()
     if request.method == "POST":
         # Get a list of all moodle course files
-        for root, sub_folders, files in os.walk(base_path):
-            for file in files:
-                full_file_path = os.path.join(root, file)
-                file_path = full_file_path.replace(base_path, '')
-                course = CourseDetail.query.filter_by(filename=file_path).first()
-                # Check to see if it exists in the database already
+#        for source in os.listdir(base_path):
+        sources = [source+"/" for source in os.listdir(base_path)]
+        for source in sources:
+            for root, sub_folders, files in os.walk(base_path+source):
+                for file in files:
+                    full_file_path = os.path.join(root, file)
+                    file_path = full_file_path.replace(base_path+source, '')
+                    print file_path
+                    course = CourseDetail.query.filter_by(filename=file_path).first()
+                    # Check to see if it exists in the database already
 
-                if not course and os.path.isfile(full_file_path):
-                    create_course_from_moodle_backup(base_path, file_path)
-                    num_courses += 1
+                    if not course and os.path.isfile(full_file_path):
+                        create_course_from_moodle_backup(base_path, file_path, source)
+                        num_courses += 1
+                        print num_courses
 
         if num_courses > 0:
             flash(str(num_courses) + ' new courses added successfully!')
     return render_template('update_courses.html')
 
-def create_course_from_moodle_backup(base_path, file_name):
+def create_course_from_moodle_backup(base_path, file_path, source):
     # Needed to delete extracted xml once operation is done
     project_folder = "/home/vagrant/orvsd_central/"
 
     # Unzip the file to get the manifest (All course backups are zip files)
-    zip = zipfile.ZipFile(base_path+file_name)
+    zip = zipfile.ZipFile(base_path+source+file_path)
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
     xml = Soup(xmlfile.read(), "xml")
     info = xml.moodle_backup.information
@@ -608,6 +614,7 @@ def create_course_from_moodle_backup(base_path, file_name):
     if not old_course:
         # Create a course since one is unable to be found with that name.
         new_course = Course(serial=1000 + Course.query.count(),
+                            source=source.replace('/', ''),
                             name=info.original_course_fullname.string,
                             shortname=info.original_course_shortname.string)
         db.session.add(new_course)
@@ -620,13 +627,13 @@ def create_course_from_moodle_backup(base_path, file_name):
     else:
         course_id = old_course.id
 
-    regex = re.findall(r'_v(\d)_', file_name)
+    regex = re.findall(r'_v(\d)_', file_path)
 
     # Regex will only be a list if it has a value in it
     version = regex[0] if list(regex) else None
 
     new_course_detail = CourseDetail(course_id=course_id,
-                                         filename=file_name,
+                                         filename=file_path,
                                          version=version,
                                          updated=datetime.datetime.now(),
                                          active=True,
