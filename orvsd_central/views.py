@@ -298,6 +298,33 @@ def install_course():
                                output=output,
                                user=current_user)
 
+@app.route("/courses/filter")
+def get_course_list():
+    dir = request.form.get('directory')
+
+    selected_courses = CourseDetail.query.all()
+    courses = [course for course in selected_courses if course.course.source == dir]
+    # This means the folder selected was not the source folder.
+    if not courses:
+        courses = db.session.query(CourseDetail).filter(
+                                   CourseDetail.filename.like("%"+dir+"%")).all()
+
+    serialized_courses = []
+    for course in courses:
+        serialized_courses.append(({'id' : course.id, 'name' : course.course.name}))
+
+    return jsonify(courses=serialized_courses)
+
+
+def get_course_folders():
+    base_path = "/data/moodle2-masters/"
+    folders = []
+    for root, sub_folders, files in os.walk(base_path):
+        for folder in sub_folders:
+            if folder not in folders:
+                folders.append(folder)
+    return folders
+
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
     # To get the file path we need the text input, the lowercase of
