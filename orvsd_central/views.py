@@ -257,6 +257,7 @@ def install_course():
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
+        form.filters.choices = [(folder, folder) for folder in get_course_folders()]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
@@ -292,15 +293,16 @@ def install_course():
         for course in courses:
             #Courses are detached from session for being inactive for too long.
             course.course.name
-            output += install_course_to_site.delay(course, site).get()
+    #        output += install_course_to_site.delay(course, site).get()
 
         return render_template('install_course_output.html',
                                output=output,
                                user=current_user)
 
-@app.route("/courses/filter")
+@app.route("/courses/filter", methods=["POST"])
 def get_course_list():
-    dir = request.form.get('directory')
+    dir = request.form.get('filters')
+    print request.form
 
     selected_courses = CourseDetail.query.all()
     courses = [course for course in selected_courses if course.course.source == dir]
@@ -318,7 +320,7 @@ def get_course_list():
 
 def get_course_folders():
     base_path = "/data/moodle2-masters/"
-    folders = []
+    folders = ['None']
     for root, sub_folders, files in os.walk(base_path):
         for folder in sub_folders:
             if folder not in folders:
