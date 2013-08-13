@@ -279,24 +279,19 @@ def install_course():
         site_ids = [site_id for site_id in request.form.getlist('site')]
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
 
-        for site_url in site_urls:
-            # The site to install the courses
-            site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
-                   site_url,
-                   app.config['INSTALL_COURSE_WS_TOKEN'],
-                   app.config['INSTALL_COURSE_WS_FUNCTION'])
-            site = str(site.encode('utf-8'))
+        for course in courses:
+            for site_url in site_urls:
+                # The site to install the courses
+                site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+                       site_url,
+                       app.config['INSTALL_COURSE_WS_TOKEN'],
+                       app.config['INSTALL_COURSE_WS_FUNCTION'])
+                site = str(site.encode('utf-8'))
 
-            # Loop through the courses, generate the command to be run, run it, and
-            # append the ouput to output
-            #
-            # Currently this will break as our db is not setup correctly yet
-            for course in courses:
-                #Courses are detached from session for being inactive for too long.
                 course.course.name
                 install_course_to_site.delay(course, site)
 
-            output += str(len(courses)) + " course install(s) for " + site_url + " started.\n"
+            output += str(len(site_urls)) + " course install(s) for " + course.course.name + " started.\n"
 
         return render_template('install_course_output.html',
                                 output=output,
