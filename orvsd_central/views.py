@@ -257,7 +257,7 @@ def install_course():
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
-        form.filters.choices = [(folder, folder) for folder in get_course_folders()]
+        form.filter.choices = [(folder, folder) for folder in get_course_folders()]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
@@ -293,7 +293,7 @@ def install_course():
         for course in courses:
             #Courses are detached from session for being inactive for too long.
             course.course.name
-    #        output += install_course_to_site.delay(course, site).get()
+            output += install_course_to_site.delay(course, site).get()
 
         return render_template('install_course_output.html',
                                output=output,
@@ -301,12 +301,15 @@ def install_course():
 
 @app.route("/courses/filter", methods=["POST"])
 def get_course_list():
-    dir = request.form.get('filters')
+    dir = request.form.get('filter')
     print request.form
 
     selected_courses = CourseDetail.query.all()
-    courses = [course for course in selected_courses if course.course.source == dir]
-    # This means the folder selected was not the source folder.
+    if dir == "None":
+        courses = selected_courses
+    else:
+        courses = [course for course in selected_courses if course.course.source == dir]
+    # This means the folder selected was not the source folder or None.
     if not courses:
         courses = db.session.query(CourseDetail).filter(
                                    CourseDetail.filename.like("%"+dir+"%")).all()
@@ -605,7 +608,6 @@ def get_task_status(celery_id):
 def update_courselist():
     num_courses = 0
     base_path = "/data/moodle2-masters/"
-    print SiteDetail.__dict__.keys()
     if request.method == "POST":
         # Get a list of all moodle course files
 #        for source in os.listdir(base_path):
@@ -615,14 +617,12 @@ def update_courselist():
                 for file in files:
                     full_file_path = os.path.join(root, file)
                     file_path = full_file_path.replace(base_path+source, '')
-                    print file_path
                     course = CourseDetail.query.filter_by(filename=file_path).first()
                     # Check to see if it exists in the database already
 
                     if not course and os.path.isfile(full_file_path):
                         create_course_from_moodle_backup(base_path, file_path, source)
                         num_courses += 1
-                        print num_courses
 
         if num_courses > 0:
             flash(str(num_courses) + ' new courses added successfully!')

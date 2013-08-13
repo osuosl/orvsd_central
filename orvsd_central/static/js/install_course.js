@@ -13,7 +13,7 @@ $(function() {
         });
         $("#selected-courses").html(html);
     });
-     $("#filters").on("change", function() {
+     $("#filter").on("change", function() {
         var filter = $(this).val()
         $.post("/courses/filter", $(this)).done(function(data) {
             $("#course").empty();
