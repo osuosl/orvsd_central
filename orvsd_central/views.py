@@ -228,9 +228,16 @@ def install_course():
                 SiteDetail.siterelease.like('2.2%'))
             ).order_by(SiteDetail.timemodified.desc()).first()
 
+<<<<<<< HEAD
             if details is not None:
+=======
+
+            if details:
+>>>>>>> install_course: Bugfix for single site install.
                 moodle_22_sites.append(site)
 
+        testsite = Site.query.filter_by(id=504).first()
+        moodle_22_sites.append(testsite)
         # Generate the list of choices for the template
         courses_info = []
         sites_info = []
@@ -279,6 +286,7 @@ def install_course():
         site_ids = [site_id for site_id in request.form.getlist('site')]
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
 
+<<<<<<< HEAD
         for course in courses:
             for site_url in site_urls:
                 # The site to install the courses
