@@ -217,13 +217,12 @@ def install_course():
 
         # For all sites query the SiteDetail to see if it's a moodle 2.2 site
         for site in sites:
-            details = db.session.query(SiteDetail) \
-                                .filter(and_(SiteDetail.site_id == site.id,
-                                             SiteDetail.siterelease
-                                                       .like('2.2%'))) \
-                                .order_by(SiteDetail.timemodified.desc()).first()
+            details = db.session.query(SiteDetail).filter(and_(
+                SiteDetail.site_id == site.id,
+                SiteDetail.siterelease.like('2.2%'))
+            ).order_by(SiteDetail.timemodified.desc()).first()
 
-            if details:
+            if details is not None:
                 moodle_22_sites.append(site)
 
         # Generate the list of choices for the template
@@ -232,9 +231,9 @@ def install_course():
 
         # Create the courses list
         for course in courses:
-            courses_info.append((course.course_id,
-                                 "%s - v%s" %
-                                 (course.course.name, course.version)))
+            courses_info.append(
+                (course.course_id, "%s - v%s"
+                % (course.course.name, course.version)))
 
         # Create the sites list
         for site in moodle_22_sites:
@@ -275,7 +274,8 @@ def install_course():
         for course in courses:
             #Courses are detached from session for being inactive for too long.
             course.course.name
-            output += install_course_to_site.delay(course, site).get()
+            resp = install_course_to_site.delay(course, site).get()
+            output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
 
         return render_template('install_course_output.html',
                                output=output,
@@ -303,7 +303,7 @@ def install_course_to_site(course, site):
 
     resp = requests.post(site, data=data)
 
-    return "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
+    return resp
 """
 VIEW
 """
