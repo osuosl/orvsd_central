@@ -366,6 +366,42 @@ def view_school(school_id):
     return render_template('view.html', content=template, user=current_user)
 
 
+# View courses installed for a specific school
+@app.route('/view/schools/<int:school_id>/courses', methods=['GET'])
+@login_required
+def view_school_courses(school_id):
+    school = School.query.filter_by(id=school_id).first()
+
+    # Info for the school's page
+    admins = 0
+    teachers = 0
+    users = 0
+
+    # Get the school's sites
+    sites = Site.query.filter_by(school_id=school_id).all()
+
+    # School view template
+    t = app.jinja_env.get_template('views/school.html')
+
+    # if we have sites, grab the details needed for the template
+    if sites:
+        for site in sites:
+            detail = SiteDetail.query.filter_by(site_id=site.id) \
+                                     .order_by(SiteDetail
+                                               .timemodified.desc()) \
+                                     .first()
+            if detail:
+                admins += detail.adminusers
+                teachers += detail.teachers
+                users += detail.totalusers
+
+    # Return a pre-compiled template to be dumped into the view template
+    template = t.render(name=school.name, admins=admins, teachers=teachers,
+                        users=users, user=current_user)
+
+    return render_template('view.html', content=template, user=current_user)
+
+
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
     # From the POST, we need the district id, or distid
