@@ -10,6 +10,7 @@ from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
+from sqlalchemy.orm import eagerload
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 import celery
@@ -218,18 +219,20 @@ def install_course():
 
 
         # Query all moodle sites
-        sites = Site.query.filter_by(sitetype='moodle').all()
+        sites = db.session.query(Site).filter(
+            Site.sitetype=='moodle')
+        site_details = db.session.query(SiteDetail).filter(
+            SiteDetail.siterelease.like('2.2%'))
+
         moodle_22_sites = []
 
         # For all sites query the SiteDetail to see if it's a moodle 2.2 site
         for site in sites:
-            details = db.session.query(SiteDetail) \
-                                .filter(and_(SiteDetail.site_id == site.id,
-                                             SiteDetail.siterelease
-                                                       .like('2.2%'))) \
-                                .order_by(SiteDetail.timemodified.desc()).first()
+            details = (site_details.filter_by(site_id=site.id)
+                .order_by(SiteDetail.timemodified.desc())
+                .first())
 
-            if details:
+            if details is not None:
                 moodle_22_sites.append(site)
 
         # Generate the list of choices for the template
@@ -241,13 +244,13 @@ def install_course():
         for course in courses:
             if course.course_id not in listed_courses:
                 if course.version:
-                    courses_info.append((course.course_id,
-                                        "%s - v%s" %
-                                        (course.course.name, course.version)))
+                    courses_info.append(
+                        (course.course_id, "%s - v%s" %
+                        (course.course.name, course.version)))
                 else:
-                    courses_info.append((course.course_id,
-                                    "%s" %
-                                    (course.course.name)))
+                    courses_info.append(
+                        (course.course_id,"%s" %
+                        (course.course.name)))
                 listed_courses.append(course.course_id)
 
 
@@ -264,9 +267,11 @@ def install_course():
     elif request.method == 'POST':
         # An array of unicode strings will be passed, they need to be integers
         # for the query
-        selected_courses = [int(cid) for cid in request.form.getlist('course')]
+        selected_courses = [int(cid) for cid in
+                            request.form.getlist('course')]
 
-        site_url = Site.query.filter_by(id=request.form.get('site')).first().baseurl
+        site_url = Site.query.filter_by(id=request.form.get('site'))\
+                   .first().baseurl
 
         # The site to install the courses
         site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
@@ -277,10 +282,13 @@ def install_course():
 
         # The CourseDetail objects needed to generate the url
         courses = []
+        course_list = db.session.query(CourseDetail)\
+                        .filter(CourseDetail.course_id
+                            .in_(selected_courses))
         for cid in selected_courses:
-            courses.append(CourseDetail.query.filter_by(course_id=cid)
-                                             .order_by(CourseDetail.updated.desc())
-                                             .first())
+            courses.append(course_list.filter_by(course_id=cid)
+                    .order_by(CourseDetail.updated.desc())
+                    .first())
 
         # Course installation results
         output = ''
