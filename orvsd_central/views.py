@@ -12,7 +12,7 @@ from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-from tasks import celery
+import celery
 import json
 import re
 import subprocess
@@ -280,6 +280,40 @@ def install_course():
         return render_template('install_course_output.html',
                                output=output,
                                user=current_user)
+
+@app.route("/1/course/install", methods=["POST"])
+def install_course_api():
+    # An array of unicode strings will be passed, they need to be integers
+    # for the query
+    selected_courses = [int(cid) for cid in request.json.get('course_ids')]
+
+    site_url = Site.query.filter_by(id=request.args.get('moodle_site_id')).first().baseurl
+
+    # The site to install the courses
+    site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+           site_url,
+           app.config['INSTALL_COURSE_WS_TOKEN'],
+           app.config['INSTALL_COURSE_WS_FUNCTION'])
+    site = str(site.encode('utf-8'))
+
+    # The CourseDetail objects needed to generate the url
+    courses = CourseDetail.query.filter(CourseDetail
+                                        .course_id.in_(selected_courses))\
+                                .all()
+
+    # Course installation results
+    output = ''
+
+    # Loop through the courses, generate the command to be run, run it, and
+    # append the ouput to output
+    #
+    # Currently this will break as our db is not setup correctly yet
+    for course in courses:
+        #Courses are detached from session for being inactive for too long.
+        course.course.name
+        output += install_course_to_site.delay(course, site).get()
+
+    return "The selected courses are now being installed!"
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
