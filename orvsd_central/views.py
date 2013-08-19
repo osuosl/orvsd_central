@@ -279,7 +279,7 @@ def install_course():
         # The CourseDetail objects needed to generate the url
         courses = []
         for cid in selected_courses:
-            courses.append(CourseDetail.query.filter_by(course_id=cid)
+            courses.append(CourseDetail.query.filter_by(id=cid)
                                              .order_by(CourseDetail.updated.desc())
                                              .first())
 
@@ -302,7 +302,6 @@ def install_course():
 @app.route("/courses/filter", methods=["POST"])
 def get_course_list():
     dir = request.form.get('filter')
-    print request.form
 
     selected_courses = CourseDetail.query.all()
     if dir == "None":
