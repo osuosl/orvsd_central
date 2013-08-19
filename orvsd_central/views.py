@@ -275,7 +275,9 @@ def install_course():
             #Courses are detached from session for being inactive for too long.
             course.course.name
             resp = install_course_to_site.delay(course, site).get()
-            output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
+
+            output += "%s\n\n%s\n\n\n" % \
+                      (course.course.shortname, resp)
 
         return render_template('install_course_output.html',
                                output=output,
@@ -303,7 +305,10 @@ def install_course_to_site(course, site):
 
     resp = requests.post(site, data=data)
 
-    return resp
+    # Unfortunately the response object to turned into unicode
+    # when returned by the celery job, so we must send the
+    # data we need, instead of the whole object.
+    return resp.text
 """
 VIEW
 """
