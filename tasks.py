@@ -1,6 +1,5 @@
 from celery import Celery
 from orvsd_central import app
-import requests
 
 def init_celery(app):
     celery = Celery("tasks", broker=app.config['CELERY_BROKER_URL'])
