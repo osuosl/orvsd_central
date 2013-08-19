@@ -3,7 +3,7 @@ from flask import (request, render_template, flash, g, session, redirect,
 from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db, app, login_manager, google
+from orvsd_central import db, app, login_manager, google, celery
 from forms import (LoginForm, AddDistrict, AddSchool, AddUser,
                    InstallCourse, AddCourse)
 from models import (District, School, Site, SiteDetail,
@@ -12,6 +12,7 @@ from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
+from tasks import celery
 import json
 import re
 import subprocess
@@ -272,32 +273,37 @@ def install_course():
         #
         # Currently this will break as our db is not setup correctly yet
         for course in courses:
-            # To get the file path we need the text input, the lowercase of
-            # source, and the filename
-            fp = app.config['INSTALL_COURSE_FILE_PATH']
-            fp += course.course.source.lower() + '/'
-
-            data = {'filepath': fp,
-                    'file': course.filename,
-                    'courseid': course.course_id,
-                    'coursename': course.course.name,
-                    'shortname': course.course.shortname,
-                    'category': '1',
-                    'firstname': 'orvsd',
-                    'lastname': 'central',
-                    'city': 'none',
-                    'username': 'admin',
-                    'email': 'a@a.aa',
-                    'pass': 'testo123'}
-
-            resp = requests.post(site, data=data)
-
-            output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
+            #Courses are detached from session for being inactive for too long.
+            course.course.name
+            output += install_course_to_site.delay(course, site).get()
 
         return render_template('install_course_output.html',
                                output=output,
                                user=current_user)
 
+@celery.task(name='tasks.install_course')
+def install_course_to_site(course, site):
+    # To get the file path we need the text input, the lowercase of
+    # source, and the filename
+    fp = app.config['INSTALL_COURSE_FILE_PATH']
+    fp += course.course.source.lower() + '/'
+
+    data = {'filepath': fp,
+            'file': course.filename,
+            'courseid': course.course_id,
+            'coursename': course.course.name,
+            'shortname': course.course.shortname,
+            'category': '1',
+            'firstname': 'orvsd',
+            'lastname': 'central',
+            'city': 'none',
+            'username': 'admin',
+            'email': 'a@a.aa',
+            'pass': 'testo123'}
+
+    resp = requests.post(site, data=data)
+
+    return "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
 
 """
 VIEW
@@ -579,3 +585,11 @@ def get_moodle_sites(baseurl):
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
     return jsonify(content=data)
+
+@app.route('/celery/status/<celery_id>')
+def get_task_status(celery_id):
+    status = db.session.query("status") \
+                       .from_statement("SELECT status "
+                           "FROM celery_taskmeta WHERE id=:celery_id") \
+                           .params(celery_id=celery_id).first()
+    return jsonify(status=status)
