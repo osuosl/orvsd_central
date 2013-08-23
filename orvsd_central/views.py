@@ -314,10 +314,10 @@ def get_course_list():
         courses = db.session.query(CourseDetail).filter(
                                    CourseDetail.filename.like("%"+dir+"%")).all()
 
-    serialized_courses = []
-    for course in courses:
-        serialized_courses.append(({'id' : course.course_id, 'name' : course.course.name}))
+    courses = sorted(courses, key=lambda x: x.course.name)
 
+    serialized_courses = [{'id' : course.course_id, 'name' : course.course.name}
+                            for course in courses]
     return jsonify(courses=serialized_courses)
 
 
