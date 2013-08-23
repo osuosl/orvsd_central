@@ -423,13 +423,16 @@ UPDATE
 @login_required
 def update(category):
     obj = get_obj_by_category(category)
-
     identifier = get_obj_identifier(category)
     if obj:
-        objects = obj.query.all()
+        if 'details' in category:
+            category = category.split("details")[0] + " Details"
+        category = category[0].upper() + category[1:]
+
+        objects = obj.query.order_by(identifier).all()
         if objects:
             return render_template("update.html", objects=objects,
-                                    identifier=identifier)
+                                    identifier=identifier, category=category)
 
     abort(404)
 
