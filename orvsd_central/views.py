@@ -303,11 +303,12 @@ def install_course():
 def get_course_list():
     dir = request.form.get('filter')
 
-    selected_courses = CourseDetail.query.all()
     if dir == "None":
-        courses = selected_courses
+        courses = CourseDetail.query.all()
     else:
-        courses = [course for course in selected_courses if course.course.source == dir]
+        courses = db.session.query(CourseDetail).join(Course) \
+                    .filter(Course.source == dir).all()
+
     # This means the folder selected was not the source folder or None.
     if not courses:
         courses = db.session.query(CourseDetail).filter(
