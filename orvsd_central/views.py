@@ -262,6 +262,7 @@ def install_course():
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
+        form.filter.choices = [(folder, folder) for folder in get_course_folders()]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
@@ -307,6 +308,36 @@ def install_course():
         return render_template('install_course_output.html',
                                output=output,
                                user=current_user)
+
+@app.route("/courses/filter", methods=["POST"])
+def get_course_list():
+    dir = request.form.get('filter')
+
+    selected_courses = CourseDetail.query.all()
+    if dir == "None":
+        courses = selected_courses
+    else:
+        courses = [course for course in selected_courses if course.course.source == dir]
+    # This means the folder selected was not the source folder or None.
+    if not courses:
+        courses = db.session.query(CourseDetail).filter(
+                                   CourseDetail.filename.like("%"+dir+"%")).all()
+
+    serialized_courses = []
+    for course in courses:
+        serialized_courses.append(({'id' : course.id, 'name' : course.course.name}))
+
+    return jsonify(courses=serialized_courses)
+
+
+def get_course_folders():
+    base_path = "/data/moodle2-masters/"
+    folders = ['None']
+    for root, sub_folders, files in os.walk(base_path):
+        for folder in sub_folders:
+            if folder not in folders:
+                folders.append(folder)
+    return folders
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
@@ -683,45 +714,73 @@ def get_task_status(celery_id):
 '''
 1. Comment more
 2. Separate into seperate functions
-3. Fix hacks/messy code with elementtree
-4. Note whether or not course_id is reliably being found.
 '''
-@app.route("/courses/update", methods=['GET', 'POST'])
+@app.route("/courses/list/update", methods=['GET', 'POST'])
 def update_courselist():
+    """
+        Updates the database to contain the most recent course
+        and course detail entries, based on available files.
+    """
     num_courses = 0
-    base_path = "/data/moodle2-masters/flvs/"
+    base_path = "/data/moodle2-masters/"
+    mdl_files = []
     if request.method == "POST":
         # Get a list of all moodle course files
+        # for source in os.listdir(base_path):
         for root, sub_folders, files in os.walk(base_path):
             for file in files:
                 full_file_path = os.path.join(root, file)
-                file_path = full_file_path.replace(base_path, '')
-                course = CourseDetail.query.filter_by(filename=file_path).first()
-                # Check to see if it exists in the database already
+                if os.path.isfile(full_file_path):
+                    mdl_files.append(full_file_path)
 
-                if not course and os.path.isfile(full_file_path):
-                    create_course_from_moodle_backup(base_path, file_path)
-                    num_courses += 1
+        filenames = []
+        sources = []
+        for filename in mdl_files:
+            source, path = get_path_and_source(base_path, filename)
+            sources.append(source)
+            filenames.append(path)
+
+        details = db.session.query(CourseDetail) \
+                        .join(CourseDetail.course) \
+                        .filter(CourseDetail.filename.in_(
+                            filenames)).all()
+
+        for detail in details:
+            if detail.filename in filenames:
+                sources.pop(filenames.index(detail.filename))
+                filenames.pop(filenames.index(detail.filename))
+
+        for source, file_path in zip(sources, filenames):
+            create_course_from_moodle_backup(base_path, source, file_path)
+            num_courses += 1
 
         if num_courses > 0:
             flash(str(num_courses) + ' new courses added successfully!')
-    return render_template('update_courses.html')
+    return render_template('update_courses.html', user=current_user)
 
-def create_course_from_moodle_backup(base_path, file_name):
+# /base_path/source/path is the format of the parsed directories.
+def get_path_and_source(base_path, file_path):
+    path = file_path.strip(base_path).partition('/')
+    return path[0]+'/', path[2]
+
+def create_course_from_moodle_backup(base_path, source, file_path):
     # Needed to delete extracted xml once operation is done
     project_folder = "/home/vagrant/orvsd_central/"
 
     # Unzip the file to get the manifest (All course backups are zip files)
-    zip = zipfile.ZipFile(base_path+file_name)
+    zip = zipfile.ZipFile(base_path+source+file_path)
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
     xml = Soup(xmlfile.read(), "xml")
     info = xml.moodle_backup.information
-    old_course = Course.query.filter_by(name=info.original_course_fullname.string).first() or \
-                Course.query.filter_by(shortname=info.original_course_shortname.string).first()
+    old_course = Course.query.filter_by(
+                    name=info.original_course_fullname.string) or \
+                 Course.query.filter_by(
+                    name=info.original_course_shortname.string)
 
-    if not old_course:
+    if old_course is not None:
         # Create a course since one is unable to be found with that name.
-        new_course = Course(serial=1000 + Course.query.count(),
+        new_course = Course(serial=1000 + len(Course.query.all()),
+                            source=source.replace('/', ''),
                             name=info.original_course_fullname.string,
                             shortname=info.original_course_shortname.string)
         db.session.add(new_course)
@@ -734,13 +793,13 @@ def create_course_from_moodle_backup(base_path, file_name):
     else:
         course_id = old_course.id
 
-    regex = re.findall(r'_v(\d)_', file_name)
+    _version_re = re.findall(r'_v(\d)_', file_path)
 
     # Regex will only be a list if it has a value in it
-    version = regex[0] if list(regex) else None
+    version = _version_re[0] if list(_version_re) else None
 
     new_course_detail = CourseDetail(course_id=course_id,
-                                         filename=file_name,
+                                         filename=file_path,
                                          version=version,
                                          updated=datetime.datetime.now(),
                                          active=True,
