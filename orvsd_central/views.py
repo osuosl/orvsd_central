@@ -316,7 +316,7 @@ def get_course_list():
 
     serialized_courses = []
     for course in courses:
-        serialized_courses.append(({'id' : course.id, 'name' : course.course.name}))
+        serialized_courses.append(({'id' : course.course_id, 'name' : course.course.name}))
 
     return jsonify(courses=serialized_courses)
 
