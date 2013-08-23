@@ -345,7 +345,7 @@ def view_school(school_id):
     sites = Site.query.filter_by(school_id=school_id).all()
 
     # School view template
-    t = app.jinja_env.get_template('views/school.html')
+    t = app.jinja_env.get_template('views/courses.html')
 
     # if we have sites, grab the details needed for the template
     if sites:
@@ -361,7 +361,7 @@ def view_school(school_id):
 
     # Return a pre-compiled template to be dumped into the view template
     template = t.render(name=school.name, admins=admins, teachers=teachers,
-                        users=users, user=current_user)
+                        users=users, user=current_user, course_list=range(10))
 
     return render_template('view.html', content=template, user=current_user)
 
