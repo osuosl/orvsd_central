@@ -601,7 +601,7 @@ def get_task_status(celery_id):
 1. Comment more
 2. Separate into seperate functions
 '''
-@app.route("/courses/update", methods=['GET', 'POST'])
+@app.route("/courses/list/update", methods=['GET', 'POST'])
 def update_courselist():
     """
         Updates the database to contain the most recent course
