@@ -385,7 +385,8 @@ def update(category):
         objects = obj.query.order_by(identifier).all()
         if objects:
             return render_template("update.html", objects=objects,
-                                    identifier=identifier, category=category)
+                                    identifier=identifier, category=category,
+                                    user=current_user)
 
     abort(404)
 
