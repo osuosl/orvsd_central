@@ -776,7 +776,7 @@ def get_all_ids():
     return jsonify(status=statuses)
 
 
-@app.route("/courses/update", methods=['GET', 'POST'])
+@app.route("/courses/list/update", methods=['GET', 'POST'])
 def update_courselist():
     """
         Updates the database to contain the most recent course
