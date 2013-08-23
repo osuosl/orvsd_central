@@ -750,7 +750,7 @@ def update_courselist():
 
         if num_courses > 0:
             flash(str(num_courses) + ' new courses added successfully!')
-    return render_template('update_courses.html')
+    return render_template('update_courses.html', user=current_user)
 
 
 # /base_path/source/path is the format of the parsed directories.
