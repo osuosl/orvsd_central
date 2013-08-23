@@ -1,0 +1,19 @@
+<div class="row">
+    <div class="span5 offset3"><h3>{{ name }}</h3></div>
+</div>
+<div class="row">
+    <div class="span3 offset1">Administrators: {{ admins }}</div>
+    <div class="span3">Teachers: {{ teachers }}</div>
+    <div class="span3">Total Users: {{ users }}</div>
+
+    <br />
+    <ul>
+    {% if course_list|length %}
+        {% for course in course_list %}
+            <li>{{course}}</li>
+        {% endfor %}
+    {% else %}
+        <p>No courses installed!</p>
+    {% endif %}
+    </ul>
+</div>
