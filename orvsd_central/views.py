@@ -295,7 +295,7 @@ def install_course():
 
                 install_course_to_site.delay(course, site)
 
-            output += str(len(courses)) + " course install(s) for " + site_url + " started.\n"
+            output += str(len(site_urls)) + " course install(s) for " + course.course.name + " started.\n"
 
         return render_template('install_course_output.html',
                                 output=output,
