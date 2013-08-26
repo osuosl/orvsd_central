@@ -229,8 +229,6 @@ def install_course():
             if details:
                 moodle_22_sites.append(site)
 
-        testsite = Site.query.filter_by(id=504).first()
-        moodle_22_sites.append(testsite)
         # Generate the list of choices for the template
         courses_info = []
         sites_info = []
@@ -270,13 +268,11 @@ def install_course():
 
         for site_url in site_urls:
             # The site to install the courses
-            site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+            site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
                    site_url,
                    app.config['INSTALL_COURSE_WS_TOKEN'],
                    app.config['INSTALL_COURSE_WS_FUNCTION'])
             site = str(site.encode('utf-8'))
-
-
 
             # Loop through the courses, generate the command to be run, run it, and
             # append the ouput to output
@@ -286,7 +282,8 @@ def install_course():
                 #Courses are detached from session for being inactive for too long.
                 course.course.name
                 install_course_to_site.delay(course, site)
-                output += str(len(courses)) + " course install(s) for " + site_url + " started."
+
+            output += str(len(courses)) + " course install(s) for " + site_url + " started.\n"
 
         return render_template('install_course_output.html',
                                 output=output,
