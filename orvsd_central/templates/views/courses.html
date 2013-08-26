@@ -7,13 +7,21 @@
     <div class="span3">Total Users: {{ users }}</div>
 
     <br />
-    <ul>
+
+    <hr />
+
     {% if course_list|length %}
+        <div class="span4">Task ID</div>
+        <div class="span2">Status</div>
+        <div class="span4">Date completed</div>
+        <br />
         {% for course in course_list %}
-            <li>{{course|id}}</li>
+            <div class="span4">{{course.task_id}}</div>
+            <div class="span2">{{course.status}}</div>
+            <div class="span4">{{course.date_done}}</div>
+            <br />
         {% endfor %}
     {% else %}
         <p>No courses installed!</p>
     {% endif %}
-    </ul>
 </div>
