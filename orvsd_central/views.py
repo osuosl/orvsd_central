@@ -215,8 +215,8 @@ def install_course():
 
         # Query all moodle 2.2 courses
         courses = db.session.query(CourseDetail).filter(
-                                   CourseDetail.moodle_version.like("2.5%")).all()
-
+                                        CourseDetail.moodle_version.like('2.5%')) \
+                                    .all()
 
         # Query all moodle sites
         sites = db.session.query(Site).filter(
@@ -265,46 +265,44 @@ def install_course():
                                form=form, user=current_user)
 
     elif request.method == 'POST':
+        # Course installation results
+        output = ''
+
         # An array of unicode strings will be passed, they need to be integers
         # for the query
         selected_courses = [int(cid) for cid in
                             request.form.getlist('course')]
 
-        site_url = Site.query.filter_by(id=request.form.get('site'))\
-                   .first().baseurl
+         # The CourseDetail objects needed to generate the url
+        courses = CourseDetail.query.filter(CourseDetail
+                                            .course_id.in_(selected_courses))\
+                                        .all()
 
-        # The site to install the courses
-        site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
-               site_url,
-               app.config['INSTALL_COURSE_WS_TOKEN'],
-               app.config['INSTALL_COURSE_WS_FUNCTION'])
-        site = str(site.encode('utf-8'))
+        site_ids = [site_id for site_id in request.form.getlist('site')]
+        site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
 
-        # The CourseDetail objects needed to generate the url
-        courses = []
-        course_list = db.session.query(CourseDetail)\
-                        .filter(CourseDetail.course_id
-                            .in_(selected_courses))
-        for cid in selected_courses:
-            courses.append(course_list.filter_by(course_id=cid)
-                    .order_by(CourseDetail.updated.desc())
-                    .first())
+        for site_url in site_urls:
+            # The site to install the courses
+            site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+                   site_url,
+                   app.config['INSTALL_COURSE_WS_TOKEN'],
+                   app.config['INSTALL_COURSE_WS_FUNCTION'])
+            site = str(site.encode('utf-8'))
 
-        # Course installation results
-        output = ''
+            # Loop through the courses, generate the command to be run, run it, and
+            # append the ouput to output
+            #
+            # Currently this will break as our db is not setup correctly yet
+            for course in courses:
+                #Courses are detached from session for being inactive for too long.
+                course.course.name
+                install_course_to_site.delay(course, site)
 
-        # Loop through the courses, generate the command to be run, run it, and
-        # append the ouput to output
-        #
-        # Currently this will break as our db is not setup correctly yet
-        for course in courses:
-            #Courses are detached from session for being inactive for too long.
-            course.course.name
-            output += install_course_to_site.delay(course, site).get()
+            output += str(len(courses)) + " course install(s) for " + site_url + " started.\n"
 
         return render_template('install_course_output.html',
-                               output=output,
-                               user=current_user)
+                                output=output,
+                                user=current_user)
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):

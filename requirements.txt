@@ -20,12 +20,10 @@ celery
 distribute
 httplib2
 kombu
+lxml
 oauth2
-pycurl
 python-dateutil
 requests
 six
-wsgiref
-alembic
 sphinx
-pycurl
+wsgiref
