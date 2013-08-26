@@ -339,7 +339,7 @@ def view_school_courses(school_id):
                 users += detail.totalusers
 
     # Get course list
-    course_details = db.session.query("id", "status") \
+    course_details = db.session.query("id", "task_id", "status", "date_done") \
     .from_statement("SELECT * "
     "FROM celery_taskmeta") \
     .all()
