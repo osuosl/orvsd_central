@@ -293,7 +293,9 @@ def install_course():
                        app.config['INSTALL_COURSE_WS_FUNCTION'])
                 site = str(site.encode('utf-8'))
 
+                #Courses are detached from session for being inactive for too long.
                 course.course.name
+
                 install_course_to_site.delay(course, site)
 
             output += str(len(site_urls)) + " course install(s) for " + course.course.name + " started.\n"
