@@ -10,7 +10,7 @@
     <ul>
     {% if course_list|length %}
         {% for course in course_list %}
-            <li>{{course}}</li>
+            <li>{{course|id}}</li>
         {% endfor %}
     {% else %}
         <p>No courses installed!</p>

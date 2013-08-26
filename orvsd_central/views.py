@@ -338,9 +338,15 @@ def view_school_courses(school_id):
                 teachers += detail.teachers
                 users += detail.totalusers
 
+    # Get course list
+    course_details = db.session.query("id", "status") \
+    .from_statement("SELECT * "
+    "FROM celery_taskmeta") \
+    .all()
+
     # Return a pre-compiled template to be dumped into the view template
     template = t.render(name=school.name, admins=admins, teachers=teachers,
-                        users=users, user=current_user, course_list=range(10))
+                        users=users, user=current_user, course_list=course_details)
 
     return render_template('view.html', content=template, user=current_user)
 
