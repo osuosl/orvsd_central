@@ -12,9 +12,6 @@ Sphinx
 WTForms
 Werkzeug
 alembic
-WTForms
-Werkzeug
-alembic
 amqp
 anyjson
 argparse
