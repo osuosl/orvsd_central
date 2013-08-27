@@ -61,6 +61,13 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % (self.name)
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'name' : self.name,
+                 'email' : self.email,
+                 # Don't reveal passwords
+                 'password' : '********',
+                 'role' : self.role }
 
 class District(db.Model):
     """
@@ -87,6 +94,11 @@ class District(db.Model):
     def get_properties(self):
         return ['id', 'name', 'shortname', 'base_path']
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'name' : self.name,
+                 'shortname' : self.shortname,
+                 'base_path' : self.base_path }
 
 class School(db.Model):
     """
@@ -121,6 +133,14 @@ class School(db.Model):
 
     def get_properties(self):
         return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license']
+
+    def serialize(self):
+        return { 'id' : self.id,
+                 'district_id' : self.district_id,
+                 'name' : self.name,
+                 'shortname' : self.shortname,
+                 'domain' : self.domain,
+                 'license' : self.license }
 
 
 class Site(db.Model):
@@ -168,6 +188,14 @@ class Site(db.Model):
         return ['id', 'school_id', 'name', 'sitetype',
                 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'name' : self.name,
+                 'sitetype' : self.sitetype,
+                 'baseurl' : self.baseurl,
+                 'basepath' : self.basepath,
+                 'jenkins_cron_job' : self.jenkins_cron_job,
+                 'location' : self.location }
 
 class SiteDetail(db.Model):
     """
@@ -213,6 +241,20 @@ class SiteDetail(db.Model):
                 self.totalusers, self.adminusers, self.teachers,
                 self.activeusers, self.totalcourses, self.timemodified)
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'site_id' : self.site_id,
+                 'courses' : self.courses,
+                 'siteversion' : self.siteversion,
+                 'siterelease' : self.siterelease,
+                 'adminemail' : self.adminemail,
+                 'totalusers' : self.totalusers,
+                 'adminusers' : self.adminusers,
+                 'teachers' : self.teachers,
+                 'activeusers' : self.activeusers,
+                 'totalcourses' : self.totalcourses,
+                 'timemodified' : self.timemodified }
+
 
 class Course(db.Model):
     """
@@ -251,6 +293,14 @@ class Course(db.Model):
     def get_properties(self):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'serial' : self.serial,
+                 'name' : self.name,
+                 'shortname' : self.shortname,
+                 'license' : self.license,
+                 'category' : self.category,
+                 'source' : self.source }
 
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
@@ -281,3 +331,12 @@ class CourseDetail(db.Model):
         return "<CourseDetail('%s','%s','%s','%s','%s','%s')>" % \
                (self.course_id, self.filename, self.version,
                 self.updated, self.active, self.moodle_version)
+
+    def serialize(self):
+        return { 'id' : self.id,
+                 'course_id' : self.course_id,
+                 'filename' : self.filename,
+                 'version' : self.version,
+                 'updated' : self.updated,
+                 'active' : self.active,
+                 'moodle_version' : self.moodle_version }
