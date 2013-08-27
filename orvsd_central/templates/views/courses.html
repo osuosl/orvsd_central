@@ -16,9 +16,9 @@
         <div class="span4">Date completed</div>
         <br />
         {% for course in course_list %}
-            <div class="span4">{{course.task_id}}</div>
-            <div class="span2">{{course.status}}</div>
-            <div class="span4">{{course.date_done}}</div>
+            <div class="span4">{{course.uuid}}</div>
+            <div class="span2">{{course.state}}</div>
+            <div class="span4">{{course.timestamp}}</div>
             <br />
         {% endfor %}
     {% else %}
