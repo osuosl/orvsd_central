@@ -341,9 +341,12 @@ def view_school_courses(school_id):
     # Get course list
     resp = requests.get('http://localhost:5555/api/tasks').json()
     course_details = [{'uuid':v['uuid'],
-                       'state':v['state'],
-                       'timestamp':v['timestamp']}
+                       'task_state':v['state'],
+                       'time_completed':v['timestamp'],
+                       'course_state':'TODO: course_state'}
                       for k,v in resp.iteritems()]
+
+    # TODO: sort course_details by.. timestamp?
 
     # Return a pre-compiled template to be dumped into the view template
     template = t.render(name=school.name, admins=admins, teachers=teachers,

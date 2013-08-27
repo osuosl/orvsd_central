@@ -12,13 +12,24 @@
 
     {% if course_list|length %}
         <div class="span4">Task ID</div>
-        <div class="span2">Status</div>
-        <div class="span4">Date completed</div>
+        <div class="span1">Celery state</div>
+        <div class="span2">Date completed</div>
+        <div class="span3">Course state</div>
+        <br />
         <br />
         {% for course in course_list %}
             <div class="span4">{{course.uuid}}</div>
-            <div class="span2">{{course.state}}</div>
-            <div class="span4">{{course.timestamp}}</div>
+
+            {% if course.task_state == "SUCCESS" %}
+                <div class="span1 celery-success">{{course.task_state}}</div>
+            {% elif course.task_state == "FAILURE" %}
+                <div class="span1 celery-important">{{course.task_state}}</div>
+            {% else %}
+                <div class="span1 celery-default">{{course.task_state}}</div>
+            {% endif %}
+
+            <div class="span2">{{course.time_completed}}</div>
+            <div class="span3">{{course.course_state}}</div>
             <br />
         {% endfor %}
     {% else %}
