@@ -2,6 +2,8 @@ from orvsd_central import db
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+import hashlib
+import time
 
 sites_courses = db.Table('sites_courses',
                          db.Model.metadata,
@@ -142,11 +144,15 @@ class Site(db.Model):
     jenkins_cron_job = db.Column(db.DateTime)
     # what machine is this on, or is it in the moodle cloud?
     location = db.Column(db.String(255))
+    api_key = db.Column(db.String(40))
 
     site_details = db.relationship("SiteDetail", backref=db.backref('sites'))
     courses = db.relationship("Course",
                               secondary='sites_courses',
                               backref='sites')
+
+    def generate_new_key(self):
+        self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
     def __init__(self, name, sitetype, baseurl,
                  basepath, jenkins_cron_job, location):
@@ -245,8 +251,8 @@ class Course(db.Model):
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % \
-               (self.name, self.shortname, self.filename,
-                self.license, self.category, self.version)
+               (self.serial, self.name, self.shortname,
+                self.license, self.category, self.source)
 
     def get_properties(self):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
@@ -267,17 +273,20 @@ class CourseDetail(db.Model):
     updated = db.Column(db.DateTime)
     active = db.Column(db.Boolean)
     moodle_version = db.Column(db.String(255))
+    moodle_course_id = db.Column(db.Integer)
 
     def __init__(self, course_id, serial, filename, version,
-                 updated, active, moodle_version):
+                 updated, active, moodle_version, moodle_course_id):
         self.course_id = course_id
         self.filename = filename
         self.version = version
         self.updated = updated
         self.active = active
         self.moodle_version = moodle_version
+        self.moodle_course_id = moodle_course_id
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s')>" % \
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
                (self.course_id, self.filename, self.version, self.updated,
-                self.active, self.moodle_version, self.source)
+                self.active, self.moodle_version, self.source,
+                self.moodle_course_version)

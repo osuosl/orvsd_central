@@ -209,7 +209,9 @@ def install_course():
         form = InstallCourse()
 
         # Query all moodle 2.2 courses
-        courses = CourseDetail.query.filter_by(moodle_version='2.2').all()
+        courses = db.session.query(CourseDetail).filter(
+                                        CourseDetail.moodle_version.like('2.5%')) \
+                                    .all()
 
         # Query all moodle sites
         sites = Site.query.filter_by(sitetype='moodle').all()
@@ -246,42 +248,44 @@ def install_course():
                                form=form, user=current_user)
 
     elif request.method == 'POST':
+        # Course installation results
+        output = ''
+
         # An array of unicode strings will be passed, they need to be integers
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-        site_url = Site.query.filter_by(id=request.form.get('site')).first().baseurl
-
-        # The site to install the courses
-        site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
-               site_url,
-               app.config['INSTALL_COURSE_WS_TOKEN'],
-               app.config['INSTALL_COURSE_WS_FUNCTION'])
-        site = str(site.encode('utf-8'))
-
-        # The CourseDetail objects needed to generate the url
+         # The CourseDetail objects needed to generate the url
         courses = CourseDetail.query.filter(CourseDetail
                                             .course_id.in_(selected_courses))\
-                                    .all()
+                                        .all()
 
-        # Course installation results
-        output = ''
 
-        # Loop through the courses, generate the command to be run, run it, and
-        # append the ouput to output
-        #
-        # Currently this will break as our db is not setup correctly yet
-        for course in courses:
-            #Courses are detached from session for being inactive for too long.
-            course.course.name
-            resp = install_course_to_site.delay(course, site).get()
+        site_ids = [site_id for site_id in request.form.getlist('site')]
+        site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
 
-            output += "%s\n\n%s\n\n\n" % \
-                      (course.course.shortname, resp)
+        for site_url in site_urls:
+            # The site to install the courses
+            site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+                   site_url,
+                   app.config['INSTALL_COURSE_WS_TOKEN'],
+                   app.config['INSTALL_COURSE_WS_FUNCTION'])
+            site = str(site.encode('utf-8'))
+
+            # Loop through the courses, generate the command to be run, run it, and
+            # append the ouput to output
+            #
+            # Currently this will break as our db is not setup correctly yet
+            for course in courses:
+                #Courses are detached from session for being inactive for too long.
+                course.course.name
+                install_course_to_site.delay(course, site)
+
+            output += str(len(courses)) + " course install(s) for " + site_url + " started.\n"
 
         return render_template('install_course_output.html',
-                               output=output,
-                               user=current_user)
+                                output=output,
+                                user=current_user)
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
@@ -534,3 +538,10 @@ def district_details(schools):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+@app.route("/1/sites/<baseurl>/moodle")
+def get_moodle_sites(baseurl):
+    school_id = Site.query.filter_by(baseurl=baseurl).first().school_id
+    moodle_sites = Site.query.filter_by(school_id=school_id).all()
+    data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
+    return jsonify(content=data)
