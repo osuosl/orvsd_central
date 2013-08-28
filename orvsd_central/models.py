@@ -2,6 +2,8 @@ from orvsd_central import db
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+import hashlib
+import time
 
 sites_courses = db.Table('sites_courses',
                          db.Model.metadata,
@@ -142,11 +144,15 @@ class Site(db.Model):
     jenkins_cron_job = db.Column(db.DateTime)
     # what machine is this on, or is it in the moodle cloud?
     location = db.Column(db.String(255))
+    api_key = db.Column(db.String(40))
 
     site_details = db.relationship("SiteDetail", backref=db.backref('sites'))
     courses = db.relationship("Course",
                               secondary='sites_courses',
                               backref='sites')
+
+    def generate_new_key(self):
+        self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
     def __init__(self, name, sitetype, baseurl,
                  basepath, jenkins_cron_job, location):
@@ -168,6 +174,14 @@ class Site(db.Model):
         return ['id', 'school_id', 'name', 'sitetype',
                 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'name' : self.name,
+                 'sitetype' : self.sitetype,
+                 'baseurl' : self.baseurl,
+                 'basepath' : self.basepath,
+                 'jenkins_cron_job' : self.jenkins_cron_job,
+                 'location' : self.location }
 
 class SiteDetail(db.Model):
     """
@@ -212,6 +226,20 @@ class SiteDetail(db.Model):
                (self.siteversion, self.siterelease, self.adminemail,
                 self.totalusers, self.adminusers, self.teachers,
                 self.activeusers, self.totalcourses, self.timemodified)
+
+    def serialize(self):
+        return { 'id' : self.id,
+                 'site_id' : self.site_id,
+                 'courses' : self.courses,
+                 'siteversion' : self.siteversion,
+                 'siterelease' : self.siterelease,
+                 'adminemail' : self.adminemail,
+                 'totalusers' : self.totalusers,
+                 'adminusers' : self.adminusers,
+                 'teachers' : self.teachers,
+                 'activeusers' : self.activeusers,
+                 'totalcourses' : self.totalcourses,
+                 'timemodified' : self.timemodified }
 
 
 class Course(db.Model):
@@ -280,7 +308,7 @@ class CourseDetail(db.Model):
         self.moodle_course_id = moodle_course_id
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s')>" % \
-               (self.course_id, self.filename, self.version,
-                self.updated, self.active, self.moodle_version,
-                self.moodle_course_id)
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
+               (self.course_id, self.filename, self.version, self.updated,
+                self.active, self.moodle_version, self.source,
+                self.moodle_course_version)

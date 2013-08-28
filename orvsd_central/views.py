@@ -231,7 +231,7 @@ def install_course():
                                 .order_by(SiteDetail.timemodified.desc()
                                 ).first()
 
-            if details:
+            if details is not None:
                 moodle_22_sites.append(site)
 
         # Generate the list of choices for the template
@@ -265,6 +265,9 @@ def install_course():
                                form=form, user=current_user)
 
     elif request.method == 'POST':
+        # Course installation results
+        output = ''
+
         # An array of unicode strings will be passed, they need to be integers
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
@@ -287,21 +290,31 @@ def install_course():
                                 .order_by(CourseDetail.updated.desc())
                                 .first())
 
-        # Course installation results
-        output = ''
+        site_ids = [site_id for site_id in request.form.getlist('site')]
+        site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
 
-        # Loop through the courses, generate the command to be run, run it, and
-        # append the ouput to output
-        #
-        # Currently this will break as our db is not setup correctly yet
-        for course in courses:
-            #Courses are detached from session for being inactive for too long.
-            course.course.name
-            output += install_course_to_site.delay(course, site).get()
+        for site_url in site_urls:
+            # The site to install the courses
+            site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+                   site_url,
+                   app.config['INSTALL_COURSE_WS_TOKEN'],
+                   app.config['INSTALL_COURSE_WS_FUNCTION'])
+            site = str(site.encode('utf-8'))
+
+            # Loop through the courses, generate the command to be run, run it, and
+            # append the ouput to output
+            #
+            # Currently this will break as our db is not setup correctly yet
+            for course in courses:
+                #Courses are detached from session for being inactive for too long.
+                course.course.name
+                install_course_to_site.delay(course, site)
+
+            output += str(len(courses)) + " course install(s) for " + site_url + " started.\n"
 
         return render_template('install_course_output.html',
-                               output=output,
-                               user=current_user)
+                                output=output,
+                                user=current_user)
 
 
 @app.route("/courses/filter", methods=["POST"])
@@ -588,6 +601,25 @@ def district_details(schools):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+
+#ORVSD Central API
+
+@app.route("/1/sites/<baseurl>")
+def get_site_by_url(baseurl):
+    site = Site.query.filter_by(baseurl=baseurl).first()
+    if site:
+        site_details = SiteDetail.query.filter_by(site_id=site.id) \
+                                       .order_by(SiteDetail
+                                                 .timemodified
+                                                 .desc()) \
+                                       .first()
+
+        site_info = dict(site.serialize().items() + \
+                    site_details.serialize().items())
+
+        return jsonify(content=site_info)
+    return jsonify(content={'error': 'Site not found'})
 
 
 @app.route("/1/sites/<baseurl>/moodle")

@@ -41,6 +41,6 @@ class AddCourse(Form):
 
 class InstallCourse(Form):
     defaults = [('None', '---')]
-    site = SelectField('Site', choices=defaults)
+    site = SelectMultipleField('Site', choices=defaults)
     course = SelectMultipleField('Course', choices=defaults)
     filter = SelectField('Filter', choices=defaults)
