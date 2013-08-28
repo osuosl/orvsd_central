@@ -372,6 +372,7 @@ def root():
 UPDATE
 """
 
+
 @app.route("/<category>/update")
 @login_required
 def update(category):
@@ -390,6 +391,28 @@ def update(category):
 
     abort(404)
 
+
+@app.route("/<category>/object/add", methods=["POST"])
+def add_object(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        inputs = {}
+        # Here we update our dict with new values
+        # A one liner is too messy :(
+        for column in obj.__table__.columns:
+            if column.name is not 'id':
+                inputs.update({column.name: string_to_type(
+                                request.form.get(column.name))})
+
+        new_obj = obj(**inputs)
+        db.session.add(new_obj)
+        db.session.commit()
+        return jsonify({'id': new_obj.id,
+                'message': "Object added successfully!"})
+
+    abort(404)
+
+
 @app.route("/<category>/<id>", methods=["GET"])
 def get_object(category, id):
     obj = get_obj_by_category(category)
@@ -400,6 +423,7 @@ def get_object(category, id):
 
     abort(404)
 
+
 @app.route("/<category>/<id>/update", methods=["POST"])
 def update_object(category, id):
     obj = get_obj_by_category(category)
@@ -408,14 +432,18 @@ def update_object(category, id):
         if modified_obj:
             inputs = {}
             # Here we update our dict with new
-            [inputs.update( {key : string_to_type(request.form.get(key))})
+            [inputs.update({key: string_to_type(request.form.get(key))})
                         for key in modified_obj.serialize().keys()]
 
-            db.session.query(obj).filter_by(id=request.form.get("id")).update(inputs)
+            db.session.query(obj).filter_by(
+                    id=request.form.get("id")) \
+                .update(inputs)
+
             db.session.commit()
             return "Object updated sucessfully!"
 
     abort(404)
+
 
 @app.route("/<category>/<id>/delete", methods=["POST"])
 def delete_object(category, id):
@@ -429,6 +457,14 @@ def delete_object(category, id):
 
     abort(404)
 
+
+@app.route("/<category>/keys")
+def get_keys(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        cols = dict((column.name, '') for column in
+                    obj.__table__.columns)
+        return jsonify(cols)
 
 
 def string_to_type(string):
@@ -446,6 +482,7 @@ def string_to_type(string):
         if string.isdigit():
             return int(string)
     return string
+
 """
 REMOVE
 """

@@ -1,15 +1,29 @@
 $(document).on("ready", function() {
     var pairs;
+    // [1] will skip the first /, which returns an empty string and
+    // give the category we are looking for.
     var category = window.location.pathname.split("/")[1]
     var url;
     $("#object_list").on("change", function() {
-        // [1] will skip the first /, which returns an empty string and
-        // give the category we are looking for.
         url = "/" + category + "/" + $(this).val();
         $.get(url, function(resp) {
             var rows = "";
             for (var key in resp) {
                 rows += generate_row(key, resp[key]);
+            }
+            $("#form").empty();
+            $("#form").html(rows);
+            $("#message").empty();
+            pairs = resp;
+    });
+
+    });
+    $("#add").on("click", function() {
+        url = "/" + category;
+        $.get(url + "/keys", function(resp) {
+            var rows = "";
+            for (var key in resp) {
+                rows += generate_row(key, "");
             }
             $("#form").empty();
             $("#form").html(rows);
@@ -22,12 +36,22 @@ $(document).on("ready", function() {
         for (var key_name in pairs) {
             data[key_name] = $("#"+key_name).val();
         }
-        console.log($(this).attr("name"));
-        $.post(url + "/" + $(this).attr("name"), data).done(function(resp) {
-            $("#message").html(resp);
-        });
+        if (data["id"] == "") {
+            $.post(url + "/object/add", data).done(function(resp) {
+                $("#message").html(resp["message"]);
+                $("#id").val(resp["id"]);
+            });
+        }
+        else {
+            $.post(url + "/" + $(this).attr("name"), data).done(function(resp) {
+                $("#message").html(resp);
+            });
+        }
     });
 });
+
+function update_object(category, id) {
+    }
 
 // Used to generate the html for an input field for an attribute.
 function generate_row(key, value) {
