@@ -3,21 +3,21 @@ from flask import (request, render_template, flash, g, session, redirect,
 from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db, app, login_manager, google
+from orvsd_central import db, app, login_manager, google, celery
 from forms import (LoginForm, AddDistrict, AddSchool, AddUser,
                    InstallCourse, AddCourse)
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-import urllib2
+import celery
 import json
 import re
 import subprocess
 import StringIO
-import urllib
+import requests
 
 
 """
@@ -190,84 +190,129 @@ def add_course():
 INSTALL
 """
 
+@app.route('/get_site_by/<int:site_id>', methods=['GET'])
+def site_by_id(site_id):
+    address = Site.query.filter_by(id=site_id).first().baseurl
+    return jsonify(address=address)
 
 @app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
+    """
+    Displays a form for the admin user to pick courses to install on a site
+
+    Returns:
+        Rendered template
+    """
+
 
     if request.method == 'GET':
         form = InstallCourse()
 
-        # Get all the available course modules
-        all_courses = CourseDetail.query.all()
+        # Query all moodle 2.2 courses
+        courses = db.session.query(CourseDetail).filter(
+                                        CourseDetail.moodle_version.like('2.5%')) \
+                                    .all()
+
+        # Query all moodle sites
+        sites = Site.query.filter_by(sitetype='moodle').all()
+        moodle_22_sites = []
+
+        # For all sites query the SiteDetail to see if it's a moodle 2.2 site
+        for site in sites:
+            details = db.session.query(SiteDetail).filter(and_(
+                SiteDetail.site_id == site.id,
+                SiteDetail.siterelease.like('2.2%'))
+            ).order_by(SiteDetail.timemodified.desc()).first()
+
+            if details is not None:
+                moodle_22_sites.append(site)
 
         # Generate the list of choices for the template
-        choices = []
+        courses_info = []
+        sites_info = []
 
-        for course in all_courses:
-            choices.append((course.course_id,
-                            "%s - Version: %s - Moodle Version: %s" %
-                            (course.course.name, course.version,
-                             course.moodle_version)))
+        # Create the courses list
+        for course in courses:
+            courses_info.append(
+                (course.course_id, "%s - v%s"
+                % (course.course.name, course.version)))
 
-        form.course.choices = choices
+        # Create the sites list
+        for site in moodle_22_sites:
+            sites_info.append((site.id, site.name))
+
+        form.course.choices = sorted(courses_info, key=lambda x: x[1])
+        form.site.choices = sorted(sites_info, key=lambda x: x[1])
 
         return render_template('install_course.html',
                                form=form, user=current_user)
 
     elif request.method == 'POST':
+        # Course installation results
+        output = ''
+
         # An array of unicode strings will be passed, they need to be integers
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-        # The site to install the courses
-        site = "%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
-               request.form.get('site'),
-               app.config['INSTALL_COURSE_WS_TOKEN'],
-               app.config['INSTALL_COURSE_WS_FUNCTION'])
-        site = str(site.encode('utf-8'))
-
-        # The CourseDetail objects of info needed to generate the url
+         # The CourseDetail objects needed to generate the url
         courses = CourseDetail.query.filter(CourseDetail
                                             .course_id.in_(selected_courses))\
-                                    .all()
+                                        .all()
 
-        # Appended to buy all the courses being installed
-        output = ''
 
-        # Loop through the courses, generate the command to be run, run it, and
-        # append the ouput to output
-        #
-        # Currently this will break ao our db is not setup correctly yet
-        for course in courses:
-            # To get the file path we need the text input, the lowercase of
-            # source, and the filename
-            fp = app.config['INSTALL_COURSE_FILE_PATH']
-            fp += course.source.lower() + '/'
+        site_ids = [site_id for site_id in request.form.getlist('site')]
+        site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
 
-            data = {'filepath': fp,
-                    'file': course.filename,
-                    'courseid': course.course_id,
-                    'coursename': course.course.name,
-                    'shortname': course.course.shortname,
-                    'category': '1',
-                    'firstname': 'orvsd',
-                    'lastname': 'central',
-                    'city': 'none',
-                    'username': 'admin',
-                    'email': 'a@a.aa',
-                    'pass': 'testo123'}
+        for site_url in site_urls:
+            # The site to install the courses
+            site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+                   site_url,
+                   app.config['INSTALL_COURSE_WS_TOKEN'],
+                   app.config['INSTALL_COURSE_WS_FUNCTION'])
+            site = str(site.encode('utf-8'))
 
-            postdata = urllib.urlencode(data)
+            # Loop through the courses, generate the command to be run, run it, and
+            # append the ouput to output
+            #
+            # Currently this will break as our db is not setup correctly yet
+            for course in courses:
+                #Courses are detached from session for being inactive for too long.
+                course.course.name
+                install_course_to_site.delay(course, site)
 
-            resp = urllib.urlopen(site, data=postdata)
-
-            output += "%s\n\n%s\n\n\n" % (course.course.shortname, resp.read())
+            output += str(len(courses)) + " course install(s) for " + site_url + " started.\n"
 
         return render_template('install_course_output.html',
-                               output=output,
-                               user=current_user)
+                                output=output,
+                                user=current_user)
 
+@celery.task(name='tasks.install_course')
+def install_course_to_site(course, site):
+    # To get the file path we need the text input, the lowercase of
+    # source, and the filename
+    fp = app.config['INSTALL_COURSE_FILE_PATH']
+    fp += course.course.source.lower() + '/'
 
+    data = {'filepath': fp,
+            'file': course.filename,
+            'courseid': course.course_id,
+            'coursename': course.course.name,
+            'shortname': course.course.shortname,
+            'category': '1',
+            'firstname': 'orvsd',
+            'lastname': 'central',
+            'city': 'none',
+            'username': 'admin',
+            'email': 'a@a.aa',
+            'pass': 'testo123'}
+
+    resp = requests.post(site, data=data)
+
+    # Unfortunately the response object to turned into unicode
+    # when returned by the celery job, so we must send the
+    # data we need, instead of the whole object.
+    return resp.text
 """
 VIEW
 """
@@ -366,6 +411,7 @@ def root():
     if not current_user.is_anonymous():
         return redirect(url_for('report'))
     return redirect(url_for('login'))
+
 
 """
 REMOVE
@@ -511,3 +557,11 @@ def get_site_by_url(baseurl):
 
         return jsonify(content=site_info)
     return jsonify(content={'error': 'Site not found'})
+
+
+@app.route("/1/sites/<baseurl>/moodle")
+def get_moodle_sites(baseurl):
+    school_id = Site.query.filter_by(baseurl=baseurl).first().school_id
+    moodle_sites = Site.query.filter_by(school_id=school_id).all()
+    data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
+    return jsonify(content=data)
