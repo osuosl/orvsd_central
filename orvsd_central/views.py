@@ -190,10 +190,12 @@ def add_course():
 INSTALL
 """
 
+
 @app.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
     address = Site.query.filter_by(id=site_id).first().baseurl
     return jsonify(address=address)
+
 
 @app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
@@ -203,7 +205,6 @@ def install_course():
     Returns:
         Rendered template
     """
-
 
     if request.method == 'GET':
         form = InstallCourse()
@@ -250,10 +251,12 @@ def install_course():
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-        site_url = Site.query.filter_by(id=request.form.get('site')).first().baseurl
+        site_url = Site.query.filter_by(id=request.form.get('site')
+                    ).first().baseurl
 
         # The site to install the courses
-        site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+        site = ("http://%s/webservice/rest/server.php?"
+               "wstoken=%s&wsfunction=%s") % (
                site_url,
                app.config['INSTALL_COURSE_WS_TOKEN'],
                app.config['INSTALL_COURSE_WS_FUNCTION'])
@@ -282,6 +285,7 @@ def install_course():
         return render_template('install_course_output.html',
                                output=output,
                                user=current_user)
+
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
