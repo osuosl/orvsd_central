@@ -194,10 +194,12 @@ def add_course():
 INSTALL
 """
 
+
 @app.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
     address = Site.query.filter_by(id=site_id).first().baseurl
     return jsonify(address=address)
+
 
 @app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
@@ -208,14 +210,13 @@ def install_course():
         Rendered template
     """
 
-
     if request.method == 'GET':
         form = InstallCourse()
 
         # Query all moodle 2.2 courses
         courses = db.session.query(CourseDetail).filter(
-                                   CourseDetail.moodle_version.like("2.5%")).all()
-
+                                   CourseDetail.moodle_version
+                                    .like("2.5%")).all()
 
         # Query all moodle sites
         sites = Site.query.filter_by(sitetype='moodle').all()
@@ -227,7 +228,8 @@ def install_course():
                                 .filter(and_(SiteDetail.site_id == site.id,
                                              SiteDetail.siterelease
                                                        .like('2.2%'))) \
-                                .order_by(SiteDetail.timemodified.desc()).first()
+                                .order_by(SiteDetail.timemodified.desc()
+                                ).first()
 
             if details:
                 moodle_22_sites.append(site)
@@ -250,14 +252,14 @@ def install_course():
                                     (course.course.name)))
                 listed_courses.append(course.course_id)
 
-
         # Create the sites list
         for site in moodle_22_sites:
             sites_info.append((site.id, site.name))
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
-        form.filter.choices = [(folder, folder) for folder in get_course_folders()]
+        form.filter.choices = [(folder, folder) for folder in
+                                get_course_folders()]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
@@ -267,10 +269,12 @@ def install_course():
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-        site_url = Site.query.filter_by(id=request.form.get('site')).first().baseurl
+        site_url = Site.query.filter_by(id=request.form.get('site')
+                    ).first().baseurl
 
         # The site to install the courses
-        site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+        site = ("http://%s/webservice/rest/server.php?"
+               "wstoken=%s&wsfunction=%s") % (
                site_url,
                app.config['INSTALL_COURSE_WS_TOKEN'],
                app.config['INSTALL_COURSE_WS_FUNCTION'])
@@ -280,8 +284,8 @@ def install_course():
         courses = []
         for cid in selected_courses:
             courses.append(CourseDetail.query.filter_by(id=cid)
-                                             .order_by(CourseDetail.updated.desc())
-                                             .first())
+                                .order_by(CourseDetail.updated.desc())
+                                .first())
 
         # Course installation results
         output = ''
@@ -299,6 +303,7 @@ def install_course():
                                output=output,
                                user=current_user)
 
+
 @app.route("/courses/filter", methods=["POST"])
 def get_course_list():
     dir = request.form.get('filter')
@@ -312,12 +317,14 @@ def get_course_list():
     # This means the folder selected was not the source folder or None.
     if not courses:
         courses = db.session.query(CourseDetail).filter(
-                                   CourseDetail.filename.like("%"+dir+"%")).all()
+                                        CourseDetail.filename
+                                            .like("%"+dir+"%")).all()
 
     courses = sorted(courses, key=lambda x: x.course.name)
 
-    serialized_courses = [{'id' : course.course_id, 'name' : course.course.name}
-                            for course in courses]
+    serialized_courses = [{'id': course.course_id,
+                            'name': course.course.name}
+                                for course in courses]
     return jsonify(courses=serialized_courses)
 
 
@@ -329,6 +336,7 @@ def get_course_folders():
             if folder not in folders:
                 folders.append(folder)
     return folders
+
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
@@ -581,12 +589,14 @@ def district_details(schools):
             'teachers': teacher_count,
             'users': user_count}
 
+
 @app.route("/1/sites/<baseurl>/moodle")
 def get_moodle_sites(baseurl):
     school_id = Site.query.filter_by(baseurl=baseurl).first().school_id
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
     return jsonify(content=data)
+
 
 @app.route('/celery/status/<celery_id>')
 def get_task_status(celery_id):
@@ -597,13 +607,6 @@ def get_task_status(celery_id):
     return jsonify(status=status)
 
 
-#TODO:
-'''
-1. Comment more
-2. Separate into seperate functions
-3. Fix hacks/messy code with elementtree
-4. Note whether or not course_id is reliably being found.
-'''
 @app.route("/courses/update", methods=['GET', 'POST'])
 def update_courselist():
     num_courses = 0
@@ -617,16 +620,19 @@ def update_courselist():
                 for file in files:
                     full_file_path = os.path.join(root, file)
                     file_path = full_file_path.replace(base_path+source, '')
-                    course = CourseDetail.query.filter_by(filename=file_path).first()
+                    course = CourseDetail.query.filter_by(
+                                filename=file_path).first()
                     # Check to see if it exists in the database already
 
                     if not course and os.path.isfile(full_file_path):
-                        create_course_from_moodle_backup(base_path, file_path, source)
+                        create_course_from_moodle_backup(base_path,
+                            file_path, source)
                         num_courses += 1
 
         if num_courses > 0:
             flash(str(num_courses) + ' new courses added successfully!')
     return render_template('update_courses.html')
+
 
 def create_course_from_moodle_backup(base_path, file_path, source):
     # Needed to delete extracted xml once operation is done
@@ -637,8 +643,12 @@ def create_course_from_moodle_backup(base_path, file_path, source):
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
     xml = Soup(xmlfile.read(), "xml")
     info = xml.moodle_backup.information
-    old_course = Course.query.filter_by(name=info.original_course_fullname.string).first() or \
-                Course.query.filter_by(shortname=info.original_course_shortname.string).first()
+    old_course = Course.query.filter_by(
+                        name=info.original_course_fullname.string
+                    ).first() or \
+                 Course.query.filter_by(
+                        shortname=info.original_course_shortname.string
+                    ).first()
 
     if not old_course:
         # Create a course since one is unable to be found with that name.
@@ -662,12 +672,12 @@ def create_course_from_moodle_backup(base_path, file_path, source):
     version = regex[0] if list(regex) else None
 
     new_course_detail = CourseDetail(course_id=course_id,
-                                         filename=file_path,
-                                         version=version,
-                                         updated=datetime.datetime.now(),
-                                         active=True,
-                                         moodle_version=info.moodle_release.string,
-                                         moodle_course_id=info.original_course_id.string)
+                             filename=file_path,
+                             version=version,
+                             updated=datetime.datetime.now(),
+                             active=True,
+                             moodle_version=info.moodle_release.string,
+                             moodle_course_id=info.original_course_id.string)
 
     db.session.add(new_course_detail)
     db.session.commit()
