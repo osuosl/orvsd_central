@@ -192,8 +192,8 @@ INSTALL
 
 @app.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
-    address = Site.query.filter_by(id=site_id).first().baseurl
-    return jsonify(address=address)
+    name = Site.query.filter_by(id=site_id).first().name
+    return jsonify(name=name)
 
 @app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
@@ -239,7 +239,7 @@ def install_course():
 
         # Create the sites list
         for site in moodle_22_sites:
-            sites_info.append((site.id, site.name))
+            sites_info.append((site.id, site.baseurl))
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
