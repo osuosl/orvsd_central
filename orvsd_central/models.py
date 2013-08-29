@@ -308,7 +308,7 @@ class CourseDetail(db.Model):
         self.moodle_course_id = moodle_course_id
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
-               (self.course_id, self.filename, self.version, self.updated,
-                self.active, self.moodle_version, self.source,
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s')>" % \
+               (self.course_id, self.filename, self.version,
+                self.updated, self.active, self.moodle_version,
                 self.moodle_course_id)

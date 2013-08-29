@@ -244,10 +244,6 @@ def install_course():
         listed_courses = []
         # Create the courses list
         for course in courses:
-            courses_info.append(
-                (course.course_id, "%s - v%s"
-                % (course.course.name, course.version)))
-
             if course.course_id not in listed_courses:
                 if course.version:
                     courses_info.append(
