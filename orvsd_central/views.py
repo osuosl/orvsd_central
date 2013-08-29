@@ -455,7 +455,7 @@ def update_object(category, id):
         if modified_obj:
             inputs = {}
             # Here we update our dict with new
-            [inputs.update( {key : string_to_type(request.form.get(key))})
+            [inputs.update({key : string_to_type(request.form.get(key))})
                         for key in modified_obj.serialize().keys()]
 
             db.session.query(obj).filter_by(id=request.form.get("id")).update(inputs)
