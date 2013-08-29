@@ -195,10 +195,12 @@ def add_course():
 INSTALL
 """
 
+
 @app.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
     address = Site.query.filter_by(id=site_id).first().baseurl
     return jsonify(address=address)
+
 
 @app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
@@ -209,14 +211,14 @@ def install_course():
         Rendered template
     """
 
-
     if request.method == 'GET':
         form = InstallCourse()
 
         # Query all moodle 2.2 courses
         courses = db.session.query(CourseDetail).filter(
-                                        CourseDetail.moodle_version.like('2.5%')) \
-                                    .all()
+                                        CourseDetail.moodle_version
+                                            .like('2.5%')
+                                    ).all()
 
         # Query all moodle sites
         sites = db.session.query(Site).filter(
@@ -253,7 +255,7 @@ def install_course():
                         (course.course.name, course.version)))
                 else:
                     courses_info.append(
-                        (course.course_id,"%s" %
+                        (course.course_id, "%s" %
                         (course.course.name)))
                 listed_courses.append(course.course_id)
 
@@ -282,23 +284,27 @@ def install_course():
                                         .all()
 
         site_ids = [site_id for site_id in request.form.getlist('site')]
-        site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
+        site_urls = [Site.query.filter_by(id=site_id).first().baseurl
+                        for site_id in site_ids]
 
         for course in courses:
             for site_url in site_urls:
                 # The site to install the courses
-                site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+                site = ("http://%s/webservice/rest/server.php?"
+                       "wstoken=%s&wsfunction=%s") % (
                        site_url,
                        app.config['INSTALL_COURSE_WS_TOKEN'],
                        app.config['INSTALL_COURSE_WS_FUNCTION'])
                 site = str(site.encode('utf-8'))
 
-                #Courses are detached from session for being inactive for too long.
+                # Courses are detached from session for being
+                # inactive for too long.
                 course.course.name
 
                 install_course_to_site.delay(course, site)
 
-            output += str(len(site_urls)) + " course install(s) for " + course.course.name + " started.\n"
+            output += (str(len(site_urls)) + " course install(s) for " +
+                       course.course.name + " started.\n")
 
         return render_template('install_course_output.html',
                                 output=output,
@@ -596,13 +602,6 @@ def get_task_status(celery_id):
     return jsonify(status=status)
 
 
-#TODO:
-'''
-1. Comment more
-2. Separate into seperate functions
-3. Fix hacks/messy code with elementtree
-4. Note whether or not course_id is reliably being found.
-'''
 @app.route("/courses/update", methods=['GET', 'POST'])
 def update_courselist():
     num_courses = 0
@@ -613,7 +612,8 @@ def update_courselist():
             for file in files:
                 full_file_path = os.path.join(root, file)
                 file_path = full_file_path.replace(base_path, '')
-                course = CourseDetail.query.filter_by(filename=file_path).first()
+                course = CourseDetail.query.filter_by(filename=file_path
+                                                ).first()
                 # Check to see if it exists in the database already
 
                 if not course and os.path.isfile(full_file_path):
@@ -624,6 +624,7 @@ def update_courselist():
             flash(str(num_courses) + ' new courses added successfully!')
     return render_template('update_courses.html')
 
+
 def create_course_from_moodle_backup(base_path, file_name):
     # Needed to delete extracted xml once operation is done
     project_folder = "/home/vagrant/orvsd_central/"
@@ -633,8 +634,12 @@ def create_course_from_moodle_backup(base_path, file_name):
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
     xml = Soup(xmlfile.read(), "xml")
     info = xml.moodle_backup.information
-    old_course = Course.query.filter_by(name=info.original_course_fullname.string).first() or \
-                Course.query.filter_by(shortname=info.original_course_shortname.string).first()
+    old_course = Course.query.filter_by(
+                        name=info.original_course_fullname.string
+                    ).first() or \
+                 Course.query.filter_by(
+                        shortname=info.original_course_shortname.string
+                    ).first()
 
     if not old_course:
         # Create a course since one is unable to be found with that name.
@@ -657,12 +662,12 @@ def create_course_from_moodle_backup(base_path, file_name):
     version = regex[0] if list(regex) else None
 
     new_course_detail = CourseDetail(course_id=course_id,
-                                         filename=file_name,
-                                         version=version,
-                                         updated=datetime.datetime.now(),
-                                         active=True,
-                                         moodle_version=info.moodle_release.string,
-                                         moodle_course_id=info.original_course_id.string)
+                             filename=file_name,
+                             version=version,
+                             updated=datetime.datetime.now(),
+                             active=True,
+                             moodle_version=info.moodle_release.string,
+                             moodle_course_id=info.original_course_id.string)
 
     db.session.add(new_course_detail)
     db.session.commit()
