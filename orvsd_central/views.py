@@ -347,7 +347,8 @@ def view_school_courses(school_id):
                        'course_state': 'TODO: course_state'}
                       for k, v in resp.iteritems()]
 
-    # TODO: sort course_details by.. timestamp?
+    # Sort course_details by timestamp.
+    course_details = sorted(course_details, key=lambda course: course['time_completed'])
 
     # Return a pre-compiled template to be dumped into the view template
     template = t.render(name=school.name, admins=admins, teachers=teachers,
