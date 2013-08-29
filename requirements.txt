@@ -26,6 +26,5 @@ python-dateutil
 requests
 six
 wsgiref
-alembic
 sphinx
 pycurl
