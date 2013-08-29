@@ -343,7 +343,7 @@ def view_school_courses(school_id):
     resp = requests.get('http://localhost:5555/api/tasks').json()
     course_details = [{'uuid': v['uuid'],
                        'task_state': v['state'],
-                       'time_completed': v['timestamp'],
+                       'time_completed': datetime.datetime.fromtimestamp(int(v['timestamp'])).strftime('%Y-%m-%d %H:%M:%S'),
                        'course_state': 'TODO: course_state'}
                       for k, v in resp.iteritems()]
 
