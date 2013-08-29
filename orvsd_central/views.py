@@ -17,6 +17,7 @@ import json
 import re
 import subprocess
 import StringIO
+import requests
 import urllib
 
 
@@ -340,11 +341,11 @@ def view_school_courses(school_id):
 
     # Get course list
     resp = requests.get('http://localhost:5555/api/tasks').json()
-    course_details = [{'uuid':v['uuid'],
-                       'task_state':v['state'],
-                       'time_completed':v['timestamp'],
-                       'course_state':'TODO: course_state'}
-                      for k,v in resp.iteritems()]
+    course_details = [{'uuid': v['uuid'],
+                       'task_state': v['state'],
+                       'time_completed': v['timestamp'],
+                       'course_state': 'TODO: course_state'}
+                      for k, v in resp.iteritems()]
 
     # TODO: sort course_details by.. timestamp?
 
