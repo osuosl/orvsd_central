@@ -127,66 +127,6 @@ def logout():
 
 
 """
-ADD
-"""
-
-
-@app.route("/add/district", methods=['GET', 'POST'])
-def add_district():
-    form = AddDistrict()
-    user = current_user
-    if request.method == "POST":
-        #Add district to db.
-        db.session.add(District(form.name.data,
-                                form.shortname.data,
-                                form.base_path.data))
-        db.session.commit()
-
-    return render_template('add_district.html', form=form, user=user)
-
-
-@login_required
-@app.route("/add/school", methods=['GET', 'POST'])
-def add_school():
-    form = AddSchool()
-    user = current_user
-    msg = ""
-
-    if request.method == "POST":
-        #The district_id is supposed to be an integer
-        #try:
-            #district = District.query.filter_by(id=int(form.district_id))
-            #                                          .all()
-            #if len(district) == 1:
-                #Add School to db
-        db.session.add(School(int(form.district_id.data),
-                              form.name.data, form.shortname.data,
-                              form.domain.data. form.license.data))
-        db.session.commit()
-            #else:
-            #    error_msg= "A district with that id doesn't exist!"
-        #except:
-        #    error_msg= "The entered district_id was not an integer!"
-    return render_template('add_school.html', form=form,
-                           msg=msg, user=user)
-
-
-@app.route("/add/course", methods=['GET', 'POST'])
-def add_course():
-    form = AddCourse()
-    user = current_user
-    msg = ""
-    if request.method == "POST":
-        db.session.add(Course(int(form.serial.data), form.name.data,
-                              form.shortname.data, form.license.data,
-                              form.category.data))
-        db.session.commit()
-        msg = "Course: "+form.name.data+"added successfully!"
-
-    return render_template('add_course.html', form=form, msg=msg, user=user)
-
-
-"""
 INSTALL
 """
 
@@ -411,42 +351,6 @@ def root():
     if not current_user.is_anonymous():
         return redirect(url_for('report'))
     return redirect(url_for('login'))
-
-
-"""
-REMOVE
-"""
-
-
-@app.route("/display/<category>")
-def remove(category):
-    user = get_user()
-    obj = get_obj_by_category(category)
-    if obj:
-        objects = obj.query.all()
-        if objects:
-            # fancy way to get the properties of an object
-            properties = objects[0].get_properties()
-            return render_template('removal.html', category=category,
-                                   objects=objects, properties=properties,
-                                   user=user)
-
-    abort(404)
-
-
-@app.route("/remove/<category>", methods=['POST'])
-def remove_objects(category):
-    obj = get_obj_by_category(category)
-    remove_ids = request.form.getlist('remove')
-    for remove_id in remove_ids:
-        # obj.query returns a list, but should only have one element because
-        # ids are unique.
-        remove = obj.query.filter_by(id=remove_id)[0]
-        db.session.delete(remove)
-
-    db.session.commit()
-
-    return redirect('display/'+category)
 
 
 """
