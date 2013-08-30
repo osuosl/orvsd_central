@@ -4,8 +4,7 @@ from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager, google, celery
-from forms import (LoginForm, AddDistrict, AddSchool, AddUser,
-                   InstallCourse, AddCourse)
+from forms import LoginForm, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func, and_
