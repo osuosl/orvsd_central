@@ -468,3 +468,82 @@ def get_moodle_sites(baseurl):
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
     return jsonify(content=data)
+
+@app.route("/1/get_count/<id>")
+def get_id_count(id):
+    return str(get_count('teachers', District.query.filter_by(id=id).first()))
+
+@app.route("/test")
+def get_dup_schools():
+    schools = School.query.all()
+    duplicate_districts = []
+    districts = {}
+    for school in schools:
+        if districts.get(school.district_id):
+            districts[school.district_id] += 1
+        else:
+            districts.update({school.district_id: 1})
+
+    for key in districts:
+        if districts.get(key) > 1:
+            duplicate_districts.append(key)
+
+    site_districts = [District.query.filter_by(id=id).first() for id in duplicate_districts]
+    import datetime
+    start = datetime.datetime.now()
+    site_districts = District.query.all()
+    fields = ['admins', 'teachers', 'totalusers']
+    district_info = [[district.name, district.id, len(district.schools), get_count(fields, district, {})] for district in site_districts]
+    print "Time taken: "+str(datetime.datetime.now()-start)
+    return render_template("test.html", data=district_info, fields=fields)
+
+
+# Must send in an object! No 'districts', 'courses', etc.
+def get_count(fields, base_obj, data):
+    association_objs, obj_present = get_association_obj(base_obj)
+    if association_objs:
+        if hasattr(association_objs, '__iter__'):
+            if len(association_objs) > 1:
+                for obj in association_objs:
+                    get_count(fields, obj, data)
+            else:
+                get_count(fields, association_objs[0], data)
+        else:
+            get_count(fields, association_objs, data)
+    elif not obj_present: # Base Case
+        serialized = base_obj.serialize()
+        for field in fields:
+            if serialized.get(field) is not None:
+                if not data.get(field):
+                    data[field] = 0
+                data[field] += int(serialized.get(field))
+    return data
+
+# Input:  Object instance, that is a subclass of Model
+# Output: 1. Next object in the association graph
+#         2. Continue looking for associations?
+def get_association_obj(obj):
+    if isinstance(obj, District):
+        return (obj.schools, True)
+    elif isinstance(obj, School):
+        return (obj.sites, True)
+    elif isinstance(obj, Site):
+        details = sorted(obj.site_details, key=lambda x:
+                             x.timemodified)
+        if details:
+            return (details[-1], False)
+    return (None, False)
+
+@app.route("/1/<category>/<id>/associated_objs", methods=["GET", "POST"])
+def get_associated_objs(category, id):
+    obj_type = get_obj_by_category(category)
+    if obj_type:
+        parent_obj = obj_type.query.filter_by(id=id).first()
+        associated_objs, obj_present = get_association_obj(obj)
+        if obj_present:
+            children_objs = [(obj.id, obj.name) for obj in associated_objs]
+            return jsonify(content=children_objs)
+
+    return jsonify({'error': 'No more associated objs'})
+
+
