@@ -50,9 +50,6 @@ $(document).on("ready", function() {
     });
 });
 
-function update_object(category, id) {
-    }
-
 // Used to generate the html for an input field for an attribute.
 function generate_row(key, value) {
     html =  "<div class=\"control-group pull-left\">\n" +
