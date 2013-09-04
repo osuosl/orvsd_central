@@ -1,9 +1,9 @@
 $(function() {
     $('#site').change(function() {
-        $("#selected-addresses").empty();
+        $("#selected-names").empty();
         $('#site option:selected').each(function() {
             $.get('/get_site_by/' + $(this).val(), function(data) {
-                $("#selected-addresses").append("Address: <i>" + data.address + "</i></br>");
+                $("#selected-names").append("Name: <i>" + data.name + "</i></br>");
             });
         });
     });
