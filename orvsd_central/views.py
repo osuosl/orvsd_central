@@ -4,8 +4,7 @@ from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager, google, celery
-from forms import (LoginForm, AddDistrict, AddSchool, AddUser,
-                   InstallCourse, AddCourse)
+from forms import LoginForm, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func, and_
@@ -130,66 +129,6 @@ def home():
 def logout():
     logout_user()
     return redirect(url_for("login"))
-
-
-"""
-ADD
-"""
-
-
-@app.route("/add/district", methods=['GET', 'POST'])
-def add_district():
-    form = AddDistrict()
-    user = current_user
-    if request.method == "POST":
-        #Add district to db.
-        db.session.add(District(form.name.data,
-                                form.shortname.data,
-                                form.base_path.data))
-        db.session.commit()
-
-    return render_template('add_district.html', form=form, user=user)
-
-
-@login_required
-@app.route("/add/school", methods=['GET', 'POST'])
-def add_school():
-    form = AddSchool()
-    user = current_user
-    msg = ""
-
-    if request.method == "POST":
-        #The district_id is supposed to be an integer
-        #try:
-            #district = District.query.filter_by(id=int(form.district_id))
-            #                                          .all()
-            #if len(district) == 1:
-                #Add School to db
-        db.session.add(School(int(form.district_id.data),
-                              form.name.data, form.shortname.data,
-                              form.domain.data. form.license.data))
-        db.session.commit()
-            #else:
-            #    error_msg= "A district with that id doesn't exist!"
-        #except:
-        #    error_msg= "The entered district_id was not an integer!"
-    return render_template('add_school.html', form=form,
-                           msg=msg, user=user)
-
-
-@app.route("/add/course", methods=['GET', 'POST'])
-def add_course():
-    form = AddCourse()
-    user = current_user
-    msg = ""
-    if request.method == "POST":
-        db.session.add(Course(int(form.serial.data), form.name.data,
-                              form.shortname.data, form.license.data,
-                              form.category.data))
-        db.session.commit()
-        msg = "Course: "+form.name.data+"added successfully!"
-
-    return render_template('add_course.html', form=form, msg=msg, user=user)
 
 
 """
