@@ -22,6 +22,8 @@ import StringIO
 import requests
 import zipfile
 import datetime
+import urllib
+import itertools
 
 
 """
@@ -477,6 +479,121 @@ def root():
 
 
 """
+UPDATE
+"""
+
+
+@app.route("/<category>/update")
+@login_required
+def update(category):
+    obj = get_obj_by_category(category)
+    identifier = get_obj_identifier(category)
+    if obj:
+        if 'details' in category:
+            category = category.split("details")[0] + " Details"
+        category = category[0].upper() + category[1:]
+
+        objects = obj.query.order_by(identifier).all()
+        if objects:
+            return render_template("update.html", objects=objects,
+                                    identifier=identifier, category=category,
+                                    user=current_user)
+
+    abort(404)
+
+
+@app.route("/<category>/object/add", methods=["POST"])
+def add_object(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        inputs = {}
+        # Here we update our dict with new values
+        # A one liner is too messy :(
+        for column in obj.__table__.columns:
+            if column.name is not 'id':
+                inputs.update({column.name: string_to_type(
+                                request.form.get(column.name))})
+
+        new_obj = obj(**inputs)
+        db.session.add(new_obj)
+        db.session.commit()
+        return jsonify({'id': new_obj.id,
+                'message': "Object added successfully!"})
+
+    abort(404)
+
+
+@app.route("/<category>/<id>", methods=["GET"])
+def get_object(category, id):
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=id).first()
+        if modified_obj:
+            return jsonify(modified_obj.serialize())
+
+    abort(404)
+
+
+@app.route("/<category>/<id>/update", methods=["POST"])
+def update_object(category, id):
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            inputs = {}
+            # Here we update our dict with new
+            [inputs.update({key: string_to_type(request.form.get(key))})
+                        for key in modified_obj.serialize().keys()]
+
+            db.session.query(obj).filter_by(
+                    id=request.form.get("id")) \
+                .update(inputs)
+
+            db.session.commit()
+            return "Object updated sucessfully!"
+
+    abort(404)
+
+
+@app.route("/<category>/<id>/delete", methods=["POST"])
+def delete_object(category, id):
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            db.session.delete(modified_obj)
+            db.session.commit()
+            return "Object deleted successful!"
+
+    abort(404)
+
+
+@app.route("/<category>/keys")
+def get_keys(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        cols = dict((column.name, '') for column in
+                    obj.__table__.columns)
+        return jsonify(cols)
+
+
+def string_to_type(string):
+    # Have to watch out for the format of true/false/null
+    # with javascript strings.
+    if string == "true":
+        return True
+    elif string == "false":
+        return False
+    elif string == "null":
+        return None
+    try:
+        return float(string)
+    except ValueError:
+        if string.isdigit():
+            return int(string)
+    return string
+
+"""
 REMOVE
 """
 
@@ -553,10 +670,17 @@ def build_accordion(objects, accordion_id, type, extra=None):
 def get_obj_by_category(category):
     # Checking for case insensitive categories
     categories = {'districts': District, 'schools': School,
-                  'sites': Site, 'courses': Course}
+                  'sites': Site, 'courses': Course, 'users': User,
+                  'coursedetails': CourseDetail, 'sitedetails': SiteDetail}
 
     return categories.get(category.lower())
 
+def get_obj_identifier(category):
+    categories = {'districts': 'name', 'schools': 'name',
+                  'sites': 'name', 'courses': 'name', 'users': 'name',
+                  'coursedetails': 'filename', 'sitedetails': 'site_id'}
+
+    return categories.get(category.lower())
 
 def get_user():
     # A user id is sent in, to check against the session
@@ -602,8 +726,8 @@ def district_details(schools):
             'teachers': teacher_count,
             'users': user_count}
 
-
 #ORVSD Central API
+
 
 @app.route("/1/sites/<baseurl>")
 def get_site_by_url(baseurl):
