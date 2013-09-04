@@ -1,0 +1,23 @@
+<form action="{{url_for('update_single', category=category, id=obj['id'])}}" method="POST" class="form-horizontal">
+        <div class="row-fluid">
+    {% for attr in attrs %}
+            <div class="control-group pull-left">
+            {% if attr == 'id' %}
+                <label for="{{attr}}" class="control-label min-padding">{{attr|capitalize}}:</label> 
+                <div class="controls">
+                <input id="{{attr}}" name="{{attr}}" type="text" value="{{obj[attr]}}" readonly>
+            {% else %}
+                <label for="{{attr}}" class="control-label min-padding">{{attr|capitalize}}:</label>
+                <div class="controls">
+                <input id="{{attr}}" name="{{attr}}" type="text" value="{{obj[attr]}}">
+            {% endif %}
+                </div>
+            </div>
+    {% endfor %}
+        </div>
+
+<div class="row-fluid">
+        <input id="update" type="submit" name="Update" value="Update" class="btn btn-primary btn-large span2">
+        <input id="delete" type="submit" name="Delete" value="Delete" class="btn btn-danger btn-large span2 pull-right">
+</div>
+</form>

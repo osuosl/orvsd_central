@@ -1,9 +1,9 @@
 $(function() {
     $('#site').change(function() {
-        $("#selected-addresses").empty();
+        $("#selected-names").empty();
         $('#site option:selected').each(function() {
             $.get('/get_site_by/' + $(this).val(), function(data) {
-                $("#selected-addresses").append("Address: <i>" + data.address + "</i></br>");
+                $("#selected-names").append("Name: <i>" + data.name + "</i></br>");
             });
         });
     });
@@ -15,4 +15,22 @@ $(function() {
         });
         $("#selected-courses").html(html);
     });
+     $("#filter").on("change", function() {
+        var filter = $(this).val()
+        $.post("/courses/filter", $(this)).done(function(data) {
+            $("#course").empty();
+            generate_course_list(data);
+        });
+    });
 });
+
+function generate_course_list(resp) {
+    var json = JSON.parse(JSON.stringify(resp));
+    var html = "";
+    $(json.courses).each(function(i, val) {
+        $('#course').append($("<option></option>")
+                    .attr("value",val.id)
+                    .text(val.name));
+        });
+}
+

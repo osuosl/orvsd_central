@@ -63,6 +63,13 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % (self.name)
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'name' : self.name,
+                 'email' : self.email,
+                 # Don't reveal passwords
+                 'password' : '********',
+                 'role' : self.role }
 
 class District(db.Model):
     """
@@ -89,6 +96,11 @@ class District(db.Model):
     def get_properties(self):
         return ['id', 'name', 'shortname', 'base_path']
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'name' : self.name,
+                 'shortname' : self.shortname,
+                 'base_path' : self.base_path }
 
 class School(db.Model):
     """
@@ -123,6 +135,14 @@ class School(db.Model):
 
     def get_properties(self):
         return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license']
+
+    def serialize(self):
+        return { 'id' : self.id,
+                 'district_id' : self.district_id,
+                 'name' : self.name,
+                 'shortname' : self.shortname,
+                 'domain' : self.domain,
+                 'license' : self.license }
 
 
 class Site(db.Model):
@@ -279,6 +299,14 @@ class Course(db.Model):
     def get_properties(self):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
 
+    def serialize(self):
+        return { 'id' : self.id,
+                 'serial' : self.serial,
+                 'name' : self.name,
+                 'shortname' : self.shortname,
+                 'license' : self.license,
+                 'category' : self.category,
+                 'source' : self.source }
 
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
@@ -308,7 +336,16 @@ class CourseDetail(db.Model):
         self.moodle_course_id = moodle_course_id
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s')>" % \
-               (self.course_id, self.filename, self.version,
-                self.updated, self.active, self.moodle_version,
-                self.moodle_course_id)
+        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
+               (self.course_id, self.filename, self.version, self.updated,
+                self.active, self.moodle_version, self.source,
+                self.moodle_course_version)
+
+    def serialize(self):
+        return { 'id' : self.id,
+                 'course_id' : self.course_id,
+                 'filename' : self.filename,
+                 'version' : self.version,
+                 'updated' : self.updated,
+                 'active' : self.active,
+                 'moodle_version' : self.moodle_version }
