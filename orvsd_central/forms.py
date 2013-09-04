@@ -17,29 +17,8 @@ class AddUser(Form):
                                         ('admin', 'Admin')])
 
 
-class AddDistrict(Form):
-    name = TextField('name', [Required()])
-    shortname = TextField('shortname', [Required()])
-    base_path = TextField('base_path', [Required()])
-
-
-class AddSchool(Form):
-    district_id = TextField('district_id', [Required()])
-    name = TextField('name', [Required()])
-    shortname = TextField('shortname', [Required()])
-    domain = TextField('domain', [Required()])
-    license = TextField('license', [Required()])
-
-
-class AddCourse(Form):
-    serial = TextField('serial', [Required()])
-    name = TextField('name', [Required()])
-    shortname = TextField('shortname', [Required()])
-    license = TextField('license')
-    category = TextField('category')
-
-
 class InstallCourse(Form):
     defaults = [('None', '---')]
     site = SelectMultipleField('Site', choices=defaults)
     course = SelectMultipleField('Course', choices=defaults)
+    filter = SelectField('Filter', choices=defaults)
