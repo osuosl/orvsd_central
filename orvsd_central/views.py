@@ -12,11 +12,17 @@ from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 import celery
+from bs4 import BeautifulSoup as Soup
+import os
 import json
 import re
 import subprocess
 import StringIO
 import requests
+import zipfile
+import datetime
+import urllib
+import itertools
 
 
 """
@@ -129,10 +135,12 @@ def logout():
 INSTALL
 """
 
+
 @app.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
     address = Site.query.filter_by(id=site_id).first().baseurl
     return jsonify(address=address)
+
 
 @app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
@@ -143,14 +151,13 @@ def install_course():
         Rendered template
     """
 
-
     if request.method == 'GET':
         form = InstallCourse()
 
         # Query all moodle 2.2 courses
         courses = db.session.query(CourseDetail).filter(
-                                        CourseDetail.moodle_version.like('2.5%')) \
-                                    .all()
+                                   CourseDetail.moodle_version
+                                    .like("2.5%")).all()
 
         # Query all moodle sites
         sites = Site.query.filter_by(sitetype='moodle').all()
@@ -158,10 +165,12 @@ def install_course():
 
         # For all sites query the SiteDetail to see if it's a moodle 2.2 site
         for site in sites:
-            details = db.session.query(SiteDetail).filter(and_(
-                SiteDetail.site_id == site.id,
-                SiteDetail.siterelease.like('2.2%'))
-            ).order_by(SiteDetail.timemodified.desc()).first()
+            details = db.session.query(SiteDetail) \
+                                .filter(and_(SiteDetail.site_id == site.id,
+                                             SiteDetail.siterelease
+                                                       .like('2.2%'))) \
+                                .order_by(SiteDetail.timemodified.desc()
+                                ).first()
 
             if details is not None:
                 moodle_22_sites.append(site)
@@ -170,11 +179,19 @@ def install_course():
         courses_info = []
         sites_info = []
 
+        listed_courses = []
         # Create the courses list
         for course in courses:
-            courses_info.append(
-                (course.course_id, "%s - v%s"
-                % (course.course.name, course.version)))
+            if course.course_id not in listed_courses:
+                if course.version:
+                    courses_info.append((course.course_id,
+                                        "%s - v%s" %
+                                        (course.course.name, course.version)))
+                else:
+                    courses_info.append((course.course_id,
+                                    "%s" %
+                                    (course.course.name)))
+                listed_courses.append(course.course_id)
 
         # Create the sites list
         for site in moodle_22_sites:
@@ -182,6 +199,8 @@ def install_course():
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
+        form.filter.choices = [(folder, folder) for folder in
+                                get_course_folders()]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
@@ -194,11 +213,23 @@ def install_course():
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-         # The CourseDetail objects needed to generate the url
-        courses = CourseDetail.query.filter(CourseDetail
-                                            .course_id.in_(selected_courses))\
-                                        .all()
+        site_url = Site.query.filter_by(id=request.form.get('site')
+                    ).first().baseurl
 
+        # The site to install the courses
+        site = ("http://%s/webservice/rest/server.php?"
+               "wstoken=%s&wsfunction=%s") % (
+               site_url,
+               app.config['INSTALL_COURSE_WS_TOKEN'],
+               app.config['INSTALL_COURSE_WS_FUNCTION'])
+        site = str(site.encode('utf-8'))
+
+        # The CourseDetail objects needed to generate the url
+        courses = []
+        for cid in selected_courses:
+            courses.append(CourseDetail.query.filter_by(id=cid)
+                                .order_by(CourseDetail.updated.desc())
+                                .first())
 
         site_ids = [site_id for site_id in request.form.getlist('site')]
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl for site_id in site_ids]
@@ -226,12 +257,47 @@ def install_course():
                                 output=output,
                                 user=current_user)
 
+
+@app.route("/courses/filter", methods=["POST"])
+def get_course_list():
+    dir = request.form.get('filter')
+
+    if dir == "None":
+        courses = CourseDetail.query.all()
+    else:
+        courses = db.session.query(CourseDetail).join(Course) \
+                    .filter(Course.source == dir).all()
+
+    # This means the folder selected was not the source folder or None.
+    if not courses:
+        courses = db.session.query(CourseDetail).filter(
+                                        CourseDetail.filename
+                                            .like("%"+dir+"%")).all()
+
+    courses = sorted(courses, key=lambda x: x.course.name)
+
+    serialized_courses = [{'id': course.course_id,
+                            'name': course.course.name}
+                                for course in courses]
+    return jsonify(courses=serialized_courses)
+
+
+def get_course_folders():
+    base_path = "/data/moodle2-masters/"
+    folders = ['None']
+    for root, sub_folders, files in os.walk(base_path):
+        for folder in sub_folders:
+            if folder not in folders:
+                folders.append(folder)
+    return folders
+
+
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
     # To get the file path we need the text input, the lowercase of
     # source, and the filename
     fp = app.config['INSTALL_COURSE_FILE_PATH']
-    fp += course.course.source.lower() + '/'
+    fp += 'flvs/'
 
     data = {'filepath': fp,
             'file': course.filename,
@@ -244,14 +310,13 @@ def install_course_to_site(course, site):
             'city': 'none',
             'username': 'admin',
             'email': 'a@a.aa',
-            'pass': 'testo123'}
+            'pass': 'adminpass'}
 
     resp = requests.post(site, data=data)
 
-    # Unfortunately the response object to turned into unicode
-    # when returned by the celery job, so we must send the
-    # data we need, instead of the whole object.
-    return resp.text
+    return "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
+
+
 """
 VIEW
 """
@@ -353,6 +418,157 @@ def root():
 
 
 """
+UPDATE
+"""
+
+
+@app.route("/<category>/update")
+@login_required
+def update(category):
+    obj = get_obj_by_category(category)
+    identifier = get_obj_identifier(category)
+    if obj:
+        if 'details' in category:
+            category = category.split("details")[0] + " Details"
+        category = category[0].upper() + category[1:]
+
+        objects = obj.query.order_by(identifier).all()
+        if objects:
+            return render_template("update.html", objects=objects,
+                                    identifier=identifier, category=category,
+                                    user=current_user)
+
+    abort(404)
+
+
+@app.route("/<category>/object/add", methods=["POST"])
+def add_object(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        inputs = {}
+        # Here we update our dict with new values
+        # A one liner is too messy :(
+        for column in obj.__table__.columns:
+            if column.name is not 'id':
+                inputs.update({column.name: string_to_type(
+                                request.form.get(column.name))})
+
+        new_obj = obj(**inputs)
+        db.session.add(new_obj)
+        db.session.commit()
+        return jsonify({'id': new_obj.id,
+                'message': "Object added successfully!"})
+
+    abort(404)
+
+
+@app.route("/<category>/<id>", methods=["GET"])
+def get_object(category, id):
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=id).first()
+        if modified_obj:
+            return jsonify(modified_obj.serialize())
+
+    abort(404)
+
+
+@app.route("/<category>/<id>/update", methods=["POST"])
+def update_object(category, id):
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            inputs = {}
+            # Here we update our dict with new
+            [inputs.update({key: string_to_type(request.form.get(key))})
+                        for key in modified_obj.serialize().keys()]
+
+            db.session.query(obj).filter_by(
+                    id=request.form.get("id")) \
+                .update(inputs)
+
+            db.session.commit()
+            return "Object updated sucessfully!"
+
+    abort(404)
+
+
+@app.route("/<category>/<id>/delete", methods=["POST"])
+def delete_object(category, id):
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            db.session.delete(modified_obj)
+            db.session.commit()
+            return "Object deleted successful!"
+
+    abort(404)
+
+
+@app.route("/<category>/keys")
+def get_keys(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        cols = dict((column.name, '') for column in
+                    obj.__table__.columns)
+        return jsonify(cols)
+
+
+def string_to_type(string):
+    # Have to watch out for the format of true/false/null
+    # with javascript strings.
+    if string == "true":
+        return True
+    elif string == "false":
+        return False
+    elif string == "null":
+        return None
+    try:
+        return float(string)
+    except ValueError:
+        if string.isdigit():
+            return int(string)
+    return string
+
+"""
+REMOVE
+"""
+
+
+@app.route("/display/<category>")
+def remove(category):
+    user = get_user()
+    obj = get_obj_by_category(category)
+    if obj:
+        objects = obj.query.all()
+        if objects:
+            # fancy way to get the properties of an object
+            properties = objects[0].get_properties()
+            return render_template('removal.html', category=category,
+                                   objects=objects, properties=properties,
+                                   user=user)
+
+    abort(404)
+
+
+@app.route("/remove/<category>", methods=['POST'])
+def remove_objects(category):
+    obj = get_obj_by_category(category)
+    remove_ids = request.form.getlist('remove')
+    for remove_id in remove_ids:
+        # obj.query returns a list, but should only have one element because
+        # ids are unique.
+        remove = obj.query.filter_by(id=remove_id)[0]
+        db.session.delete(remove)
+
+    db.session.commit()
+
+    return redirect('display/'+category)
+
+
+"""
 HELPERS
 """
 
@@ -393,10 +609,17 @@ def build_accordion(objects, accordion_id, type, extra=None):
 def get_obj_by_category(category):
     # Checking for case insensitive categories
     categories = {'districts': District, 'schools': School,
-                  'sites': Site, 'courses': Course}
+                  'sites': Site, 'courses': Course, 'users': User,
+                  'coursedetails': CourseDetail, 'sitedetails': SiteDetail}
 
     return categories.get(category.lower())
 
+def get_obj_identifier(category):
+    categories = {'districts': 'name', 'schools': 'name',
+                  'sites': 'name', 'courses': 'name', 'users': 'name',
+                  'coursedetails': 'filename', 'sitedetails': 'site_id'}
+
+    return categories.get(category.lower())
 
 def get_user():
     # A user id is sent in, to check against the session
@@ -442,8 +665,8 @@ def district_details(schools):
             'teachers': teacher_count,
             'users': user_count}
 
-
 #ORVSD Central API
+
 
 @app.route("/1/sites/<baseurl>")
 def get_site_by_url(baseurl):
@@ -468,3 +691,91 @@ def get_moodle_sites(baseurl):
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
     return jsonify(content=data)
+
+
+@app.route('/celery/status/<celery_id>')
+def get_task_status(celery_id):
+    status = db.session.query("status") \
+                       .from_statement("SELECT status "
+                           "FROM celery_taskmeta WHERE id=:celery_id") \
+                           .params(celery_id=celery_id).first()
+    return jsonify(status=status)
+
+
+@app.route("/courses/update", methods=['GET', 'POST'])
+def update_courselist():
+    num_courses = 0
+    base_path = "/data/moodle2-masters/"
+    if request.method == "POST":
+        # Get a list of all moodle course files
+#        for source in os.listdir(base_path):
+        sources = [source+"/" for source in os.listdir(base_path)]
+        for source in sources:
+            for root, sub_folders, files in os.walk(base_path+source):
+                for file in files:
+                    full_file_path = os.path.join(root, file)
+                    file_path = full_file_path.replace(base_path+source, '')
+                    course = CourseDetail.query.filter_by(
+                                filename=file_path).first()
+                    # Check to see if it exists in the database already
+
+                    if not course and os.path.isfile(full_file_path):
+                        create_course_from_moodle_backup(base_path,
+                            file_path, source)
+                        num_courses += 1
+
+        if num_courses > 0:
+            flash(str(num_courses) + ' new courses added successfully!')
+    return render_template('update_courses.html')
+
+
+def create_course_from_moodle_backup(base_path, file_path, source):
+    # Needed to delete extracted xml once operation is done
+    project_folder = "/home/vagrant/orvsd_central/"
+
+    # Unzip the file to get the manifest (All course backups are zip files)
+    zip = zipfile.ZipFile(base_path+source+file_path)
+    xmlfile = file(zip.extract("moodle_backup.xml"), "r")
+    xml = Soup(xmlfile.read(), "xml")
+    info = xml.moodle_backup.information
+    old_course = Course.query.filter_by(
+                        name=info.original_course_fullname.string
+                    ).first() or \
+                 Course.query.filter_by(
+                        shortname=info.original_course_shortname.string
+                    ).first()
+
+    if not old_course:
+        # Create a course since one is unable to be found with that name.
+        new_course = Course(serial=1000 + Course.query.count(),
+                            source=source.replace('/', ''),
+                            name=info.original_course_fullname.string,
+                            shortname=info.original_course_shortname.string)
+        db.session.add(new_course)
+
+        # Until the session is committed, the new_course does not yet have
+        # an id.
+        db.session.commit()
+
+        course_id = new_course.id
+    else:
+        course_id = old_course.id
+
+    regex = re.findall(r'_v(\d)_', file_path)
+
+    # Regex will only be a list if it has a value in it
+    version = regex[0] if list(regex) else None
+
+    new_course_detail = CourseDetail(course_id=course_id,
+                             filename=file_path,
+                             version=version,
+                             updated=datetime.datetime.now(),
+                             active=True,
+                             moodle_version=info.moodle_release.string,
+                             moodle_course_id=info.original_course_id.string)
+
+    db.session.add(new_course_detail)
+    db.session.commit()
+
+    #Get rid of moodle_backup.xml
+    os.remove(project_folder+"moodle_backup.xml")
