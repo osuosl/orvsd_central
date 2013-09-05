@@ -19,19 +19,11 @@ import json
 import re
 import subprocess
 import StringIO
-<<<<<<< HEAD
-import urllib
-import itertools
-import requests
-import zipfile
-import datetime
-=======
 import requests
 import zipfile
 import datetime
 import urllib
 import itertools
->>>>>>> develop
 
 
 """
