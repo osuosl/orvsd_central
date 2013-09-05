@@ -344,7 +344,7 @@ def view_school_courses(school_id):
     course_details = [{'uuid': v['uuid'],
                        'task_state': v['state'],
                        'time_completed': datetime.datetime.fromtimestamp(int(v['timestamp'])).strftime('%Y-%m-%d %H:%M:%S'),
-                       'course_state': Soup(v['result']).find('message').get_text()}
+                       'course_state': Soup(v['result']).find('message').get_text() if v['result'] != None else 'Unknown'}
                       for k, v in resp.iteritems()]
 
     # Sort course_details by timestamp.
