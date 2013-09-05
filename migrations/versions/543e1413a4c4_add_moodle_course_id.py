@@ -19,11 +19,8 @@ def upgrade(engine_name):
 
 
 def downgrade(engine_name):
-<<<<<<< HEAD
-    eval("downgrade_%s" % engine_name)()
-=======
     op.drop_column('course_details', 'moodle_course_id')
->>>>>>> enhancement/14121
+    eval("downgrade_%s" % engine_name)()
 
 
 

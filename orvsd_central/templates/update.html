@@ -11,7 +11,7 @@
 
 {% block content %}
     <div class='row pagination-centered'>
-        <h1> Edit {{category}} </h1>
+        <h1> {{category}} </h1>
         <div class='span12'>&nbsp;</div>
     </div>
     <div class="row pagination-centered">
@@ -21,7 +21,6 @@
             {% endfor %}
         </select>
     </div>
-     <div class='row'>
         </br>
         <div class='span12'>
             <div class="form-horizontal">
@@ -33,13 +32,15 @@
             </div>
             <p id="message" align="center"> </p> 
             <div class="row pagination-centered">
-                <div class="span6">
+                <div class="span3 offset1">
+                    <input id="add" type="button" name="add" value="Add" class="btn btn-success btn-large span2">
+                </div>
+                <div class="span3">
                     <input id="update" type="submit" name="update" value="Update" class="btn btn-primary btn-large span2">
                 </div>
-                <div class="span6">
+                <div class="span3">
                     <input id="delete" type="submit" name="delete" value="Delete" class="btn btn-danger btn-large span2">
                 </div>
             </div>
         </div>
-    </div>
 {% endblock %}

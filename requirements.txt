@@ -3,12 +3,13 @@ Flask
 Flask-Login
 Flask-OAuth
 Flask-SQLAlchemy
-Flask-WTF
+Flask-WTF==0.8.4
 Jinja2
 Mako
 MarkupSafe
 MySQL-python
 SQLAlchemy
+Sphinx
 WTForms
 Werkzeug
 alembic
@@ -20,11 +21,9 @@ celery
 distribute
 httplib2
 kombu
+lxml
 oauth2
-pycurl
 python-dateutil
 requests
 six
 wsgiref
-sphinx
-pycurl

@@ -4,8 +4,7 @@ from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
 from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager, google, celery
-from forms import (LoginForm, AddDistrict, AddSchool, AddUser,
-                   InstallCourse, AddCourse)
+from forms import LoginForm, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from sqlalchemy import func, and_
@@ -20,11 +19,19 @@ import json
 import re
 import subprocess
 import StringIO
+<<<<<<< HEAD
 import urllib
 import itertools
 import requests
 import zipfile
 import datetime
+=======
+import requests
+import zipfile
+import datetime
+import urllib
+import itertools
+>>>>>>> develop
 
 
 """
@@ -134,73 +141,16 @@ def logout():
 
 
 """
-ADD
-"""
-
-
-@app.route("/add/district", methods=['GET', 'POST'])
-def add_district():
-    form = AddDistrict()
-    user = current_user
-    if request.method == "POST":
-        #Add district to db.
-        db.session.add(District(form.name.data,
-                                form.shortname.data,
-                                form.base_path.data))
-        db.session.commit()
-
-    return render_template('add_district.html', form=form, user=user)
-
-
-@login_required
-@app.route("/add/school", methods=['GET', 'POST'])
-def add_school():
-    form = AddSchool()
-    user = current_user
-    msg = ""
-
-    if request.method == "POST":
-        #The district_id is supposed to be an integer
-        #try:
-            #district = District.query.filter_by(id=int(form.district_id))
-            #                                          .all()
-            #if len(district) == 1:
-                #Add School to db
-        db.session.add(School(int(form.district_id.data),
-                              form.name.data, form.shortname.data,
-                              form.domain.data. form.license.data))
-        db.session.commit()
-            #else:
-            #    error_msg= "A district with that id doesn't exist!"
-        #except:
-        #    error_msg= "The entered district_id was not an integer!"
-    return render_template('add_school.html', form=form,
-                           msg=msg, user=user)
-
-
-@app.route("/add/course", methods=['GET', 'POST'])
-def add_course():
-    form = AddCourse()
-    user = current_user
-    msg = ""
-    if request.method == "POST":
-        db.session.add(Course(int(form.serial.data), form.name.data,
-                              form.shortname.data, form.license.data,
-                              form.category.data))
-        db.session.commit()
-        msg = "Course: "+form.name.data+"added successfully!"
-
-    return render_template('add_course.html', form=form, msg=msg, user=user)
-
-
-"""
 INSTALL
 """
 
+
 @app.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
-    address = Site.query.filter_by(id=site_id).first().baseurl
-    return jsonify(address=address)
+    name = Site.query.filter_by(id=site_id).first().name
+    return jsonify(name=name)
+
+
 
 @app.route('/install/course', methods=['GET', 'POST'])
 def install_course():
@@ -211,14 +161,13 @@ def install_course():
         Rendered template
     """
 
-
     if request.method == 'GET':
         form = InstallCourse()
 
         # Query all moodle 2.2 courses
         courses = db.session.query(CourseDetail).filter(
-                                   CourseDetail.moodle_version.like("2.5%")).all()
-
+                                   CourseDetail.moodle_version
+                                    .like("2.5%")).all()
 
         # Query all moodle sites
         sites = db.session.query(Site).filter(
@@ -230,9 +179,12 @@ def install_course():
 
         # For all sites query the SiteDetail to see if it's a moodle 2.2 site
         for site in sites:
-            details = (site_details.filter_by(site_id=site.id)
-                .order_by(SiteDetail.timemodified.desc())
-                .first())
+            details = db.session.query(SiteDetail) \
+                                .filter(and_(SiteDetail.site_id == site.id,
+                                             SiteDetail.siterelease
+                                                       .like('2.2%'))) \
+                                .order_by(SiteDetail.timemodified.desc()
+                                ).first()
 
             if details is not None:
                 moodle_22_sites.append(site)
@@ -251,33 +203,36 @@ def install_course():
                         (course.course.name, course.version)))
                 else:
                     courses_info.append(
-                        (course.course_id,"%s" %
+                        (course.course_id, "%s" %
                         (course.course.name)))
                 listed_courses.append(course.course_id)
 
-
         # Create the sites list
         for site in moodle_22_sites:
-            sites_info.append((site.id, site.name))
+            sites_info.append((site.id, site.baseurl))
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
-        form.filter.choices = [(folder, folder) for folder in get_course_folders()]
+        form.filter.choices = [(folder, folder) for folder in
+                                get_course_folders()]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
 
     elif request.method == 'POST':
+        # Course installation results
+        output = ''
+
         # An array of unicode strings will be passed, they need to be integers
         # for the query
-        selected_courses = [int(cid) for cid in
-                            request.form.getlist('course')]
+        selected_courses = [int(cid) for cid in request.form.getlist('course')]
 
-        site_url = Site.query.filter_by(id=request.form.get('site'))\
-                   .first().baseurl
+        site_url = Site.query.filter_by(id=request.form.get('site')
+                    ).first().baseurl
 
         # The site to install the courses
-        site = "http://%s/webservice/rest/server.php?wstoken=%s&wsfunction=%s" % (
+        site = ("http://%s/webservice/rest/server.php?"
+               "wstoken=%s&wsfunction=%s") % (
                site_url,
                app.config['INSTALL_COURSE_WS_TOKEN'],
                app.config['INSTALL_COURSE_WS_FUNCTION'])
@@ -285,48 +240,60 @@ def install_course():
 
         # The CourseDetail objects needed to generate the url
         courses = []
-        course_list = db.session.query(CourseDetail)\
-                        .filter(CourseDetail.course_id
-                            .in_(selected_courses))
         for cid in selected_courses:
             courses.append(course_list.filter_by(course_id=cid)
                     .order_by(CourseDetail.updated.desc())
                     .first())
 
-        # Course installation results
-        output = ''
+        site_ids = [site_id for site_id in request.form.getlist('site')]
+        site_urls = [Site.query.filter_by(id=site_id).first().baseurl
+                        for site_id in site_ids]
 
-        # Loop through the courses, generate the command to be run, run it, and
-        # append the ouput to output
-        #
-        # Currently this will break as our db is not setup correctly yet
         for course in courses:
-            #Courses are detached from session for being inactive for too long.
-            course.course.name
-            output += install_course_to_site.delay(course, site).get()
+            for site_url in site_urls:
+                # The site to install the courses
+                site = ("http://%s/webservice/rest/server.php?"
+                       "wstoken=%s&wsfunction=%s") % (
+                       site_url,
+                       app.config['INSTALL_COURSE_WS_TOKEN'],
+                       app.config['INSTALL_COURSE_WS_FUNCTION'])
+                site = str(site.encode('utf-8'))
+
+                # Courses are detached from session for being
+                # inactive for too long.
+                course.course.name
+
+                install_course_to_site.delay(course, site)
+
+            output += (str(len(site_urls)) + " course install(s) for " +
+                       course.course.name + " started.\n")
 
         return render_template('install_course_output.html',
-                               output=output,
-                               user=current_user)
+                                output=output,
+                                user=current_user)
+
 
 @app.route("/courses/filter", methods=["POST"])
 def get_course_list():
     dir = request.form.get('filter')
 
-    selected_courses = CourseDetail.query.all()
     if dir == "None":
-        courses = selected_courses
+        courses = CourseDetail.query.all()
     else:
-        courses = [course for course in selected_courses if course.course.source == dir]
+        courses = db.session.query(CourseDetail).join(Course) \
+                    .filter(Course.source == dir).all()
+
     # This means the folder selected was not the source folder or None.
     if not courses:
         courses = db.session.query(CourseDetail).filter(
-                                   CourseDetail.filename.like("%"+dir+"%")).all()
+                                        CourseDetail.filename
+                                            .like("%"+dir+"%")).all()
 
-    serialized_courses = []
-    for course in courses:
-        serialized_courses.append(({'id' : course.id, 'name' : course.course.name}))
+    courses = sorted(courses, key=lambda x: x.course.name)
 
+    serialized_courses = [{'id': course.course_id,
+                            'name': course.course.name}
+                                for course in courses]
     return jsonify(courses=serialized_courses)
 
 
@@ -338,6 +305,7 @@ def get_course_folders():
             if folder not in folders:
                 folders.append(folder)
     return folders
+
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
@@ -468,6 +436,7 @@ def root():
 UPDATE
 """
 
+
 @app.route("/<category>/update")
 @login_required
 def update(category):
@@ -486,6 +455,28 @@ def update(category):
 
     abort(404)
 
+
+@app.route("/<category>/object/add", methods=["POST"])
+def add_object(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        inputs = {}
+        # Here we update our dict with new values
+        # A one liner is too messy :(
+        for column in obj.__table__.columns:
+            if column.name is not 'id':
+                inputs.update({column.name: string_to_type(
+                                request.form.get(column.name))})
+
+        new_obj = obj(**inputs)
+        db.session.add(new_obj)
+        db.session.commit()
+        return jsonify({'id': new_obj.id,
+                'message': "Object added successfully!"})
+
+    abort(404)
+
+
 @app.route("/<category>/<id>", methods=["GET"])
 def get_object(category, id):
     obj = get_obj_by_category(category)
@@ -496,6 +487,7 @@ def get_object(category, id):
 
     abort(404)
 
+
 @app.route("/<category>/<id>/update", methods=["POST"])
 def update_object(category, id):
     obj = get_obj_by_category(category)
@@ -504,14 +496,18 @@ def update_object(category, id):
         if modified_obj:
             inputs = {}
             # Here we update our dict with new
-            [inputs.update( {key : string_to_type(request.form.get(key))})
+            [inputs.update({key: string_to_type(request.form.get(key))})
                         for key in modified_obj.serialize().keys()]
 
-            db.session.query(obj).filter_by(id=request.form.get("id")).update(inputs)
+            db.session.query(obj).filter_by(
+                    id=request.form.get("id")) \
+                .update(inputs)
+
             db.session.commit()
             return "Object updated sucessfully!"
 
     abort(404)
+
 
 @app.route("/<category>/<id>/delete", methods=["POST"])
 def delete_object(category, id):
@@ -525,6 +521,14 @@ def delete_object(category, id):
 
     abort(404)
 
+
+@app.route("/<category>/keys")
+def get_keys(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        cols = dict((column.name, '') for column in
+                    obj.__table__.columns)
+        return jsonify(cols)
 
 
 def string_to_type(string):
@@ -542,6 +546,7 @@ def string_to_type(string):
         if string.isdigit():
             return int(string)
     return string
+
 """
 REMOVE
 """
@@ -678,6 +683,7 @@ def district_details(schools):
 
 #ORVSD Central API
 
+
 @app.route("/1/sites/<baseurl>")
 def get_site_by_url(baseurl):
     site = Site.query.filter_by(baseurl=baseurl).first()
@@ -692,7 +698,9 @@ def get_site_by_url(baseurl):
                     site_details.serialize().items())
 
         return jsonify(content=site_info)
-    return "Site with baseurl: " + baseurl + " not found."
+    
+    return jsonify(content={'error': 'Site not found'})
+
 
 @app.route("/1/sites/<baseurl>/moodle")
 def get_moodle_sites(baseurl):
@@ -700,6 +708,7 @@ def get_moodle_sites(baseurl):
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
     return jsonify(content=data)
+
 
 @app.route('/celery/status/<celery_id>')
 def get_task_status(celery_id):
@@ -710,12 +719,7 @@ def get_task_status(celery_id):
     return jsonify(status=status)
 
 
-#TODO:
-'''
-1. Comment more
-2. Separate into seperate functions
-'''
-@app.route("/courses/list/update", methods=['GET', 'POST'])
+@app.route("/courses/update", methods=['GET', 'POST'])
 def update_courselist():
     """
         Updates the database to contain the most recent course
@@ -726,44 +730,28 @@ def update_courselist():
     mdl_files = []
     if request.method == "POST":
         # Get a list of all moodle course files
-        # for source in os.listdir(base_path):
-        for root, sub_folders, files in os.walk(base_path):
-            for file in files:
-                full_file_path = os.path.join(root, file)
-                if os.path.isfile(full_file_path):
-                    mdl_files.append(full_file_path)
+#        for source in os.listdir(base_path):
+        sources = [source+"/" for source in os.listdir(base_path)]
+        for source in sources:
+            for root, sub_folders, files in os.walk(base_path+source):
+                for file in files:
+                    full_file_path = os.path.join(root, file)
+                    file_path = full_file_path.replace(base_path+source, '')
+                    course = CourseDetail.query.filter_by(
+                                filename=file_path).first()
+                    # Check to see if it exists in the database already
 
-        filenames = []
-        sources = []
-        for filename in mdl_files:
-            source, path = get_path_and_source(base_path, filename)
-            sources.append(source)
-            filenames.append(path)
-
-        details = db.session.query(CourseDetail) \
-                        .join(CourseDetail.course) \
-                        .filter(CourseDetail.filename.in_(
-                            filenames)).all()
-
-        for detail in details:
-            if detail.filename in filenames:
-                sources.pop(filenames.index(detail.filename))
-                filenames.pop(filenames.index(detail.filename))
-
-        for source, file_path in zip(sources, filenames):
-            create_course_from_moodle_backup(base_path, source, file_path)
-            num_courses += 1
+                    if not course and os.path.isfile(full_file_path):
+                        create_course_from_moodle_backup(base_path,
+                            file_path, source)
+                        num_courses += 1
 
         if num_courses > 0:
             flash(str(num_courses) + ' new courses added successfully!')
     return render_template('update_courses.html', user=current_user)
 
-# /base_path/source/path is the format of the parsed directories.
-def get_path_and_source(base_path, file_path):
-    path = file_path.strip(base_path).partition('/')
-    return path[0]+'/', path[2]
 
-def create_course_from_moodle_backup(base_path, source, file_path):
+def create_course_from_moodle_backup(base_path, file_path, source):
     # Needed to delete extracted xml once operation is done
     project_folder = "/home/vagrant/orvsd_central/"
 
@@ -773,9 +761,11 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     xml = Soup(xmlfile.read(), "xml")
     info = xml.moodle_backup.information
     old_course = Course.query.filter_by(
-                    name=info.original_course_fullname.string) or \
+                        name=info.original_course_fullname.string
+                    ).first() or \
                  Course.query.filter_by(
-                    name=info.original_course_shortname.string)
+                        shortname=info.original_course_shortname.string
+                    ).first()
 
     if old_course is not None:
         # Create a course since one is unable to be found with that name.
@@ -799,12 +789,12 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     version = _version_re[0] if list(_version_re) else None
 
     new_course_detail = CourseDetail(course_id=course_id,
-                                         filename=file_path,
-                                         version=version,
-                                         updated=datetime.datetime.now(),
-                                         active=True,
-                                         moodle_version=info.moodle_release.string,
-                                         moodle_course_id=info.original_course_id.string)
+                             filename=file_path,
+                             version=version,
+                             updated=datetime.datetime.now(),
+                             active=True,
+                             moodle_version=info.moodle_release.string,
+                             moodle_course_id=info.original_course_id.string)
 
     db.session.add(new_course_detail)
     db.session.commit()
