@@ -1,0 +1,209 @@
+{
+  {
+    "model": "districts",
+    "fields": {
+      "name": "Test District 1",
+      "shortname": "TestDistrict1",
+      "base_path": "/var/www"
+    }
+  },
+  {
+    "model": "districts",
+    "fields": {
+      "name": "Test District 2",
+      "shortname": "TestDistrict2",
+      "base_path": "/var/www"
+    }
+  },
+  {
+    "model": "districts",
+    "fields": {
+      "name": "Test District 3",
+      "shortname": "TestDistrict3",
+      "base_path": "/var/www"
+    }
+  },
+  {
+    "model": "schools",
+    "fields": {
+      "district_id": 1,
+      "name": "Test School 1",
+      "shortname": "TestSchool1",
+      "domain": "testschool1.org",
+      "license": ""
+    }
+  },
+  {
+    "model": "schools",
+    "fields": {
+      "district_id": 2,
+      "name": "Test School 2",
+      "shortname": "TestSchool2",
+      "domain": "testschool2.org",
+      "license": ""
+    }
+  },
+  {
+    "model": "schools",
+    "fields": {
+      "district_id": 3,
+      "name": "Test School 3",
+      "shortname": "TestSchool3",
+      "domain": "testschool3.org",
+      "license": ""
+    }
+  },
+  {
+    "model": "sites",
+    "fields": {
+      "school_id": 1,
+      "name": "Test Site 1",
+      "sitetype": "moodle",
+      "baseurl": "testsite1.org",
+      "basepath": "/var/www",
+      "jenkins_cron_job": "",
+      "location": "",
+      "api_key": "",
+    }
+  },
+  {
+    "model": "sites",
+    "fields": {
+      "school_id": 2,
+      "name": "Test Site 2",
+      "sitetype": "moodle",
+      "baseurl": "testsite2.org",
+      "basepath": "/var/www",
+      "jenkins_cron_job": "",
+      "location": "",
+      "api_key": "",
+    }
+  },
+  {
+    "model": "sites",
+    "fields": {
+      "school_id": 3,
+      "name": "Test Site 3",
+      "sitetype": "moodle",
+      "baseurl": "testsite3.org",
+      "basepath": "/var/www",
+      "jenkins_cron_job": "",
+      "location": "",
+      "api_key": "",
+    }
+  },
+  {
+    "model": "sitedetails",
+    "fields": {
+      "site_id": 1,
+      "courses": "",
+      "siteversion": "2.2",
+      "siterelease": "",
+      "adminemail": "admin@testsite1.org",
+      "totalusers": 111,
+      "adminusers": 1,
+      "teachers": 11,
+      "activeusers", 100,
+      "totalcourses": 11,
+      "timemodified": ""
+    }
+  },
+  {
+    "model": "sitedetails",
+    "fields": {
+      "site_id": 2,
+      "courses": "",
+      "siteversion": "2.2",
+      "siterelease": "",
+      "adminemail": "admin@testsite2.org",
+      "totalusers": 222,
+      "adminusers": 2,
+      "teachers": 22,
+      "activeusers", 200,
+      "totalcourses": 22,
+      "timemodified": ""
+    }
+  },
+  {
+    "model": "sitedetails",
+    "fields": {
+      "site_id": 3,
+      "courses": "",
+      "siteversion": "2.2",
+      "siterelease": "",
+      "adminemail": "admin@testsite3.org",
+      "totalusers": 333,
+      "adminusers": 3,
+      "teachers": 33,
+      "activeusers", 300,
+      "totalcourses": 33,
+      "timemodified": ""
+    }
+  },
+  {
+    "model": "courses",
+    "fields": {
+      "serial": 1001,
+      "name": "Test Course 1",
+      "shortname": "TestCourse1",
+      "license": "",
+      "category": 1,
+      "source": "/test",
+    }
+  },
+  {
+    "model": "courses",
+    "fields": {
+      "serial": 1002,
+      "name": "Test Course 2",
+      "shortname": "TestCourse2",
+      "license": "",
+      "category": 2,
+      "source": "/test",
+    }
+  },
+  {
+    "model": "courses",
+    "fields": {
+      "serial": 1003,
+      "name": "Test Course 3",
+      "shortname": "TestCourse3",
+      "license": "",
+      "category": 3,
+      "source": "/test",
+    }
+  },
+  {
+    "model": "coursedetails",
+    "fields": {
+      "course_id": 1,
+      "version": "2.2",
+      "updated": "",
+      "active": "",
+      "moodle_version": "2.2",
+      "moodle_course_id": 1,
+    }
+  },
+  {
+    "model": "coursedetails",
+    "fields": {
+      "course_id": 2,
+      "version": "2.2",
+      "updated": "",
+      "active": "",
+      "moodle_version": "2.2",
+      "moodle_course_id": 2,
+    }
+  },
+  {
+    "model": "coursedetails",
+    "fields": {
+      "course_id": 3,
+      "version": "2.2",
+      "updated": "",
+      "active": "",
+      "moodle_version": "2.2",
+      "moodle_course_id": 3,
+    }
+  }
+}
