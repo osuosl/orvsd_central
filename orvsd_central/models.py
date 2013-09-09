@@ -16,7 +16,13 @@ sites_courses = db.Table('sites_courses',
                                    db.ForeignKey('courses.id',
                                                  use_alter=True,
                                                  name=
-                                                 'fk_sites_courses_course_id'))
+                                                 'fk_sites_courses_course_id')),
+                         db.Column('celery_task_id',
+                                   db.String,
+                                   db.ForeignKey('celery_taskmeta.task_id',
+                                                 use_alter=True,
+                                                 name=
+                                                 'fk_sites_courses_celery_task_id'))
                          )
 
 
