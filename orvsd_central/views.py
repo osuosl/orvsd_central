@@ -6,7 +6,7 @@ from werkzeug import check_password_hash, generate_password_hash
 from orvsd_central import db, app, login_manager, google, celery
 from forms import LoginForm, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
-                    Course, CourseDetail, User)
+                    Course, CourseDetail, User, SiteCourse)
 from sqlalchemy import func, and_
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm import eagerload
@@ -254,8 +254,10 @@ def install_course():
                 # Courses are detached from session for being
                 # inactive for too long.
                 course.course.name
-
-                install_course_to_site.delay(course, site)
+                resp = install_course_to_site.delay(course, site)
+                new_sitecourse = SiteCourse(site_id=request.form.get('site'),
+                        course_id=course.course.id, celery_task_id=resp)
+                db.session.add(new_sitecourse)   # Add new course to database.
 
             output += (str(len(site_urls)) + " course install(s) for " +
                        course.course.name + " started.\n")
