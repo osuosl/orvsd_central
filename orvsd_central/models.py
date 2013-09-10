@@ -71,6 +71,7 @@ class User(db.Model):
                  'password' : '********',
                  'role' : self.role }
 
+
 class District(db.Model):
     """
     Districts have many schools
@@ -101,6 +102,7 @@ class District(db.Model):
                  'name' : self.name,
                  'shortname' : self.shortname,
                  'base_path' : self.base_path }
+
 
 class School(db.Model):
     """
@@ -213,6 +215,7 @@ class Site(db.Model):
                  'jenkins_cron_job' : self.jenkins_cron_job,
                  'location' : self.location }
 
+
 class SiteDetail(db.Model):
     """
     Site_details belong to one site. This data is updated from the
@@ -317,6 +320,7 @@ class Course(db.Model):
                  'license' : self.license,
                  'category' : self.category,
                  'source' : self.source }
+
 
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
