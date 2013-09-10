@@ -3,27 +3,46 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
-sites_courses = db.Table('sites_courses',
-                         db.Model.metadata,
-                         db.Column('site_id',
-                                   db.Integer,
-                                   db.ForeignKey('sites.id',
-                                                 use_alter=True,
-                                                 name=
-                                                 'fk_sites_courses_site_id')),
-                         db.Column('course_id',
-                                   db.Integer,
-                                   db.ForeignKey('courses.id',
-                                                 use_alter=True,
-                                                 name=
-                                                 'fk_sites_courses_course_id')),
-                         db.Column('celery_task_id',
-                                   db.String,
-                                   db.ForeignKey('celery_taskmeta.task_id',
-                                                 use_alter=True,
-                                                 name=
-                                                 'fk_sites_courses_celery_task_id'))
-                         )
+
+class SiteCourse(db.Model):
+    """
+    Site course model for ORVSD_CENTRAL
+    """
+    __tablename__ = 'sites_courses'
+    id = db.Column(db.Integer, primary_key=True)
+    site_id = db.Column('site_id',
+                        db.Integer,
+                        db.ForeignKey('sites.id',
+                                      use_alter=True,
+                                      name='fk_sites_courses_site_id')),
+    course_id = db.Column('course_id',
+                          db.Integer,
+                          db.ForeignKey('courses.id',
+                                        use_alter=True,
+                                        name='fk_sites_courses_course_id')),
+    celery_task_id = db.Column('celery_task_id',
+                               db.String,
+                               db.ForeignKey('celery_taskmeta.task_id',
+                                             use_alter=True,
+                                             name='fk_sites_courses_celery_task_id'))
+
+    def __init__(self, site_id, course_id, celery_task_id):
+        self.site_id = site_id
+        self.course_id = course_id
+        self.celery_task_id = celery_task_id
+
+    def __repr__(self):
+        return "<SiteCourse('%s','%s','%s')>" % (self.site_id,
+                                                 self.course_id,
+                                                 self.celery_task_id)
+
+    def get_properties(self):
+        return ['site_id', 'course_id', 'celery_task_id']
+
+    def serialize(self):
+        return {'site_id': self.site_id,
+                'course_id': self.course_id,
+                'celery_task_id': self.celery_task_id}
 
 
 class User(db.Model):
