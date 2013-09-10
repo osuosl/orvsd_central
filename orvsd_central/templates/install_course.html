@@ -4,12 +4,38 @@
     <title>Install Courses</title>
 {% endblock %}
 
+{% block head %}
+    <link type="text/css" rel="stylesheet" href="{{url_for('static', filename='css/install_course.css') }}">
+    <script src="{{url_for('static', filename='js/install_course.js') }}" type="text/javascript" ></script>
+{% endblock %}
+
 {% block content %}
 
-<form name='install_course' method='POST', action="{{ url_for('install_course_output') }}">
-    <div>Site: {{form.site}}</div>
-    <div>Course: {{form.course}}</div>
-    <div><input type='submit' value='Install'></div>
+<form name='install_course' method='POST' action="{{ url_for('install_course') }}">
+    <fieldset>
+        <legend>Install Course(s)</legend>
+        <label class="control-label" for="site">Site</label>
+        <div class="row">
+            <div class="span7">
+                {{form.site}}
+            </div>
+            <div class="span5" id="selected-names"></div>
+        </div>
+        <label class="control-label" for="filter">Filter</label>
+        <div class="row">
+            <div class="span7">
+                {{form.filter}}
+            </div>
+        </div>
+        <label class="control-label" for="course">Course(s)</label>
+        <div class="row">
+            <div class="span7">
+                {{form.course}}
+            </div>
+            <div class="span5" id="selected-courses"></div>
+        </div>
+        <button class="btn" type='submit'>Install</button>
+    </fieldset>
 </form>
 
 {% endblock %}
