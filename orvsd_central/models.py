@@ -14,12 +14,12 @@ class SiteCourse(db.Model):
                         db.Integer,
                         db.ForeignKey('sites.id',
                                       use_alter=True,
-                                      name='fk_sites_courses_site_id')),
+                                      name='fk_sites_courses_site_id'))
     course_id = db.Column('course_id',
                           db.Integer,
                           db.ForeignKey('courses.id',
                                         use_alter=True,
-                                        name='fk_sites_courses_course_id')),
+                                        name='fk_sites_courses_course_id'))
     celery_task_id = db.Column('celery_task_id',
                                db.String,
                                db.ForeignKey('celery_taskmeta.task_id',
