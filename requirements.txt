@@ -19,6 +19,7 @@ argparse
 billiard
 celery
 distribute
+fixtures
 httplib2
 kombu
 lxml
