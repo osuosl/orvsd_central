@@ -24,7 +24,7 @@ def downgrade(engine_name):
 
 
 def upgrade_engine1():
-    op.add_column('districts', sa.Column('state_id', sa.Int()))
+    op.add_column('districts', sa.Column('state_id', sa.Integer()))
 
 def downgrade_engine1():
     op.drop_column('districts', 'state_id')
