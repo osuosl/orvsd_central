@@ -114,6 +114,8 @@ class School(db.Model):
                             db.ForeignKey('districts.id',
                                           use_alter=True,
                                           name='fk_school_to_district_id'))
+    # state assigned id
+    state_id = db.Column(db.Integer)
     # school name
     name = db.Column(db.String(255))
     # short name or abbreviation
@@ -127,7 +129,8 @@ class School(db.Model):
     district = db.relationship("District",
                                backref=db.backref('schools', order_by=id))
 
-    def __init__(self, name, shortname, domain, license):
+    def __init__(self, state_id, name, shortname, domain, license):
+        self.state_id = state_id
         self.name = name
         self.shortname = shortname
         self.domain = domain
@@ -139,6 +142,7 @@ class School(db.Model):
     def serialize(self):
         return { 'id' : self.id,
                  'district_id' : self.district_id,
+                 'state_id': self.state_id,
                  'name' : self.name,
                  'shortname' : self.shortname,
                  'domain' : self.domain,
