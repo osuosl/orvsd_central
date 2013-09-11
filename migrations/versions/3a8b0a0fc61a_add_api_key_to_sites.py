@@ -15,19 +15,15 @@ import sqlalchemy as sa
 
 
 def upgrade(engine_name):
-    op.add_column('sites', sa.Column('api_key', sa.String(length=40)))
-
+    eval("upgrade_%s" % engine_name)()
 
 def downgrade(engine_name):
-    op.drop_column('sites', 'api_key')
-
-
+    eval("downgrade_%s" % engine_name)()
 
 
 def upgrade_engine1():
-    pass
-
+    op.add_column('sites', sa.Column('api_key', sa.String(length=40)))
 
 def downgrade_engine1():
-    pass
+    op.drop_column('sites', 'api_key')
 
