@@ -154,6 +154,8 @@ class Site(db.Model):
                                                     name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
     name = db.Column(db.String(255))
+    # Dev site?
+    dev = db.Column(db.Boolean)
     # (from siteinfo)
     sitetype = db.Column(db.Enum('moodle', 'drupal', name='site_types'))
     # moodle or drupal's base_url - (from siteinfo)
@@ -175,8 +177,10 @@ class Site(db.Model):
         self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
     def __init__(self, name, sitetype, baseurl,
-                 basepath, jenkins_cron_job, location):
+                 basepath, jenkins_cron_job, location,
+                 dev=False):
         self.name = name
+        self.dev = dev
         self.sitetype = sitetype
         self.baseurl = baseurl
         self.basepath = basepath
@@ -184,7 +188,8 @@ class Site(db.Model):
         self.location = location
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s')>" % (self.name,
+        return "<Site('%s','%s','%s','%s','%s', '%s')>" % (self.name,
+                                                     self.dev,
                                                      self.sitetype,
                                                      self.baseurl,
                                                      self.basepath,
@@ -197,6 +202,7 @@ class Site(db.Model):
     def serialize(self):
         return { 'id' : self.id,
                  'name' : self.name,
+                 'dev': self.dev,
                  'sitetype' : self.sitetype,
                  'baseurl' : self.baseurl,
                  'basepath' : self.basepath,
