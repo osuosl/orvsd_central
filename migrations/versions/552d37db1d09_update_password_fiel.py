@@ -15,19 +15,16 @@ import sqlalchemy as sa
 
 
 def upgrade(engine_name):
-    op.alter_column(table_name='users',
-                    column_name='password',
-                    type_=sa.String(255))
-    # op.execute('ALTER TABLE users MODIFY password VARCHAR(255);')
-
+    eval("upgrade_%s" % engine_name)()
 
 def downgrade(engine_name):
     eval("downgrade_%s" % engine_name)()
 
 
 def upgrade_engine1():
-    pass
-
+    op.alter_column(table_name='users',
+                    column_name='password',
+                    type_=sa.String(255))
 
 def downgrade_engine1():
     pass

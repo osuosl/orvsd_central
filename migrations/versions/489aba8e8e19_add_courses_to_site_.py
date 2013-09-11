@@ -15,16 +15,14 @@ import sqlalchemy as sa
 
 
 def upgrade(engine_name):
-    op.add_column('site_details', sa.Column('courses', sa.Text()))
-
+    eval("upgrade_%s" % engine_name)()
 
 def downgrade(engine_name):
     eval("downgrade_%s" % engine_name)()
 
 
 def upgrade_engine1():
-    pass
-
+    op.add_column('site_details', sa.Column('courses', sa.Text()))
 
 def downgrade_engine1():
-    pass
+    op.drop_column('site_details', 'courses')
