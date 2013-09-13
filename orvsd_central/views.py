@@ -13,6 +13,9 @@ from sqlalchemy.sql.expression import desc
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 import urllib2
+import celery
+import os
+from celery.utils.encoding import safe_repr, safe_str
 import json
 import re
 import subprocess
@@ -340,12 +343,16 @@ def view_school_courses(school_id):
                 users += detail.totalusers
 
     # Get course list
-    resp = requests.get('http://localhost:5555/api/tasks').json()
-    course_details = [{'uuid': v['uuid'],
-                       'task_state': v['state'],
-                       'time_completed': datetime.datetime.fromtimestamp(int(v['timestamp'])).strftime('%Y-%m-%d %H:%M:%S'),
-                       'course_state': Soup(v['result']).find('message').get_text() if v['result'] != None else 'Unknown'}
-                      for k, v in resp.iteritems()]
+    resp = db.session.query("id", "task_id", "status", "date_done", "traceback") \
+                       .from_statement("SELECT * "
+                           "FROM celery_taskmeta") \
+                           .all()
+
+    course_details = [{'uuid': e[1],
+                       'task_state': e[2],
+                       'time_completed': e[3],
+                       'course_state': "Known course state" if e[3] != None else 'Unknown'}
+                      for e in resp]
 
     # Sort course_details by timestamp.
     course_details = sorted(course_details, key=lambda course: course['time_completed'])
@@ -547,3 +554,142 @@ def get_moodle_sites(baseurl):
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
     return jsonify(content=data)
+
+@app.route('/celery/status/<celery_id>')
+def get_task_status(celery_id):
+    status = db.session.query("status") \
+                       .from_statement("SELECT status "
+                           "FROM celery_taskmeta WHERE id=:celery_id") \
+                           .params(celery_id=celery_id).first()
+    return jsonify(status=status)
+
+@app.route("/1/sites/<baseurl>")
+def get_site_by_url(baseurl):
+    site = Site.query.filter_by(baseurl=baseurl).first()
+    if site:
+        site_details = SiteDetail.query.filter_by(site_id=site.id) \
+                                       .order_by(SiteDetail
+                                                 .timemodified
+                                                 .desc()) \
+                                       .first()
+
+        site_info = dict(site.serialize().items() + \
+                    site_details.serialize().items())
+
+        return jsonify(content=site_info)
+    return jsonify(content={'error': 'Site not found'})
+
+#TODO:
+'''
+1. Comment more
+2. Separate into seperate functions
+'''
+@app.route("/courses/list/update", methods=['GET', 'POST'])
+def update_courselist():
+    """
+        Updates the database to contain the most recent course
+        and course detail entries, based on available files.
+    """
+    num_courses = 0
+    base_path = "/data/moodle2-masters/"
+    mdl_files = []
+    if request.method == "POST":
+        # Get a list of all moodle course files
+        # for source in os.listdir(base_path):
+        for root, sub_folders, files in os.walk(base_path):
+            for file in files:
+                full_file_path = os.path.join(root, file)
+                if os.path.isfile(full_file_path):
+                    mdl_files.append(full_file_path)
+
+        filenames = []
+        sources = []
+        for filename in mdl_files:
+            source, path = get_path_and_source(base_path, filename)
+            sources.append(source)
+            filenames.append(path)
+
+        details = db.session.query(CourseDetail) \
+                        .join(CourseDetail.course) \
+                        .filter(CourseDetail.filename.in_(
+                            filenames)).all()
+
+        for detail in details:
+            if detail.filename in filenames:
+                sources.pop(filenames.index(detail.filename))
+                filenames.pop(filenames.index(detail.filename))
+
+        for source, file_path in zip(sources, filenames):
+            create_course_from_moodle_backup(base_path, source, file_path)
+            num_courses += 1
+
+        if num_courses > 0:
+            flash(str(num_courses) + ' new courses added successfully!')
+    return render_template('update_courses.html', user=current_user)
+
+# /base_path/source/path is the format of the parsed directories.
+def get_path_and_source(base_path, file_path):
+    path = file_path.strip(base_path).partition('/')
+    return path[0]+'/', path[2]
+
+def create_course_from_moodle_backup(base_path, source, file_path):
+    # Needed to delete extracted xml once operation is done
+    project_folder = "/home/vagrant/orvsd_central/"
+
+    # Unzip the file to get the manifest (All course backups are zip files)
+    zip = zipfile.ZipFile(base_path+source+file_path)
+    xmlfile = file(zip.extract("moodle_backup.xml"), "r")
+    xml = Soup(xmlfile.read(), "lxml")
+    info = xml.moodle_backup.information
+    old_course = Course.query.filter_by(
+                    name=info.original_course_fullname.string) or \
+                 Course.query.filter_by(
+                    name=info.original_course_shortname.string)
+
+    if old_course is not None:
+        # Create a course since one is unable to be found with that name.
+        new_course = Course(serial=1000 + len(Course.query.all()),
+                            source=source.replace('/', ''),
+                            name=info.original_course_fullname.string,
+                            shortname=info.original_course_shortname.string)
+        db.session.add(new_course)
+
+        # Until the session is committed, the new_course does not yet have
+        # an id.
+        db.session.commit()
+
+        course_id = new_course.id
+    else:
+        course_id = old_course.id
+
+    _version_re = re.findall(r'_v(\d)_', file_path)
+
+    # Regex will only be a list if it has a value in it
+    version = _version_re[0] if list(_version_re) else None
+
+    new_course_detail = CourseDetail(course_id=course_id,
+                                         filename=file_path,
+                                         version=version,
+                                         updated=datetime.datetime.now(),
+                                         active=True,
+                                         moodle_version=info.moodle_release.string,
+                                         moodle_course_id=info.original_course_id.string)
+
+    db.session.add(new_course_detail)
+    db.session.commit()
+
+    #Get rid of moodle_backup.xml
+    os.remove(project_folder+"moodle_backup.xml")
+
+# Get all task IDs
+@app.route('/celery/id/all')
+def get_all_ids():
+    # "result" is another column, but it neeeds to be decoded using
+    # django-picklefield, which depends on django, which we don't want to
+    # import to OC, so it's not used here.
+    statuses = db.session.query("id", "task_id", "status", "date_done", "traceback") \
+                       .from_statement("SELECT * "
+                           "FROM celery_taskmeta") \
+                           .all()
+
+    return jsonify(status=statuses)
