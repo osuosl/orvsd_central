@@ -241,26 +241,21 @@ def install_course():
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
                         for site_id in site_ids]
 
+        # Loop through the courses, generate the command to be run, run it, and
+        # append the ouput to output
+        #
+        # Currently this will break as our db is not setup correctly yet
+        moodle_site_id = request.form.get('site')
         for course in courses:
-            for site_url in site_urls:
-                # The site to install the courses
-                site = ("http://%s/webservice/rest/server.php?"
-                       "wstoken=%s&wsfunction=%s") % (
-                       site_url,
-                       app.config['INSTALL_COURSE_WS_TOKEN'],
-                       app.config['INSTALL_COURSE_WS_FUNCTION'])
-                site = str(site.encode('utf-8'))
+            #Courses are detached from session for being inactive for too long.
+            course.course.name
+            resp = install_course_to_site.delay(course, site)
+            db.session.add(SiteCourse(site_id=moodle_site_id,
+                                      course_id=course.course_id,
+                                      celery_task_id=resp))
 
-                # Courses are detached from session for being
-                # inactive for too long.
-                course.course.name
-                resp = install_course_to_site.delay(course, site)
-                new_sitecourse = SiteCourse(site_id=request.form.get('site'),
-                        course_id=course.course.id, celery_task_id=resp)
-                db.session.add(new_sitecourse)   # Add new course to database.
-
-            output += (str(len(site_urls)) + " course install(s) for " +
-                       course.course.name + " started.\n")
+            output += "%s\n\n%s\n\n\n" % \
+                      (course.course.name, resp)
 
         return render_template('install_course_output.html',
                                 output=output,
