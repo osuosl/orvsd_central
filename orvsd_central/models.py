@@ -34,15 +34,17 @@ class SiteCourse(db.Model):
         self.celery_task_id = celery_task_id
 
     def __repr__(self):
-        return "<SiteCourse('%s','%s','%s')>" % (self.site_id,
-                                                 self.course_id,
-                                                 self.celery_task_id)
+        return "<SiteCourse('%s, %s','%s','%s')>" % (self.id,
+                                                     self.site_id,
+                                                     self.course_id,
+                                                     self.celery_task_id)
 
     def get_properties(self):
-        return ['site_id', 'course_id', 'celery_task_id']
+        return ['id', 'site_id', 'course_id', 'celery_task_id']
 
     def serialize(self):
-        return {'site_id': self.site_id,
+        return {'id': self.id,
+                'site_id': self.site_id,
                 'course_id': self.course_id,
                 'celery_task_id': self.celery_task_id}
 
