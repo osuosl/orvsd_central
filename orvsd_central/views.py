@@ -253,6 +253,7 @@ def install_course():
             db.session.add(SiteCourse(site_id=moodle_site_id,
                                       course_id=course.course_id,
                                       celery_task_id=resp))
+            db.session.commit()
 
             output += "%s\n\n%s\n\n\n" % \
                       (course.course.name, resp)
