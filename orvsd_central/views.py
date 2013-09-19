@@ -416,7 +416,7 @@ def view_school_courses(school_id):
         tasks_dict[course[0]] = tasks_dict.get(course[0],
                                                {'task_id': 'N/A',
                                                 'celery_status': 'PENDING',
-                                                'course_status': 'PENDING',
+                                                'course_status': 'Pending',
                                                 'date_completed': datetime.datetime.today(),
                                                 'traceback': 'N/A'})
 
