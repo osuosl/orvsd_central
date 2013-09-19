@@ -392,11 +392,43 @@ def view_school_courses(school_id):
                 teachers += detail.teachers
                 users += detail.totalusers
 
-    # Get course list
-    course_details = db.session.query("id", "task_id", "status", "date_done") \
-    .from_statement("SELECT * "
-    "FROM celery_taskmeta") \
-    .all()
+    # Get list of tasks and turn into dict for performance reasons   TODO: Need separate tasks list for each school
+    tasks = db.session.query('id', 'task_id', 'status', 'date_done', 'traceback') \
+                      .from_statement('SELECT * FROM celery_taskmeta') \
+                      .all()
+    tasks_dict = dict([(e[1], {'task_id': e[0],
+                         'celery_status': e[2],
+                         'course_status': 'Installed',
+                         'date_completed': e[3],
+                         'traceback': e[4]})
+                       for e in tasks])
+
+    # Get list of installed courses   TODO: site ID is 138 for FLVS while I'm testing..
+    installed_courses = db.session.query('celery_task_id') \
+                                  .from_statement('SELECT * '
+                                  'FROM sites_courses '
+                                  'WHERE site_id = :p_site_id') \
+                                  .params(p_site_id=138) \
+                                  .all()
+
+    # Compare to determine course installation status.
+    for course in installed_courses:
+        tasks_dict[course[0]] = tasks_dict.get(course[0],
+                                               {'task_id': 'N/A',
+                                                'celery_status': 'PENDING',
+                                                'course_status': 'PENDING',
+                                                'date_completed': datetime.datetime.today(),
+                                                'traceback': 'N/A'})
+
+    # Format course list for template.
+    course_details = [{'uuid': k,
+                       'task_state': v['celery_status'],
+                       'time_completed': v['date_completed'],
+                       'course_state': v['course_status']}
+                      for k,v in tasks_dict.iteritems()]
+
+    # Sort course_details by timestamp.
+    course_details = sorted(course_details, key=lambda course: course['time_completed'])
 
     # Return a pre-compiled template to be dumped into the view template
     template = t.render(name=school.name, admins=admins, teachers=teachers,
