@@ -392,40 +392,46 @@ def view_school_courses(school_id):
                 teachers += detail.teachers
                 users += detail.totalusers
 
-    # Get list of tasks and turn into dict for performance reasons   TODO: Need separate tasks list for each school
+    # Get list of installed courses   TODO: site ID is 138 for FLVS while I'm testing..
+    courses_list = db.session.query('celery_task_id') \
+                             .from_statement('SELECT * '
+                             'FROM sites_courses '
+                             'WHERE site_id = :p_site_id') \
+                             .params(p_site_id=138) \
+                             .all()
+
+    # Start courses dict, status defaulting to pending. Information in this
+    # dict will be used to generate the final list of course details to
+    # display.
+    courses_dict = dict([(e[0], {'task_id': 'N/A',
+                                 'celery_status': 'PENDING',
+                                 'course_status': 'Pending',
+                                 'date_completed': datetime.datetime.today(),
+                                 'traceback': 'N/A'})
+                         for e in courses_list])
+
+    # Get list of installed courses for the current site and turn into dict for
+    # performance reasons.
     tasks = db.session.query('id', 'task_id', 'status', 'date_done', 'traceback') \
                       .from_statement('SELECT * FROM celery_taskmeta') \
                       .all()
-    tasks_dict = dict([(e[1], {'task_id': e[0],
-                         'celery_status': e[2],
-                         'course_status': 'Installed',
-                         'date_completed': e[3],
-                         'traceback': e[4]})
-                       for e in tasks])
 
-    # Get list of installed courses   TODO: site ID is 138 for FLVS while I'm testing..
-    installed_courses = db.session.query('celery_task_id') \
-                                  .from_statement('SELECT * '
-                                  'FROM sites_courses '
-                                  'WHERE site_id = :p_site_id') \
-                                  .params(p_site_id=138) \
-                                  .all()
-
-    # Compare to determine course installation status.
-    for course in installed_courses:
-        tasks_dict[course[0]] = tasks_dict.get(course[0],
-                                               {'task_id': 'N/A',
-                                                'celery_status': 'PENDING',
-                                                'course_status': 'Pending',
-                                                'date_completed': datetime.datetime.today(),
-                                                'traceback': 'N/A'})
+    # All tasks in celery_taskmeta are tasks that are finished. Mark them as
+    # such in courses_dict.
+    for task in tasks:
+        if task[1] in courses_dict:
+            courses_dict[task[1]] = {'task_id': task[0],
+                                     'celery_status': task[2],
+                                     'course_status': 'Installed',
+                                     'date_completed': task[3],
+                                     'traceback': task[4]}
 
     # Format course list for template.
     course_details = [{'uuid': k,
                        'task_state': v['celery_status'],
                        'time_completed': v['date_completed'],
                        'course_state': v['course_status']}
-                      for k,v in tasks_dict.iteritems()]
+                      for k,v in courses_dict.iteritems()]
 
     # Sort course_details by timestamp.
     course_details = sorted(course_details, key=lambda course: course['time_completed'])
