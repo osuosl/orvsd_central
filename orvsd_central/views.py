@@ -380,6 +380,9 @@ def view_school_courses(school_id):
     # School view template
     t = app.jinja_env.get_template('views/courses.html')
 
+    # Initialize courses_list
+    courses_list = []
+
     # if we have sites, grab the details needed for the template
     if sites:
         for site in sites:
@@ -392,13 +395,13 @@ def view_school_courses(school_id):
                 teachers += detail.teachers
                 users += detail.totalusers
 
-    # Get list of installed courses   TODO: site ID is 138 for FLVS while I'm testing..
-    courses_list = db.session.query('celery_task_id') \
-                             .from_statement('SELECT * '
-                             'FROM sites_courses '
-                             'WHERE site_id = :p_site_id') \
-                             .params(p_site_id=138) \
-                             .all()
+            # Get list of installed courses.
+            courses_list.extend(db.session.query('celery_task_id')
+                                          .from_statement('SELECT * '
+                                          'FROM sites_courses '
+                                          'WHERE site_id = :p_site_id')
+                                          .params(p_site_id=school_id)
+                                          .all())
 
     # Start courses dict, status defaulting to pending. Information in this
     # dict will be used to generate the final list of course details to
