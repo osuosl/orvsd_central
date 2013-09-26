@@ -362,6 +362,18 @@ def view_school(school_id):
 
     return render_template('view.html', content=template, user=current_user)
 
+# Check for success/failure to install course by celery task.
+def get_task_result(task):
+    # Decode the results field, which is in django-picklefield format.
+    #statuses = [tuple(s[:5]) + tuple([s[5].decode('utf-8', 'ignore')]) for s in statuses]
+    #statuses = [tuple(s[:5]) + tuple([re.search('<MESSAGE>.*</MESSAGE>', '\u0002X\u0000\u0000\u0000<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<EXCEPTION class=\"dml_missing_record_exception\">\n<MESSAGE>Can not find data record in database table course_categories.</MESSAGE>\n</EXCEPTION>\nq\u0001.', re.DOTALL).group()]) for s in statuses]
+
+    #return str(task[5].decode('utf-8', 'ignore')[10:-10])
+    return re.search('MESSAGE',
+                     #'n\">\n<MESSAGE>Can not find data record in database table course_categories.</MESSA',
+                     task[5].decode('utf-8', 'ignore')[95:-20],
+                     re.DOTALL) \
+             .group()
 
 # View courses installed for a specific school
 @app.route('/view/schools/<int:school_id>/courses', methods=['GET'])
@@ -415,7 +427,7 @@ def view_school_courses(school_id):
 
     # Get list of installed courses for the current site and turn into dict for
     # performance reasons.
-    tasks = db.session.query('id', 'task_id', 'status', 'date_done', 'traceback') \
+    tasks = db.session.query('id', 'task_id', 'status', 'date_done', 'traceback', 'result') \
                       .from_statement('SELECT * FROM celery_taskmeta') \
                       .all()
 
@@ -423,11 +435,18 @@ def view_school_courses(school_id):
     # such in courses_dict.
     for task in tasks:
         if task[1] in courses_dict:
-            courses_dict[task[1]] = {'task_id': task[0],
-                                     'celery_status': task[2],
-                                     'course_status': 'Installed',
-                                     'date_completed': task[3],
-                                     'traceback': task[4]}
+            courses_dict[task[1]]['task_id']        = task[0]
+            courses_dict[task[1]]['celery_status']  = task[2]
+            courses_dict[task[1]]['date_completed'] = task[3]
+            courses_dict[task[1]]['traceback']      = task[4]
+
+            if get_task_result(task) == 'success':
+                courses_dict[task[1]]['course_status']  = 'Installed'
+            else:
+                courses_dict[task[1]]['course_status']  = 'Failed to install'
+
+    # TODO: Rename sites_courses site_id column to school_id (or fix the inconsistency wherever)
+    # TODO: Create status page for all sites combined.
 
     # Format course list for template.
     course_details = [{'uuid': k,
@@ -872,11 +891,12 @@ def create_course_from_moodle_backup(base_path, file_path, source):
 # Get all task IDs
 @app.route('/celery/id/all')
 def get_all_ids():
-    # "result" is another column, but it neeeds to be decoded using
-    # django-picklefield, which depends on django, which we don't want to
-    # import to OC, so it's not used here.
-    statuses = db.session.query("id", "task_id", "status", "date_done", "traceback") \
+    statuses = db.session.query("id", "task_id", "status", "date_done", "traceback", "result") \
                          .from_statement("SELECT * FROM celery_taskmeta") \
                          .all()
+
+    # Decode the results field, which is in django-picklefield format.
+    statuses = [tuple(s[:5]) + tuple([get_task_result(s)])
+                for s in statuses]
 
     return jsonify(status=statuses)
