@@ -303,7 +303,7 @@ class Course(db.Model):
 
     course_details = db.relationship("CourseDetail",
                                      backref=db.backref('course',
-                                     order_by=id))
+                                                        order_by=id))
 
     def __init__(self, serial, name, shortname,
                  license=None, category=None, source=None):

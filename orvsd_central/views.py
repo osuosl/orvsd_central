@@ -401,9 +401,16 @@ def view_school_courses(school_id):
                 teachers += detail.teachers
                 users += detail.totalusers
 
+    # Get course list
+    course_details = db.session.query("id", "task_id", "status", "date_done") \
+                               .from_statement("SELECT * "
+                                               "FROM celery_taskmeta") \
+                               .all()
+
     # Return a pre-compiled template to be dumped into the view template
     template = t.render(name=school.name, admins=admins, teachers=teachers,
-                        users=users, user=current_user)
+                        users=users, user=current_user,
+                        course_list=course_details)
 
     return render_template('view.html', content=template, user=current_user)
 
@@ -444,7 +451,6 @@ def report():
     site_count = Site.query.count()
     course_count = Course.query.count()
 
-    inner = ""
     accord_id = "dist_accord"
     dist_id = "distid=%s"
 
