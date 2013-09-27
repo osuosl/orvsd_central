@@ -12,6 +12,9 @@ from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm import eagerload
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
+from bs4 import BeautifulSoup as Soup
+import xml.etree.ElementTree as ET
+import urllib2
 import celery
 from bs4 import BeautifulSoup as Soup
 import os
@@ -362,18 +365,25 @@ def view_school(school_id):
 
     return render_template('view.html', content=template, user=current_user)
 
-# Check for success/failure to install course by celery task.
-def get_task_result(task):
-    # Decode the results field, which is in django-picklefield format.
-    #statuses = [tuple(s[:5]) + tuple([s[5].decode('utf-8', 'ignore')]) for s in statuses]
-    #statuses = [tuple(s[:5]) + tuple([re.search('<MESSAGE>.*</MESSAGE>', '\u0002X\u0000\u0000\u0000<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<EXCEPTION class=\"dml_missing_record_exception\">\n<MESSAGE>Can not find data record in database table course_categories.</MESSAGE>\n</EXCEPTION>\nq\u0001.', re.DOTALL).group()]) for s in statuses]
 
-    #return str(task[5].decode('utf-8', 'ignore')[10:-10])
-    return re.search('MESSAGE',
-                     #'n\">\n<MESSAGE>Can not find data record in database table course_categories.</MESSA',
-                     task[5].decode('utf-8', 'ignore')[95:-20],
-                     re.DOTALL) \
-             .group()
+# Parse the results field (in django-picklefield format) if Celery task was
+# successful.
+def get_task_result(task):
+    if task[2] == 'SUCCESS':
+        # Get values from XML field. the [7:-3] magic number split is due to
+        # a few evil Unicode characters of unknown origin (but they are
+        # consistently there). Try printing task[5] to see them.
+        root = ET.fromstring(task[5][7:-3].decode('utf-8', 'ignore'))
+        if root.tag == 'EXCEPTION':
+            out = root[0].text
+        else:
+            out = 'success'
+    else:
+        # Failed Celery tasks have no output, so don't try to parse.
+        out = None
+
+    return out
+
 
 # View courses installed for a specific school
 @app.route('/view/schools/<int:school_id>/courses', methods=['GET'])
