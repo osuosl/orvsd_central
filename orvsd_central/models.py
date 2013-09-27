@@ -12,21 +12,24 @@ class SiteCourse(db.Model):
     """
     __tablename__ = 'sites_courses'
     id = db.Column(db.Integer, primary_key=True)
-    site_id = db.Column('site_id',
-                        db.Integer,
-                        db.ForeignKey('sites.id',
-                                      use_alter=True,
-                                      name='fk_sites_courses_site_id'))
-    course_id = db.Column('course_id',
-                          db.Integer,
-                          db.ForeignKey('courses.id',
-                                        use_alter=True,
-                                        name='fk_sites_courses_course_id'))
-    celery_task_id = db.Column('celery_task_id',
-                               db.String,
-                               db.ForeignKey('celery_taskmeta.task_id',
-                                             use_alter=True,
-                                             name='fk_sites_courses_celery_task_id'))
+    site_id = \
+        db.Column('site_id',
+                  db.Integer,
+                  db.ForeignKey('sites.id',
+                                use_alter=True,
+                                name='fk_sites_courses_site_id'))
+    course_id = \
+        db.Column('course_id',
+                  db.Integer,
+                  db.ForeignKey('courses.id',
+                                use_alter=True,
+                                name='fk_sites_courses_course_id'))
+    celery_task_id = \
+        db.Column('celery_task_id',
+                  db.String,
+                  db.ForeignKey('celery_taskmeta.task_id',
+                                use_alter=True,
+                                name='fk_sites_courses_celery_task_id'))
 
     def __init__(self, site_id, course_id, celery_task_id):
         self.site_id = site_id
@@ -91,12 +94,13 @@ class User(db.Model):
         return '<User %r>' % (self.name)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'name' : self.name,
-                 'email' : self.email,
-                 # Don't reveal passwords
-                 'password' : '********',
-                 'role' : self.role }
+        return {'id': self.id,
+                'name': self.name,
+                'email': self.email,
+                # Don't reveal passwords
+                'password': '********',
+                'role': self.role}
+
 
 class District(db.Model):
     """
@@ -124,10 +128,11 @@ class District(db.Model):
         return ['id', 'name', 'shortname', 'base_path']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'base_path' : self.base_path }
+        return {'id': self.id,
+                'name': self.name,
+                'shortname': self.shortname,
+                'base_path': self.base_path}
+
 
 class School(db.Model):
     """
@@ -164,12 +169,12 @@ class School(db.Model):
         return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'district_id' : self.district_id,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'domain' : self.domain,
-                 'license' : self.license }
+        return {'id': self.id,
+                'district_id': self.district_id,
+                'name': self.name,
+                'shortname': self.shortname,
+                'domain': self.domain,
+                'license': self.license}
 
 
 class Site(db.Model):
@@ -222,13 +227,14 @@ class Site(db.Model):
                 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'name' : self.name,
-                 'sitetype' : self.sitetype,
-                 'baseurl' : self.baseurl,
-                 'basepath' : self.basepath,
-                 'jenkins_cron_job' : self.jenkins_cron_job,
-                 'location' : self.location }
+        return {'id': self.id,
+                'name': self.name,
+                'sitetype': self.sitetype,
+                'baseurl': self.baseurl,
+                'basepath': self.basepath,
+                'jenkins_cron_job': self.jenkins_cron_job,
+                'location': self.location}
+
 
 class SiteDetail(db.Model):
     """
@@ -275,18 +281,18 @@ class SiteDetail(db.Model):
                 self.activeusers, self.totalcourses, self.timemodified)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'site_id' : self.site_id,
-                 'courses' : self.courses,
-                 'siteversion' : self.siteversion,
-                 'siterelease' : self.siterelease,
-                 'adminemail' : self.adminemail,
-                 'totalusers' : self.totalusers,
-                 'adminusers' : self.adminusers,
-                 'teachers' : self.teachers,
-                 'activeusers' : self.activeusers,
-                 'totalcourses' : self.totalcourses,
-                 'timemodified' : self.timemodified }
+        return {'id': self.id,
+                'site_id': self.site_id,
+                'courses': self.courses,
+                'siteversion': self.siteversion,
+                'siterelease': self.siterelease,
+                'adminemail': self.adminemail,
+                'totalusers': self.totalusers,
+                'adminusers': self.adminusers,
+                'teachers': self.teachers,
+                'activeusers': self.activeusers,
+                'totalcourses': self.totalcourses,
+                'timemodified': self.timemodified}
 
 
 class Course(db.Model):
@@ -307,7 +313,7 @@ class Course(db.Model):
 
     course_details = db.relationship("CourseDetail",
                                      backref=db.backref('course',
-                                     order_by=id))
+                                                        order_by=id))
 
     def __init__(self, serial, name, shortname,
                  license=None, category=None, source=None):
@@ -327,13 +333,14 @@ class Course(db.Model):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'serial' : self.serial,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'license' : self.license,
-                 'category' : self.category,
-                 'source' : self.source }
+        return {'id': self.id,
+                'serial': self.serial,
+                'name': self.name,
+                'shortname': self.shortname,
+                'license': self.license,
+                'category': self.category,
+                'source': self.source}
+
 
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
@@ -369,10 +376,10 @@ class CourseDetail(db.Model):
                 self.moodle_course_version)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'course_id' : self.course_id,
-                 'filename' : self.filename,
-                 'version' : self.version,
-                 'updated' : self.updated,
-                 'active' : self.active,
-                 'moodle_version' : self.moodle_version }
+        return {'id': self.id,
+                'course_id': self.course_id,
+                'filename': self.filename,
+                'version': self.version,
+                'updated': self.updated,
+                'active': self.active,
+                'moodle_version': self.moodle_version}
