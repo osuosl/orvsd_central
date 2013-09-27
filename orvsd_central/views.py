@@ -388,12 +388,17 @@ def get_task_result(task):
 # Get course name from sites_courses by Celery task ID.
 def get_course_name_by_celery_id(celery_task_id):
     cid = db.session.query('course_id') \
-                    .from_statement('SELECT course_id FROM sites_courses WHERE celery_task_id = :p_celery_task_id') \
+                    .from_statement('SELECT course_id '
+                                    'FROM sites_courses '
+                                    'WHERE celery_task_id '
+                                    '= :p_celery_task_id') \
                     .params(p_celery_task_id=celery_task_id) \
                     .first()[0]
 
     out = db.session.query('name') \
-                    .from_statement('SELECT name FROM courses WHERE id = :p_course_id') \
+                    .from_statement('SELECT name '
+                                    'FROM courses '
+                                    'WHERE id = :p_course_id') \
                     .params(p_course_id=cid) \
                     .first()[0]
 
@@ -435,8 +440,9 @@ def view_school_courses(school_id):
             # Get list of installed courses.
             courses_list.extend(db.session.query('celery_task_id')
                                           .from_statement('SELECT * '
-                                          'FROM sites_courses '
-                                          'WHERE site_id = :p_site_id')
+                                                          'FROM sites_courses '
+                                                          'WHERE site_id '
+                                                          '= :p_site_id')
                                           .params(p_site_id=school_id)
                                           .all())
 
@@ -452,7 +458,8 @@ def view_school_courses(school_id):
 
     # Get list of installed courses for the current site and turn into dict for
     # performance reasons.
-    tasks = db.session.query('id', 'task_id', 'status', 'date_done', 'traceback', 'result') \
+    tasks = db.session.query('id', 'task_id', 'status', 'date_done',
+                             'traceback', 'result') \
                       .from_statement('SELECT * FROM celery_taskmeta') \
                       .all()
 
@@ -460,17 +467,18 @@ def view_school_courses(school_id):
     # such in courses_dict.
     for task in tasks:
         if task[1] in courses_dict:
-            courses_dict[task[1]]['course_name']    = get_course_name_by_celery_id(task[1])
-            courses_dict[task[1]]['celery_status']  = task[2]
+            courses_dict[task[1]]['course_name'] = get_course_name_by_celery_id(task[1])
+            courses_dict[task[1]]['celery_status'] = task[2]
             courses_dict[task[1]]['date_completed'] = task[3]
-            courses_dict[task[1]]['traceback']      = task[4]
+            courses_dict[task[1]]['traceback'] = task[4]
 
             if get_task_result(task) == 'success':
-                courses_dict[task[1]]['course_status']  = 'Installed'
+                courses_dict[task[1]]['course_status'] = 'Installed'
             else:
-                courses_dict[task[1]]['course_status']  = 'Failed to install'
+                courses_dict[task[1]]['course_status'] = 'Failed to install'
 
-    # TODO: Rename sites_courses site_id column to school_id (or fix the inconsistency wherever)
+    # TODO: Rename sites_courses site_id column to school_id (or fix the
+    #       inconsistency wherever)
     # TODO: Create status page for all sites combined.
 
     # Format course list for template.
@@ -478,14 +486,16 @@ def view_school_courses(school_id):
                        'task_state': v['celery_status'],
                        'time_completed': v['date_completed'],
                        'course_state': v['course_status']}
-                      for k,v in courses_dict.iteritems()]
+                      for k, v in courses_dict.iteritems()]
 
     # Sort course_details by timestamp.
-    course_details = sorted(course_details, key=lambda course: course['time_completed'])
+    course_details = sorted(course_details,
+                            key=lambda course: course['time_completed'])
 
     # Return a pre-compiled template to be dumped into the view template
     template = t.render(name=school.name, admins=admins, teachers=teachers,
-                        users=users, user=current_user, course_list=course_details)
+                        users=users, user=current_user,
+                        course_list=course_details)
 
     return render_template('view.html', content=template, user=current_user)
 
