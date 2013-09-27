@@ -385,6 +385,21 @@ def get_task_result(task):
     return out
 
 
+# Get course name from sites_courses by Celery task ID.
+def get_course_name_by_celery_id(celery_task_id):
+    cid = db.session.query('course_id') \
+                    .from_statement('SELECT course_id FROM sites_courses WHERE celery_task_id = :p_celery_task_id') \
+                    .params(p_celery_task_id=celery_task_id) \
+                    .first()[0]
+
+    out = db.session.query('name') \
+                    .from_statement('SELECT name FROM courses WHERE id = :p_course_id') \
+                    .params(p_course_id=cid) \
+                    .first()[0]
+
+    return out
+
+
 # View courses installed for a specific school
 @app.route('/view/schools/<int:school_id>/courses', methods=['GET'])
 @login_required
@@ -428,7 +443,7 @@ def view_school_courses(school_id):
     # Start courses dict, status defaulting to pending. Information in this
     # dict will be used to generate the final list of course details to
     # display.
-    courses_dict = dict([(e[0], {'task_id': 'N/A',
+    courses_dict = dict([(e[0], {'course_name': 'N/A',
                                  'celery_status': 'PENDING',
                                  'course_status': 'Pending',
                                  'date_completed': datetime.datetime.today(),
@@ -445,7 +460,7 @@ def view_school_courses(school_id):
     # such in courses_dict.
     for task in tasks:
         if task[1] in courses_dict:
-            courses_dict[task[1]]['task_id']        = task[0]
+            courses_dict[task[1]]['course_name']    = get_course_name_by_celery_id(task[1])
             courses_dict[task[1]]['celery_status']  = task[2]
             courses_dict[task[1]]['date_completed'] = task[3]
             courses_dict[task[1]]['traceback']      = task[4]
@@ -459,7 +474,7 @@ def view_school_courses(school_id):
     # TODO: Create status page for all sites combined.
 
     # Format course list for template.
-    course_details = [{'uuid': k,
+    course_details = [{'course_name': v['course_name'],
                        'task_state': v['celery_status'],
                        'time_completed': v['date_completed'],
                        'course_state': v['course_status']}
