@@ -40,10 +40,11 @@ class User(db.Model):
     role = db.Column(db.SmallInteger)
     #Possibly another column for current status
 
-    def __init__(self, name=None, email=None, password=None):
+    def __init__(self, name=None, email=None, password=None, role=1):
         self.name = name
         self.email = email
         self.password = generate_password_hash(password)
+        self.role = role
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
