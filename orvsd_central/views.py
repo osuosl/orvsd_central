@@ -46,9 +46,11 @@ def register():
             message = "Invalid email address!\n"
         else:
             # Add user to db
+            perms = {'steve': 1, 'helpdesk': 2, 'admin': 3}
             db.session.add(User(name=form.user.data,
                                 email=form.email.data,
-                                password=form.password.data))
+                                password=form.password.data,
+                                role=perms.get(form.perm.data)))
             db.session.commit()
             message = form.user.data+" has been added successfully!\n"
 
