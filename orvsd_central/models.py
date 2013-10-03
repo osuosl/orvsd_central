@@ -25,7 +25,13 @@ sites_courses = db.Table('sites_courses',
 class User(db.Model):
     """
     User model for ORVSD_CENTRAL
+
+    The user has roles:
+    1: standard user
+    2: helpdesk
+    3: admin
     """
+
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
@@ -34,10 +40,11 @@ class User(db.Model):
     role = db.Column(db.SmallInteger)
     #Possibly another column for current status
 
-    def __init__(self, name=None, email=None, password=None):
+    def __init__(self, name=None, email=None, password=None, role=1):
         self.name = name
         self.email = email
         self.password = generate_password_hash(password)
+        self.role = role
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
