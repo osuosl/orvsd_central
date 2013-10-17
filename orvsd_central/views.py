@@ -864,4 +864,6 @@ def get_courses_by_site(site_id):
                                              .desc()) \
                                    .first()
 
-    return jsonify(content=json.loads(site_details.courses))
+    if site_details.courses:
+        return jsonify(content=json.loads(site_details.courses))
+    return jsonify({'error:' : 'No courses found.'})
