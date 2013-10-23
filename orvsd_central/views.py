@@ -345,6 +345,48 @@ def view_school(school_id):
     sites = Site.query.filter_by(school_id=school_id).all()
 
     # School view template
+    t = app.jinja_env.get_template('views/courses.html')
+
+    # if we have sites, grab the details needed for the template
+    if sites:
+        for site in sites:
+            detail = SiteDetail.query.filter_by(site_id=site.id) \
+                                     .order_by(SiteDetail
+                                               .timemodified.desc()) \
+                                     .first()
+            if detail:
+                admins += detail.adminusers
+                teachers += detail.teachers
+                users += detail.totalusers
+
+    # Get course list
+    course_details = db.session.query("id", "task_id", "status", "date_done") \
+    .from_statement("SELECT * "
+    "FROM celery_taskmeta") \
+    .all()
+
+    # Return a pre-compiled template to be dumped into the view template
+    template = t.render(name=school.name, admins=admins, teachers=teachers,
+                        users=users, user=current_user, course_list=course_details)
+
+    return render_template('view.html', content=template, user=current_user)
+
+
+# View courses installed for a specific school
+@app.route('/view/schools/<int:school_id>/courses', methods=['GET'])
+@login_required
+def view_school_courses(school_id):
+    school = School.query.filter_by(id=school_id).first()
+
+    # Info for the school's page
+    admins = 0
+    teachers = 0
+    users = 0
+
+    # Get the school's sites
+    sites = Site.query.filter_by(school_id=school_id).all()
+
+    # School view template
     t = app.jinja_env.get_template('views/school.html')
 
     # if we have sites, grab the details needed for the template
@@ -359,9 +401,16 @@ def view_school(school_id):
                 teachers += detail.teachers
                 users += detail.totalusers
 
+    # Get course list
+    course_details = db.session.query("id", "task_id", "status", "date_done") \
+                               .from_statement("SELECT * "
+                                               "FROM celery_taskmeta") \
+                               .all()
+
     # Return a pre-compiled template to be dumped into the view template
     template = t.render(name=school.name, admins=admins, teachers=teachers,
-                        users=users, user=current_user)
+                        users=users, user=current_user,
+                        course_list=course_details)
 
     return render_template('view.html', content=template, user=current_user)
 
@@ -402,7 +451,6 @@ def report():
     site_count = Site.query.count()
     course_count = Course.query.count()
 
-    inner = ""
     accord_id = "dist_accord"
     dist_id = "distid=%s"
 
