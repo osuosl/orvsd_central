@@ -12,6 +12,7 @@ from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm import eagerload
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
+import constants
 import celery
 from bs4 import BeautifulSoup as Soup
 import os
@@ -49,8 +50,8 @@ def register():
             # Add user to db
             db.session.add(User(name=form.user.data,
                                 email=form.email.data,
-                                password=form.password.data
-                                role=form.perm.data))
+                                password=form.password.data,
+                                role=constants.USER_PERMS.get(form.perm.data, 1)))
             db.session.commit()
             message = form.user.data+" has been added successfully!\n"
 
@@ -545,20 +546,6 @@ def update_object(category, id):
                     id=request.form.get("id")) \
                 .update(inputs)
 
-    if request.method == "POST":
-        if form.password.data != form.confirm_pass.data:
-            message = "The passwords provided did not match!\n"
-        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z] \
-                          {2,6}$', form.email.data):
-            message = "Invalid email address!\n"
-        else:
-            #Add user to db
-            perms = {'steve': 1, 'helpdesk': 2, 'admin': 3}
-            db.session.add(User(name=form.user.data,
-                                email=form.email.data,
-                                password=form.password.data,
-                                role=perms.get(form.perm.data)))
-            db.session.commit()
             return "Object updated sucessfully!"
 
     abort(404)
