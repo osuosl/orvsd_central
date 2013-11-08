@@ -37,13 +37,17 @@ class User(db.Model):
     name = db.Column(db.String(50), unique=True)
     email = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(255))
+    # 1 = Standard User
+    # 2 = Helpdesk
+    # 3 = Admin
     role = db.Column(db.SmallInteger)
     #Possibly another column for current status
 
-    def __init__(self, name=None, email=None, password=None):
+    def __init__(self, name=None, email=None, password=None, role=1):
         self.name = name
         self.email = email
         self.password = generate_password_hash(password)
+        self.role = role
 
     def check_password(self, password):
         return check_password_hash(self.password, password)

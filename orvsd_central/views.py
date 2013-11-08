@@ -12,6 +12,7 @@ from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm import eagerload
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
+import constants
 import celery
 from bs4 import BeautifulSoup as Soup
 import os
@@ -49,7 +50,8 @@ def register():
             # Add user to db
             db.session.add(User(name=form.user.data,
                                 email=form.email.data,
-                                password=form.password.data))
+                                password=form.password.data,
+                                role=constants.USER_PERMS.get(form.perm.data, 1)))
             db.session.commit()
             message = form.user.data+" has been added successfully!\n"
 
@@ -544,7 +546,6 @@ def update_object(category, id):
                     id=request.form.get("id")) \
                 .update(inputs)
 
-            db.session.commit()
             return "Object updated sucessfully!"
 
     abort(404)
@@ -591,7 +592,6 @@ def string_to_type(string):
 """
 REMOVE
 """
-
 
 @app.route("/display/<category>")
 def remove(category):
