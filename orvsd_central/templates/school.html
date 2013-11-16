@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>{{school.name}}</title>
+{% endblock %}
+
+{% block content %}
+    <script type="text/javascript">
+        ().onClick("
+
+    </script>
+
+
+    <div class="row pagination-centered">
+        <h2>
+            {{school.name}}
+        </h2>
+    </br>
+    <h4 style="font-weight:normal">
+    <div class="span4">
+        <b>Admins:</b> {{site_details.adminusers}}
+    </div>
+    <div class="span4">
+        <b>Teachers:</b> {{site_details.teachers}}
+    </div>
+    <div class="span4">
+        <b>Active Users:</b> {{site_details.activeusers}}
+    </div>
+    </h4>
+    </div>
+        
+        </br>
+        <div class="row-fluid">
+            <div class="span6">
+                <h3>
+                    Standard Information:
+                </h3>
+                </br>
+                <h4 style="font-weight:normal">
+                    <b>State Id:</b> {{school.state_id}} </br></br>
+                    <b>District: </b> <a href="/districts/{{school.district.id}}/view">{{school.district.name}}</a></br></br>
+                    <b>School Name:</b> {{school.name}}</br></br>
+                    <b>Domain:</b> {{school.domain}}</br></br>
+                    <b>Admin Email: </b> 
+                    {% if site_details.adminemail %}
+                        {{site_details.adminemail}}
+                    {% else %}
+                        None
+                    {% endif %}
+                    </br></br>
+                    <b>License:</b> 
+                    {% if school.license %}
+                        {{school.license}}
+                    {% else %}
+                        None
+                    {% endif %}
+                    </br></br>
+                    
+                </h4>
+            </div>
+            <div class="span6">
+                <h3>
+                Courses:
+                </h3>
+                </br>
+                <table id="courses" class="table table-striped">
+                    <tr>
+                        <th>Serial #</th>
+                        <th>Course Name</th>
+                        <th># Enrolled</th>
+                    </tr>
+                    {% for course in courses %}
+                    {% if course['enrolled'] > 1 %}
+                    <tr>
+                        <td>{{course['serial']}}</td>
+                        <td>{{course['shortname']}}</td>
+                        <td>{{course['enrolled']}}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+{% endblock %}
