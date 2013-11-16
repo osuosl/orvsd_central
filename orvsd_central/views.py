@@ -582,6 +582,7 @@ def view_schools(id):
         return render_template("school.html", school=school,
                         moodle_siteinfo=moodle_siteinfo,
                         drupal_siteinfo=drupal_siteinfo, user=current_user)
+
     else:
         return "Page not found..."
 
