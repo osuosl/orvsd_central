@@ -70,13 +70,11 @@
                         <th># Enrolled</th>
                     </tr>
                     {% for course in courses %}
-                    {% if course['enrolled'] > 1 %}
                     <tr>
                         <td>{{course['serial']}}</td>
                         <td>{{course['shortname']}}</td>
                         <td>{{course['enrolled']}}</td>
                     </tr>
-                    {% endif %}
                     {% endfor %}
                 </table>
             </div>
