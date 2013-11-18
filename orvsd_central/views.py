@@ -610,8 +610,8 @@ def string_to_type(string):
 def view_schools(id):
     min_users = 1 # This should be an editable field on the template
                   # that modifies which courses are shown via js.
+
     school = School.query.filter_by(id=id).first()
-    # Handle multiple moodle sites soon.
     site = db.session.query(Site).filter(and_(
                                     Site.school_id == id,
                                     Site.sitetype == 'moodle')).first()
@@ -623,11 +623,13 @@ def view_schools(id):
                                                     .desc()) \
                                           .first()
 
-        courses = {}
         if site_details and site_details.courses:
             courses = filter(lambda x: x['enrolled'] > min_users,
                              json.loads(site_details.courses))
-            # 1397 is a valid school id to test with
+
+            # Initializing blank fields for display on the template
+            school.license = school.license or None
+            site_details.adminemail = site_details.adminemail or None
 
             return render_template("school.html", school=school,
                             site_details=site_details, user=current_user,
