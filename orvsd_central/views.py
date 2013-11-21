@@ -922,3 +922,7 @@ def get_courses_by_site(site_id):
         return jsonify({'error:': 'Site not found.'})
     else:
         return jsonify({'error:': 'No courses found.'})
+
+@app.errorhandler(404)
+def page_not_found(e):
+	return render_template('404.html')
