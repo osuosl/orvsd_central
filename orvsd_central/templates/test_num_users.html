@@ -1,0 +1,24 @@
+{% include "base.html" %}
+
+{% block content %}
+<table class="table">
+    <tr class="row">
+        <th>Name</th>
+        <th>Id</th>
+        <th># Schools </th>
+        <th>Admins</th>
+        <th>Teachers</th>
+        <th>Active Users</th>
+    </tr>
+{% for d in data %}
+    <tr class="row">
+        <td>{{ d[0] }}</td>
+        <td>{{ d[1] }}</td>
+        <td>{{ d[2] }}</td>
+        {% for field in fields %}
+        <td>{{ d[3][field] }}</td>
+        {% endfor %}
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}

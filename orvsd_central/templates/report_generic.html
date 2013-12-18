@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Report</title>
+{% endblock %}
+
+{% block head %}
+    <script type="text/javascript" src="{{url_for('static', filename='js/report_generic.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class='row'>
+        <div class='span12'>&nbsp;</div>
+    </div>
+    <div class="row pagination-centered">
+        <div class="span3"><strong>Districts:</strong> {{ dist_count }}</div>
+        <div class="span3"><strong>Schools:</strong> {{ school_count }}</div>
+        <div class="span3"><strong>Sites:</strong> {{ site_count }}</div>
+        <div class="span3"><strong>Courses:</strong> {{ course_count }}</div>
+    </div>
+     <div class='row'>
+        <div class='span12'>&nbsp;</div>
+    </div>
+    {{datadump|safe}}
+{% endblock %}
