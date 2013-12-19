@@ -5,22 +5,23 @@ dump_schools = function(a, d) {
     a.find(".teachers").html("Teachers: " + d.counts.teachers);
 
     // Clear the list
-    var out = a.find(".accordion-inner ul");
+    var out = a.find(".accordion-inner dl");
     out.html("");
 
     // Add to the lists
     $.each(d.schools, function(k, v) {
-        var line = "<li><a href=\"/view/schools/" + v.id + "\">" + v.name + "</a><ul>";
-        $.each(v.sitedata, function(j, l) {
-            if(l) {
+        var line = "<dt><a href=\"/view/schools/" + v.id + "\">" + v.name + "</a>";
+        if (v.sitedata != "") {
+            $.each(v.sitedata, function(j, l) {
                 $.each(l, function(m, n) {
-                    line += "<li>" + m + ": " + n + "</li>";
+                    if (n == undefined)
+                        n = "Not available";
+                    line += "<dd>" + m + ": " + n;
                 });
-            } else {
-                line += "<li>No site data available</li>";
-            }
-        });
-        line += "</ul>";
+            });
+        }  else {
+            line += "<dd>No site data available";
+        }
         out.append(line);
     });
 };
