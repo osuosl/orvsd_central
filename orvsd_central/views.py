@@ -433,7 +433,13 @@ def get_schools():
     school_list = {}
 
     for school in schools:
-        school_list[school.shortname] = {'name': school.name, 'id': school.id}
+        sitedata = []
+        sites = Site.query.filter(Site.school_id==school.id).all()
+        for site in sites:
+            sitedata.append({'name': site.name,
+                             'baseurl': site.baseurl,
+                             'sitetype': site.sitetype})
+        school_list[school.shortname] = {'name': school.name, 'id': school.id, 'sitedata': sitedata}
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
     return jsonify(schools=school_list, counts=district_details(schools))
