@@ -436,9 +436,14 @@ def get_schools():
         sitedata = []
         sites = Site.query.filter(Site.school_id==school.id).all()
         for site in sites:
+            admin = None
+            sd = SiteDetail.query.filter(SiteDetail.site_id==site.id).order_by(SiteDetail.timemodified.desc()).first()
+            if sd:
+                admin = sd.adminemail
             sitedata.append({'name': site.name,
                              'baseurl': site.baseurl,
-                             'sitetype': site.sitetype})
+                             'sitetype': site.sitetype,
+                             'admin': admin})
         school_list[school.shortname] = {'name': school.name, 'id': school.id, 'sitedata': sitedata}
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
