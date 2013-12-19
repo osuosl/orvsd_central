@@ -10,14 +10,23 @@ dump_schools = function(a, d) {
 
     // Add to the lists
     $.each(d.schools, function(k, v) {
-        var line = "<li><a href=\"/view/schools/" + v.id + "\">" + v.name + "</a></li>";
+        var line = "<li><a href=\"/view/schools/" + v.id + "\">" + v.name + "</a><ul>";
+        $.each(v.sitedata, function(j, l) {
+            if(l) {
+                $.each(l, function(m, n) {
+                    line += "<li>" + m + ": " + n + "</li>";
+                });
+            } else {
+                line += "<li>No site data available</li>";
+            }
+        });
+        line += "</ul>";
         out.append(line);
     });
 };
 
 $(function() {
     $(".districtcollapse").on("show", function() {
-        console.log($(this));
         var elem = $(this);
         $.ajax({
             type: "POST",
