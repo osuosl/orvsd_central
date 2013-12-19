@@ -237,9 +237,9 @@ def install_course():
         # The CourseDetail objects needed to generate the url
         courses = []
         for cid in selected_courses:
-            courses.append(course_list.filter_by(course_id=cid)
-                    .order_by(CourseDetail.updated.desc())
-                    .first())
+            courses.append(CourseDetail.query.filter_by(id=cid)
+                           .order_by(CourseDetail.updated.desc())
+                           .first())
 
         site_ids = [site_id for site_id in request.form.getlist('site')]
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
