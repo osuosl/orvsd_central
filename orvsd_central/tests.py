@@ -18,5 +18,5 @@ class ORVSD_Central_Tests(unittest.TestCase):
         username = 'name'
         resp = self.add_User(user, 'password', 'password',
                              'confirm_password', 'email@orvsd.org', 'Admin')
-        assert user+' has been added to the database successfully!'
-        in resp.data
+        assert (user + ' has been added to the database i' +
+                'successfully!' in resp.data)
