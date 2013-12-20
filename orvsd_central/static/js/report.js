@@ -16,7 +16,7 @@ dump_schools = function(a, d) {
                 $.each(l, function(m, n) {
                     if (n == undefined)
                         n = "Not available";
-                    line += "<dd>" + m + ": " + n;
+                    line += "<dd>" + m.charAt(0).toUpperCase() + m.slice(1) + ": " + n;
                 });
             });
         }  else {
