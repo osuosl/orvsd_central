@@ -10,7 +10,7 @@ dump_schools = function(a, d) {
 
     // Add to the lists
     $.each(d.schools, function(k, v) {
-        var line = "<dt><a href=\"/view/schools/" + v.id + "\">" + v.name + "</a>";
+        var line = "<li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a></li>";
         if (v.sitedata != "") {
             $.each(v.sitedata, function(j, l) {
                 $.each(l, function(m, n) {
