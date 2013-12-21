@@ -342,7 +342,6 @@ def view_schools(id):
     # School license usually defaults to ''.
     school.license = school.license or None
 
-<<<<<<< HEAD
     # Keep them separated for organizational/display purposes
     moodle_sites = db.session.query(Site).filter(and_(
                                     Site.school_id == id,
@@ -351,7 +350,6 @@ def view_schools(id):
     drupal_sites = db.session.query(Site).filter(and_(
                                     Site.school_id == id,
                                     Site.sitetype == 'drupal')).all()
-
 
     if moodle_sites or drupal_sites:
         moodle_sitedetails = []
