@@ -350,6 +350,7 @@ def view_schools(id):
                                                     .desc()) \
                                           .first()
 
+        courses = []
         if site_details and site_details.courses:
             courses = filter(lambda x: x['enrolled'] > min_users,
                              json.loads(site_details.courses))
@@ -358,11 +359,11 @@ def view_schools(id):
             school.license = school.license or None
             site_details.adminemail = site_details.adminemail or None
 
-            return render_template("school.html", school=school,
-                            site_details=site_details, user=current_user,
-                            courses=courses)
+        return render_template("school.html", school=school,
+                        site_details=site_details, user=current_user,
+                        courses=courses)
     else:
-        return "Page not found..."
+        return render_template("school_notfound.html", user=current_user)
 
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
