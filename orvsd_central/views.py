@@ -332,6 +332,7 @@ def install_course_to_site(course, site):
 VIEW
 """
 
+
 @login_required
 @app.route("/schools/<id>/view")
 def view_schools(id):
@@ -391,9 +392,14 @@ def view_schools(id):
         drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
 
         return render_template("school.html", school=school,
+<<<<<<< HEAD
                         moodle_siteinfo=moodle_siteinfo,
                         drupal_siteinfo=drupal_siteinfo, user=current_user)
 
+=======
+                               site_details=site_details,
+                               user=current_user, courses=courses)
+>>>>>>> school view: pep8 cleanup
     else:
         return render_template("school_notfound.html", user=current_user)
 
