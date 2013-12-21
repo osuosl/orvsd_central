@@ -332,23 +332,25 @@ def install_course_to_site(course, site):
 VIEW
 """
 
+
 @login_required
 @app.route("/schools/<id>/view")
 def view_schools(id):
-    min_users = 1 # This should be an editable field on the template
-                  # that modifies which courses are shown via js.
+    min_users = 1  # This should be an editable field on the template
+                   # that modifies which courses are shown via js.
 
     school = School.query.filter_by(id=id).first()
-    site = db.session.query(Site).filter(and_(
-                                    Site.school_id == id,
-                                    Site.sitetype == 'moodle')).first()
+    site = db.session.query(Site)\
+                     .filter(and_(Site.school_id == id,
+                                  Site.sitetype == 'moodle'))\
+                     .first()
 
     if site:
-        site_details = SiteDetail.query.filter_by(site_id=site.id) \
-                                                .order_by(SiteDetail
-                                                    .timemodified
-                                                    .desc()) \
-                                          .first()
+        site_details = SiteDetail.query.filter_by(site_id=site.id)\
+                                       .order_by(SiteDetail
+                                                 .timemodified
+                                                 .desc())\
+                                       .first()
 
         courses = []
         if site_details and site_details.courses:
@@ -360,10 +362,11 @@ def view_schools(id):
             site_details.adminemail = site_details.adminemail or None
 
         return render_template("school.html", school=school,
-                        site_details=site_details, user=current_user,
-                        courses=courses)
+                               site_details=site_details,
+                               user=current_user, courses=courses)
     else:
         return render_template("school_notfound.html", user=current_user)
+
 
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
