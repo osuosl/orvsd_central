@@ -332,6 +332,37 @@ def install_course_to_site(course, site):
 VIEW
 """
 
+@login_required
+@app.route("/schools/<id>/view")
+def view_schools(id):
+    min_users = 1 # This should be an editable field on the template
+                  # that modifies which courses are shown via js.
+
+    school = School.query.filter_by(id=id).first()
+    site = db.session.query(Site).filter(and_(
+                                    Site.school_id == id,
+                                    Site.sitetype == 'moodle')).first()
+
+    if site:
+        site_details = SiteDetail.query.filter_by(site_id=site.id) \
+                                                .order_by(SiteDetail
+                                                    .timemodified
+                                                    .desc()) \
+                                          .first()
+
+        if site_details and site_details.courses:
+            courses = filter(lambda x: x['enrolled'] > min_users,
+                             json.loads(site_details.courses))
+
+            # Initializing blank fields for display on the template
+            school.license = school.license or None
+            site_details.adminemail = site_details.adminemail or None
+
+            return render_template("school.html", school=school,
+                            site_details=site_details, user=current_user,
+                            courses=courses)
+    else:
+        return "Page not found..."
 
 @app.route('/view/schools/<int:school_id>', methods=['GET'])
 @login_required
@@ -603,39 +634,6 @@ def string_to_type(string):
         if string.isdigit():
             return int(string)
     return string
-
-
-@login_required
-@app.route("/schools/<id>/view")
-def view_schools(id):
-    min_users = 1 # This should be an editable field on the template
-                  # that modifies which courses are shown via js.
-
-    school = School.query.filter_by(id=id).first()
-    site = db.session.query(Site).filter(and_(
-                                    Site.school_id == id,
-                                    Site.sitetype == 'moodle')).first()
-
-    if site:
-        site_details = SiteDetail.query.filter_by(site_id=site.id) \
-                                                .order_by(SiteDetail
-                                                    .timemodified
-                                                    .desc()) \
-                                          .first()
-
-        if site_details and site_details.courses:
-            courses = filter(lambda x: x['enrolled'] > min_users,
-                             json.loads(site_details.courses))
-
-            # Initializing blank fields for display on the template
-            school.license = school.license or None
-            site_details.adminemail = site_details.adminemail or None
-
-            return render_template("school.html", school=school,
-                            site_details=site_details, user=current_user,
-                            courses=courses)
-    else:
-        return "Page not found..."
 
 
 """
