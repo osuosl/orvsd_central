@@ -81,6 +81,7 @@ class User(db.Model):
                  'password' : '********',
                  'role' : self.role }
 
+
 class District(db.Model):
     """
     Districts have many schools
@@ -88,6 +89,8 @@ class District(db.Model):
 
     __tablename__ = 'districts'
     id = db.Column(db.Integer, primary_key=True)
+    # State given ID number
+    state_id = db.Column(db.Integer)
     # Full name of the district
     name = db.Column(db.String(255))
     # short name/abbreviation
@@ -95,7 +98,8 @@ class District(db.Model):
     # root path in which school sites are stored - maybe redundant
     base_path = db.Column(db.String(255))
 
-    def __init__(self, name, shortname, base_path):
+    def __init__(self, state_id, name, shortname, base_path):
+        self.state_id = state_id
         self.name = name
         self.shortname = shortname
         self.base_path = base_path
@@ -104,13 +108,15 @@ class District(db.Model):
         return "<Disctrict('%s')>" % (self.name)
 
     def get_properties(self):
-        return ['id', 'name', 'shortname', 'base_path']
+        return ['id', 'state_id', 'name', 'shortname', 'base_path']
 
     def serialize(self):
         return { 'id' : self.id,
+                 'state_id': self.state_id,
                  'name' : self.name,
                  'shortname' : self.shortname,
                  'base_path' : self.base_path }
+
 
 class School(db.Model):
     """
@@ -223,6 +229,7 @@ class Site(db.Model):
                  'jenkins_cron_job' : self.jenkins_cron_job,
                  'location' : self.location }
 
+
 class SiteDetail(db.Model):
     """
     Site_details belong to one site. This data is updated from the
@@ -327,6 +334,7 @@ class Course(db.Model):
                  'license' : self.license,
                  'category' : self.category,
                  'source' : self.source }
+
 
 class CourseDetail(db.Model):
     __tablename__ = 'course_details'
