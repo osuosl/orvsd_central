@@ -365,7 +365,8 @@ def view_schools(id):
                                site_details=site_details,
                                user=current_user, courses=courses)
     else:
-        return render_template("school_notfound.html", user=current_user)
+        return render_template("school_data_notfound.html", user=current_user,
+                               school=school)
 
 
 @app.route('/report/get_schools', methods=['POST'])
