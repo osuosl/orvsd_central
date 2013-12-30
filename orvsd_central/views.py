@@ -401,7 +401,8 @@ def view_schools(id):
                                user=current_user, courses=courses)
 >>>>>>> school view: pep8 cleanup
     else:
-        return render_template("school_notfound.html", user=current_user)
+        return render_template("school_data_notfound.html", user=current_user,
+                               school=school)
 
 
 @app.route('/report/get_schools', methods=['POST'])
