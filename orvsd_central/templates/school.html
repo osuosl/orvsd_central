@@ -32,10 +32,12 @@
             <h3> {{site.name}} </h3>
             </br>
             <h4 style="font-weight:normal">
+                {% if site_details %}
                 <b>Admins:</b> {{site_details.adminusers}}</br></br>
                 <b>Teachers:</b> {{site_details.teachers}}</br></br>
                 <b>Active Users:</b> {{site_details.activeusers}}</br></br>
                 <b>Admin Email:</b> {{site_details.adminemail}}</br></br>
+                {% endif %}
                 <b>Base Url:</b> {{site.baseurl}}</br></br>
                 <b>Base Path:</b> {{site.basepath}}</br></br>
                 <b>Jenkin's Cron Job:</b> {{site.jenkins_cron_job}}</br></br>
@@ -58,10 +60,12 @@
                 <h3> {{site.name}} </h3>
                 </br>
                 <h4 style="font-weight:normal">
+                    {% if site_details %}
                     <b>Admins:</b> {{site_details.adminusers}}</br></br>
                     <b>Teachers:</b> {{site_details.teachers}}</br></br>
                     <b>Active Users:</b> {{site_details.activeusers}}</br></br>
                     <b>Admin Email:</b> {{site_details.adminemail}}</br></br>
+                    {% endif %}
                     <b>Base Url:</b> {{site.baseurl}}</br></br>
                     <b>Base Path:</b> {{site.basepath}}</br></br>
                     <b>Jenkin's Cron Job:</b> {{site.jenkins_cron_job}}</br></br>
@@ -69,10 +73,10 @@
                     <b>API Key:</b> {{site.api_key}}</br></br>
                 </h4>
             </div>
-            {% if site_details.courses %}
             <div class="span6">
                 <h3>Courses:</h3>
                 </br>
+                {% if site_details.courses %}
                 <table id="courses" class="table table-striped">
                     <tr>
                         <th>Serial #</th>
@@ -87,8 +91,10 @@
                     </tr>
                     {% endfor %}
                 </table>
+                {% else %}
+                <h4>No Courses Available...</h4>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </div>
     </br>
