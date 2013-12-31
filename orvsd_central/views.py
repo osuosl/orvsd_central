@@ -560,6 +560,7 @@ def update_object(category, id):
 
             db.session.query(obj).filter_by(id=request.form.get("id"))\
                                  .update(inputs)
+            db.session.commit()
 
             return "Object updated sucessfully!"
 
