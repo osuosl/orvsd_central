@@ -221,15 +221,16 @@ class Site(db.Model):
                 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'school_id' : self.school_id,
-                 'name' : self.name,
+        return { 'id': self.id,
+                 'school_id': self.school_id,
+                 'name': self.name,
                  'dev': self.dev,
-                 'sitetype' : self.sitetype,
-                 'baseurl' : self.baseurl,
-                 'basepath' : self.basepath,
-                 'jenkins_cron_job' : self.jenkins_cron_job,
-                 'location' : self.location }
+                 'sitetype': self.sitetype,
+                 'baseurl': self.baseurl,
+                 'basepath': self.basepath,
+                 'jenkins_cron_job': self.jenkins_cron_job,
+                 'location': self.location,
+                 'api_key': self.api_key}
 
 
 class SiteDetail(db.Model):
