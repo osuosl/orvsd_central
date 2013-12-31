@@ -196,10 +196,10 @@ class Site(db.Model):
     def generate_new_key(self):
         self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
-    def __init__(self, name, sitetype, baseurl,
-                 basepath, jenkins_cron_job, location,
-                 dev=False):
+    def __init__(self, name, school_id, sitetype, baseurl,
+                 basepath, jenkins_cron_job, location, dev=False):
         self.name = name
+        self.school_id = school_id
         self.dev = dev
         self.sitetype = sitetype
         self.baseurl = baseurl
@@ -208,7 +208,8 @@ class Site(db.Model):
         self.location = location
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s', '%s')>" % (self.name,
+        return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % (self.name,
+                                                     self.school_id,
                                                      self.dev,
                                                      self.sitetype,
                                                      self.baseurl,
@@ -221,6 +222,7 @@ class Site(db.Model):
 
     def serialize(self):
         return { 'id' : self.id,
+                 'school_id' : self.school_id,
                  'name' : self.name,
                  'dev': self.dev,
                  'sitetype' : self.sitetype,
