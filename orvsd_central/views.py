@@ -527,6 +527,8 @@ def view_schools(id):
                    # that modifies which courses are shown via js.
 
     school = School.query.filter_by(id=id).first()
+    # School license usually defaults to ''.
+    school.license = school.license or None
 
     # Keep them separated for organizational/display purposes
     moodle_sites = db.session.query(Site).filter(and_(
