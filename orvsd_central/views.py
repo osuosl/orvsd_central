@@ -333,90 +333,71 @@ VIEW
 """
 
 
-@app.route('/view/schools/<int:school_id>', methods=['GET'])
 @login_required
-def view_school(school_id):
+@app.route("/schools/<id>/view")
+def view_schools(id):
+    min_users = 1  # This should be an editable field on the template
+                   # that modifies which courses are shown via js.
 
-    school = School.query.filter_by(id=school_id).first()
+    school = School.query.filter_by(id=id).first()
+    # School license usually defaults to ''.
+    school.license = school.license or None
 
-    # Info for the school's page
-    admins = 0
-    teachers = 0
-    users = 0
+    # Keep them separated for organizational/display purposes
+    moodle_sites = db.session.query(Site).filter(and_(
+                                    Site.school_id == id,
+                                    Site.sitetype == 'moodle')).all()
 
-    # Get the school's sites
-    sites = Site.query.filter_by(school_id=school_id).all()
-
-    # School view template
-    t = app.jinja_env.get_template('views/courses.html')
-
-    # if we have sites, grab the details needed for the template
-    if sites:
-        for site in sites:
-            detail = SiteDetail.query.filter_by(site_id=site.id) \
-                                     .order_by(SiteDetail
-                                               .timemodified.desc()) \
-                                     .first()
-            if detail:
-                admins += detail.adminusers
-                teachers += detail.teachers
-                users += detail.totalusers
-
-    # Get course list
-    course_details = db.session.query("id", "task_id", "status", "date_done") \
-                               .from_statement("SELECT * FROM"
-                                               " celery_taskmeta").all()
-
-    # Return a pre-compiled template to be dumped into the view template
-    template = t.render(name=school.name, admins=admins,
-                        teachers=teachers, users=users,
-                        user=current_user, course_list=course_details)
-
-    return render_template('view.html', content=template, user=current_user)
+    drupal_sites = db.session.query(Site).filter(and_(
+                                    Site.school_id == id,
+                                    Site.sitetype == 'drupal')).all()
 
 
-# View courses installed for a specific school
-@app.route('/view/schools/<int:school_id>/courses', methods=['GET'])
-@login_required
-def view_school_courses(school_id):
-    school = School.query.filter_by(id=school_id).first()
+    if moodle_sites or drupal_sites:
+        moodle_sitedetails = []
+        if moodle_sites:
+            for site in moodle_sites:
+                site_detail = SiteDetail.query.filter_by(site_id=site.id) \
+                                                        .order_by(SiteDetail
+                                                            .timemodified
+                                                            .desc()) \
+                                                  .first()
 
-    # Info for the school's page
-    admins = 0
-    teachers = 0
-    users = 0
+                if site_detail and site_detail.courses:
+                    # adminemail usually defaults to '', rather than None.
+                    site_detail.adminemail = site_detail.adminemail or None
+                    # Filter courses to display based on num of users.
+                    site_detail.courses = filter(
+                            lambda x: x['enrolled'] > min_users,
+                            json.loads(site_detail.courses)
+                        )
 
-    # Get the school's sites
-    sites = Site.query.filter_by(school_id=school_id).all()
+                moodle_sitedetails.append(site_detail)
 
-    # School view template
-    t = app.jinja_env.get_template('views/school.html')
+        moodle_siteinfo = zip(moodle_sites, moodle_sitedetails)
 
-    # if we have sites, grab the details needed for the template
-    if sites:
-        for site in sites:
-            detail = SiteDetail.query.filter_by(site_id=site.id) \
-                                     .order_by(SiteDetail
-                                               .timemodified.desc()) \
-                                     .first()
-            if detail:
-                admins += detail.adminusers
-                teachers += detail.teachers
-                users += detail.totalusers
+        drupal_sitedetails = []
+        if drupal_sites:
+            for site in drupal_sites:
+                site_detail = SiteDetail.query.filter_by(site_id=site.id) \
+                                                        .order_by(SiteDetail
+                                                            .timemodified
+                                                            .desc()) \
+                                                    .first()
 
-    # Get course list
-    course_details = db.session.query("id", "task_id", "status", "date_done") \
-                               .from_statement("SELECT * "
-                                               "FROM celery_taskmeta") \
-                               .all()
+                if site_detail:
+                    site_detail.adminemail = site_detail.adminemail or None
 
-    # Return a pre-compiled template to be dumped into the view template
-    template = t.render(name=school.name, admins=admins, teachers=teachers,
-                        users=users, user=current_user,
-                        course_list=course_details)
+                drupal_sitedetails.append(site_detail)
 
-    return render_template('view.html', content=template, user=current_user)
+        drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
 
+        return render_template("school.html", school=school,
+                        moodle_siteinfo=moodle_siteinfo,
+                        drupal_siteinfo=drupal_siteinfo, user=current_user)
+    else:
+        return render_template("school_data_notfound.html", school=school,
+                               user=current_user)
 
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
@@ -604,6 +585,7 @@ def string_to_type(string):
         if string.isdigit():
             return int(string)
     return string
+
 
 """
 REMOVE
