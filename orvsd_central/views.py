@@ -396,7 +396,8 @@ def view_schools(id):
                         moodle_siteinfo=moodle_siteinfo,
                         drupal_siteinfo=drupal_siteinfo, user=current_user)
     else:
-        return "Page not found..."
+        return render_template("school_data_notfound.html", school=school,
+                               user=current_user)
 
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
