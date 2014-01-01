@@ -333,6 +333,71 @@ VIEW
 """
 
 
+@login_required
+@app.route("/schools/<id>/view")
+def view_schools(id):
+    min_users = 1  # This should be an editable field on the template
+                   # that modifies which courses are shown via js.
+
+    school = School.query.filter_by(id=id).first()
+    # School license usually defaults to ''.
+    school.license = school.license or None
+
+    # Keep them separated for organizational/display purposes
+    moodle_sites = db.session.query(Site).filter(and_(
+                                    Site.school_id == id,
+                                    Site.sitetype == 'moodle')).all()
+
+    drupal_sites = db.session.query(Site).filter(and_(
+                                    Site.school_id == id,
+                                    Site.sitetype == 'drupal')).all()
+
+
+    if moodle_sites or drupal_sites:
+        moodle_sitedetails = []
+        if moodle_sites:
+            for site in moodle_sites:
+                site_detail = SiteDetail.query.filter_by(site_id=site.id) \
+                                                        .order_by(SiteDetail
+                                                            .timemodified
+                                                            .desc()) \
+                                                  .first()
+
+                if site_detail and site_detail.courses:
+                    # adminemail usually defaults to '', rather than None.
+                    site_detail.adminemail = site_detail.adminemail or None
+                    # Filter courses to display based on num of users.
+                    site_detail.courses = filter(
+                            lambda x: x['enrolled'] > min_users,
+                            json.loads(site_detail.courses)
+                        )
+
+                moodle_sitedetails.append(site_detail)
+
+        moodle_siteinfo = zip(moodle_sites, moodle_sitedetails)
+
+        drupal_sitedetails = []
+        if drupal_sites:
+            for site in drupal_sites:
+                site_detail = SiteDetail.query.filter_by(site_id=site.id) \
+                                                        .order_by(SiteDetail
+                                                            .timemodified
+                                                            .desc()) \
+                                                    .first()
+
+                if site_detail:
+                    site_detail.adminemail = site_detail.adminemail or None
+
+                drupal_sitedetails.append(site_detail)
+
+        drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
+
+        return render_template("school.html", school=school,
+                        moodle_siteinfo=moodle_siteinfo,
+                        drupal_siteinfo=drupal_siteinfo, user=current_user)
+    else:
+        return "Page not found..."
+
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
     # From the POST, we need the district id, or distid
@@ -518,72 +583,6 @@ def string_to_type(string):
         if string.isdigit():
             return int(string)
     return string
-
-
-@login_required
-@app.route("/schools/<id>/view")
-def view_schools(id):
-    min_users = 1  # This should be an editable field on the template
-                   # that modifies which courses are shown via js.
-
-    school = School.query.filter_by(id=id).first()
-    # School license usually defaults to ''.
-    school.license = school.license or None
-
-    # Keep them separated for organizational/display purposes
-    moodle_sites = db.session.query(Site).filter(and_(
-                                    Site.school_id == id,
-                                    Site.sitetype == 'moodle')).all()
-
-    drupal_sites = db.session.query(Site).filter(and_(
-                                    Site.school_id == id,
-                                    Site.sitetype == 'drupal')).all()
-
-
-    if moodle_sites or drupal_sites:
-        moodle_sitedetails = []
-        if moodle_sites:
-            for site in moodle_sites:
-                site_detail = SiteDetail.query.filter_by(site_id=site.id) \
-                                                        .order_by(SiteDetail
-                                                            .timemodified
-                                                            .desc()) \
-                                                  .first()
-
-                if site_detail and site_detail.courses:
-                    # adminemail usually defaults to '', rather than None.
-                    site_detail.adminemail = site_detail.adminemail or None
-                    # Filter courses to display based on num of users.
-                    site_detail.courses = filter(
-                            lambda x: x['enrolled'] > min_users,
-                            json.loads(site_detail.courses)
-                        )
-
-                moodle_sitedetails.append(site_detail)
-
-        moodle_siteinfo = zip(moodle_sites, moodle_sitedetails)
-
-        drupal_sitedetails = []
-        if drupal_sites:
-            for site in drupal_sites:
-                site_detail = SiteDetail.query.filter_by(site_id=site.id) \
-                                                        .order_by(SiteDetail
-                                                            .timemodified
-                                                            .desc()) \
-                                                    .first()
-
-                if site_detail:
-                    site_detail.adminemail = site_detail.adminemail or None
-
-                drupal_sitedetails.append(site_detail)
-
-        drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
-
-        return render_template("school.html", school=school,
-                        moodle_siteinfo=moodle_siteinfo,
-                        drupal_siteinfo=drupal_siteinfo, user=current_user)
-    else:
-        return "Page not found..."
 
 
 """
