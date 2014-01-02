@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Migrate Schools</title>
+{% endblock %}
+
+{% block head %}
+    <script type="text/javascript" src="{{url_for('static', filename='js/migrate.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class='row-fluid pagination-centered'>
+        <h1> Migrate Unknown District Schools </h1>
+        <div class='span12'>&nbsp;</div>
+    </div>
+    <div class="row-fluid pagination-centered">
+        <div class="span4 offset2">
+        <h3> Unknown Schools </h3>
+        </div>
+        <div class="span4 ">
+        <h3> Districts </h3>
+        </div>
+    </div>
+    <div class="row-fluid pagination-centered">
+        <select id="schools" class="span4">
+            {% for school in schools %}
+            <option value={{school.id}} class="object">{{school.name}}</option>
+            {% endfor %}
+        </select>
+        <select id="districts" class="span4 offset2">
+            {% for district in districts %}
+            <option value={{district.id}} class="object">{{district.name}}</option>
+            {% endfor %}
+        </select>
+
+    </div>
+        </br>
+        <div class='span12'>
+            <p id="message" align="center"> </p>
+            <div class="row pagination-centered">
+                    <input id="update" type="submit" name="update" value="Migrate" class="btn btn-success btn-large span2">
+            </div>
+        </div>
+{% endblock %}
