@@ -57,6 +57,7 @@ ACCESS
 
 
 @app.route("/register", methods=['GET', 'POST'])
+@requires_role(3)
 @login_required
 def register():
     #user=current_user
@@ -165,6 +166,7 @@ ADD
 
 
 @app.route("/add/district", methods=['GET', 'POST'])
+@requires_role(2)
 @login_required
 def add_district():
     form = AddDistrict()
@@ -180,6 +182,7 @@ def add_district():
 
 
 @app.route("/add/school", methods=['GET', 'POST'])
+@requires_role(2)
 @login_required
 def add_school():
     form = AddSchool()
@@ -206,6 +209,7 @@ def add_school():
 
 
 @app.route("/add/course", methods=['GET', 'POST'])
+@requires_role(2)
 @login_required
 def add_course():
     form = AddCourse()
@@ -234,6 +238,7 @@ def site_by_id(site_id):
 
 
 @app.route('/install/course', methods=['GET', 'POST'])
+@requires_role(2)
 @login_required
 def install_course():
     """
@@ -406,8 +411,9 @@ VIEW
 """
 
 
-@login_required
 @app.route("/schools/<id>/view")
+@requires_role(2)
+@login_required
 def view_schools(id):
     min_users = 1  # This should be an editable field on the template
                    # that modifies which courses are shown via js.
@@ -551,6 +557,7 @@ UPDATE
 
 
 @app.route("/<category>/update")
+@requires_role(2)
 @login_required
 def update(category):
     obj = get_obj_by_category(category)
@@ -863,6 +870,8 @@ def get_all_ids():
 
 
 @app.route("/courses/list/update", methods=['GET', 'POST'])
+@requires_role(2)
+@login_required
 def update_courselist():
     """
         Updates the database to contain the most recent course
