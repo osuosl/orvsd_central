@@ -9,24 +9,22 @@
             <li>
                 <a href="{{ url_for('install_course') }}">Install Course</a>
             </li>
+            <li>
+                <a href="/courses/list/update">Update Availble Courses</a>
+            </li>
             <li class="dropdown">
                 <a  class="dropdown-toggle"
                     data-toggle="dropdown"
-                    href="#">Update
+                    href="#">Add/Modify/Delete
                     <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    <li class=""><a href="/districts/update">Districts</a></li>
-                    <li class=""><a href="/schools/update">Schools</a></li>
-                    <li class=""><a href="/sites/update">Sites</a></li>
-                    <li class=""><a href="/sitedetails/update">Site Details</a></li>
-                    <li class="dropdown-submenu"><a>Courses</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="/courses/list/update">List</a></li>
-                            <li><a href="/courses/update">Objects</a></li>
-                        </ul>
-                    </li>
-                    <li class=""><a href="/coursedetails/update">Course Details</a></li>
+                    <li><a href="/districts/update">Districts</a></li>
+                    <li><a href="/schools/update">Schools</a></li>
+                    <li><a href="/sites/update">Sites</a></li>
+                    <li><a href="/sitedetails/update">Site Details</a></li>
+                    <li><a href="/courses/update">Courses</a></li>
+                    <li><a href="/coursedetails/update">Course Details</a></li>
                 </ul>
             </li>
             {% if admin %}
@@ -58,16 +56,18 @@
             </li>
             {% endif %}
             {% endif %}
+            <li>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul class="flashes nav">
+                    {% for message in messages %}
+                        <li><a style="color:black">{{message}}</a></li>
+                    {%endfor%}
+                    </ul>
+                {%endif%}
+            {%endwith%}
+            </li>
         </ul>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul class="flashes nav">
-                {% for message in messages %}
-                    <li>{{message}}</li>
-                {%endfor%}
-                </ul>
-            {%endif%}
-        {%endwith%}
         <ul class="nav pull-right">
         {% if user %}
             <li><a>Logged in as: {{user.name}}</a></li>
