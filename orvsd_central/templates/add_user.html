@@ -10,7 +10,9 @@
         Password: {{form.password}}</br>
         Confirm Password: {{form.confirm_pass}}</br>
         Email: {{form.email}}</br>
-        Permissions: {{form.perm}}</br>
+        {% if user.is_admin() %}
+        Role: {{form.role}}</br>
+        {% endif %}
         <input type="submit" value="Add User"></input></br>
     </form>
     {% if message %}

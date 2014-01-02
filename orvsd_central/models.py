@@ -70,6 +70,10 @@ class User(db.Model):
         """
         return USER.STATUS[self.status]
 
+    def is_admin(self):
+        # 3 is the current admin role
+        return self.role == 3
+
     def __repr__(self):
         return '<User %r>' % (self.name)
 
