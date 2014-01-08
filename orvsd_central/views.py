@@ -25,7 +25,7 @@ import StringIO
 import requests
 import zipfile
 import datetime
-import urllib
+import urllib2
 import itertools
 
 """
