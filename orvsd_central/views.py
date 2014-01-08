@@ -41,7 +41,7 @@ def requires_role(role):
     def decorator(f):
         def wrapper(*args, **kwargs):
             if not current_user.is_anonymous():
-                if current_user.role >= role:
+                if current_user.role >= constants.USER_PERMS.get(role):
                     return f(*args, **kwargs)
                 flash("You do not have permission to access this page.")
                 return redirect("/")
@@ -57,7 +57,7 @@ ACCESS
 
 
 @app.route("/register", methods=['GET', 'POST'])
-@requires_role(3)
+@requires_role('admin')
 @login_required
 def register():
     #user=current_user
@@ -173,7 +173,7 @@ def site_by_id(site_id):
 
 
 @app.route('/install/course', methods=['GET', 'POST'])
-@requires_role(2)
+@requires_role('helpdesk')
 @login_required
 def install_course():
     """
@@ -347,7 +347,7 @@ VIEW
 
 
 @app.route("/schools/<id>/view")
-@requires_role(2)
+@requires_role('helpdesk')
 @login_required
 def view_schools(id):
     min_users = 1  # This should be an editable field on the template
@@ -492,7 +492,7 @@ UPDATE
 
 
 @app.route("/<category>/update")
-@requires_role(2)
+@requires_role('helpdesk')
 @login_required
 def update(category):
     obj = get_obj_by_category(category)
@@ -804,8 +804,8 @@ def get_all_ids():
     return jsonify(status=statuses)
 
 
-@app.route("/courses/list/update", methods=['GET', 'POST'])
-@requires_role(2)
+@app.route("/courses/update", methods=['GET', 'POST'])
+@requires_role('helpdesk')
 @login_required
 def update_courselist():
     """
