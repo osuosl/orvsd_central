@@ -13,6 +13,7 @@ from sqlalchemy.orm import eagerload
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 import constants
+from functools import wraps
 import celery
 from bs4 import BeautifulSoup as Soup
 import os
@@ -27,6 +28,28 @@ import datetime
 import urllib
 import itertools
 
+"""
+Custom Decorators
+"""
+
+
+# Decorator for defining access to certain actions.
+# 1 - General User (Implicit with login_required)
+# 2 - Help Desk
+# 3 - Admin
+def requires_role(role):
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            if not current_user.is_anonymous():
+                if current_user.role >= constants.USER_PERMS.get(role):
+                    return f(*args, **kwargs)
+                flash("You do not have permission to access this page.")
+                return redirect("/")
+            # Must check for a logged in user before checking it's attrs.
+            return f(*args, **kwargs)
+        return wraps(f)(wrapper)
+    return decorator
+
 
 """
 ACCESS
@@ -34,7 +57,8 @@ ACCESS
 
 
 @app.route("/register", methods=['GET', 'POST'])
-#@login_required
+@requires_role('admin')
+@login_required
 def register():
     #user=current_user
     form = AddUser()
@@ -52,9 +76,9 @@ def register():
                                 email=form.email.data,
                                 password=form.password.data,
                                 role=constants.USER_PERMS
-                                              .get(form.perm.data, 1)))
+                                              .get(form.role.data, 1)))
             db.session.commit()
-            message = form.user.data+" has been added successfully!\n"
+            message = form.user.data + " has been added successfully!\n"
 
     return render_template('add_user.html', form=form,
                            message=message, user=current_user)
@@ -84,7 +108,7 @@ def google_login():
         return google.authorize(callback=callback)
     else:
         access_token = access_token
-        headers = {'Authorization': 'OAuth '+access_token}
+        headers = {'Authorization': 'OAuth ' + access_token}
         req = urllib2.Request('https://www.googleapis.com/oauth2/v1/userinfo',
                               None, headers)
         try:
@@ -147,7 +171,10 @@ def site_by_id(site_id):
     return jsonify(name=name)
 
 
+
 @app.route('/install/course', methods=['GET', 'POST'])
+@requires_role('helpdesk')
+@login_required
 def install_course():
     """
     Displays a form for the admin user to pick courses to install on a site
@@ -160,9 +187,10 @@ def install_course():
         form = InstallCourse()
 
         # Query all moodle 2.2 courses
-        courses = db.session.query(CourseDetail).filter(CourseDetail
-                                                        .moodle_version
-                                                        .like("2.5%")).all()
+        courses = db.session.query(CourseDetail).filter(
+                                        CourseDetail.moodle_version
+                                            .like('2.5%')
+                                    ).all()
 
         # Query all moodle sites
         sites = db.session.query(Site).filter(
@@ -222,47 +250,31 @@ def install_course():
         # An array of unicode strings will be passed, they need to be integers
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
-
-        site_url = Site.query.filter_by(id=request.form.get('site'))\
-                             .first().baseurl
-
-        # The site to install the courses
-        site = ("http://%s/webservice/rest/server.php?"
-                "wstoken=%s&wsfunction=%s") % \
-               (site_url,
-                app.config['INSTALL_COURSE_WS_TOKEN'],
-                app.config['INSTALL_COURSE_WS_FUNCTION'])
-        site = str(site.encode('utf-8'))
-
-        # The CourseDetail objects needed to generate the url
-        courses = []
-        for cid in selected_courses:
-            courses.append(CourseDetail.query.filter_by(id=cid)
-                           .order_by(CourseDetail.updated.desc())
-                           .first())
-
         site_ids = [site_id for site_id in request.form.getlist('site')]
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
-                     for site_id in site_ids]
+                        for site_id in site_ids]
 
-        for course in courses:
-            for site_url in site_urls:
-                # The site to install the courses
-                site = ("http://%s/webservice/rest/server.php?"
-                        "wstoken=%s&wsfunction=%s") % \
-                       (site_url,
-                        app.config['INSTALL_COURSE_WS_TOKEN'],
-                        app.config['INSTALL_COURSE_WS_FUNCTION'])
-                site = str(site.encode('utf-8'))
+        for site_url in site_urls:
+            # The site to install the courses
+            site = ("http://%s/webservice/rest/server.php?" +
+                   "wstoken=%s&wsfunction=%s") % (
+                   site_url,
+                   app.config['INSTALL_COURSE_WS_TOKEN'],
+                   app.config['INSTALL_COURSE_WS_FUNCTION'])
+            site = str(site.encode('utf-8'))
 
-                # Courses are detached from session for being
-                # inactive for too long.
+            # Loop through the courses, generate the command to be run, run it,
+            # and append the ouput to output
+            #
+            # Currently this will break as our db is not setup correctly yet
+            for course in courses:
+                # Courses are detached from session if inactive for too long.
                 course.course.name
 
                 install_course_to_site.delay(course, site)
 
-            output += (str(len(site_urls)) + " course install(s) for " +
-                       course.course.name + " started.\n")
+            output += (str(len(courses)) + " course install(s) for " +
+                        site_url + " started.\n")
 
         return render_template('install_course_output.html',
                                output=output,
@@ -303,6 +315,7 @@ def get_course_folders():
     return folders
 
 
+
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
     # To get the file path we need the text input, the lowercase of
@@ -333,8 +346,9 @@ VIEW
 """
 
 
-@login_required
 @app.route("/schools/<id>/view")
+@requires_role('helpdesk')
+@login_required
 def view_schools(id):
     min_users = 1  # This should be an editable field on the template
                    # that modifies which courses are shown via js.
@@ -478,6 +492,7 @@ UPDATE
 
 
 @app.route("/<category>/update")
+@requires_role('helpdesk')
 @login_required
 def update(category):
     obj = get_obj_by_category(category)
@@ -606,6 +621,7 @@ REMOVE
 
 
 @app.route("/display/<category>")
+@login_required
 def remove(category):
     user = get_user()
     obj = get_obj_by_category(category)
@@ -622,6 +638,7 @@ def remove(category):
 
 
 @app.route("/remove/<category>", methods=['POST'])
+@login_required
 def remove_objects(category):
     obj = get_obj_by_category(category)
     remove_ids = request.form.getlist('remove')
@@ -633,7 +650,7 @@ def remove_objects(category):
 
     db.session.commit()
 
-    return redirect('display/'+category)
+    return redirect('display/' + category)
 
 
 """
@@ -787,7 +804,9 @@ def get_all_ids():
     return jsonify(status=statuses)
 
 
-@app.route("/courses/list/update", methods=['GET', 'POST'])
+@app.route("/courses/update", methods=['GET', 'POST'])
+@requires_role('helpdesk')
+@login_required
 def update_courselist():
     """
         Updates the database to contain the most recent course
