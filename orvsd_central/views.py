@@ -76,7 +76,7 @@ def register():
                                 email=form.email.data,
                                 password=form.password.data,
                                 role=constants.USER_PERMS
-                                              .get(form.perm.data, 1)))
+                                              .get(form.role.data, 1)))
             db.session.commit()
             message = form.user.data + " has been added successfully!\n"
 

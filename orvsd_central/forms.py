@@ -12,7 +12,7 @@ class AddUser(Form):
     password = PasswordField('password', [Required()])
     confirm_pass = PasswordField('confirm_pass', [Required()])
     email = TextField('username', [Required(), Email()])
-    perm = SelectField('perm', choices=[('viewonly', 'View Only'),
+    role = SelectField('role', choices=[('viewonly', 'View Only'),
                                         ('helpdesk', 'Helpdesk'),
                                         ('admin', 'Admin')])
 
