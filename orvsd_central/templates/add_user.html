@@ -11,7 +11,7 @@
         Confirm Password: {{form.confirm_pass}}</br>
         Email: {{form.email}}</br>
         {% if user.is_admin() %}
-        Role: {{form.role}}</br>
+        Role: {{form.perm}}</br>
         {% endif %}
         <input type="submit" value="Add User"></input></br>
     </form>
