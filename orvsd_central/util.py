@@ -83,7 +83,8 @@ class Util():
                         school = School(name=d['sitename'],
                                         shortname=d['sitename'],
                                         domain=school_url,
-                                        license='')
+                                        license='',
+                                        state_id=None)
                         school.district_id = 0
                         db.session.add(school)
                         db.session.commit()
@@ -97,7 +98,8 @@ class Util():
                                     baseurl='',
                                     basepath='',
                                     jenkins_cron_job=None,
-                                    location='')
+                                    location='',
+                                    school_id=None)
 
                     site.school_id = school.id
 
