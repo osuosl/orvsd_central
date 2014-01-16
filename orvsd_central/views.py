@@ -23,9 +23,9 @@ import re
 import subprocess
 import StringIO
 import requests
+from requests.exceptions import HTTPError
 import zipfile
 import datetime
-import urllib2
 import itertools
 
 """
@@ -108,19 +108,19 @@ def google_login():
         return google.authorize(callback=callback)
     else:
         access_token = access_token
-        headers = {'Authorization': 'OAuth ' + access_token}
-        req = urllib2.Request('https://www.googleapis.com/oauth2/v1/userinfo',
-                              None, headers)
+        payload = {'Authorization': 'OAuth ' + access_token}
+        req = requests.get('https://www.googleapis.com/oauth2/v1/userinfo',
+                           headers=payload)
         try:
-            res = urllib2.urlopen(req)
-        except urllib2.URLError, e:
-            if e.code == 401:
+            req.raise_for_status()
+        except HTTPError, e:
+            if req.status_code == 401:
                 session.pop('access_token', None)
                 flash('There was a problem with your Google \
                       login information.  Please try again.')
                 return redirect(url_for('login'))
-            return res.read()
-        obj = json.loads(res.read())
+            return req.raw.read()
+        obj = req.json()
         email = obj['email']
         user = User.query.filter_by(email=email).first()
         #pop access token so it isn't sitting around in our
@@ -130,8 +130,7 @@ def google_login():
             login_user(user)
             return redirect(url_for('report'))
         else:
-            flash("This google account was not recognized \
-                  as having access. Sorry.")
+            flash("That google account does not have access.")
             return redirect(url_for('login'))
 
 
