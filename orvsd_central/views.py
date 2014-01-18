@@ -21,6 +21,7 @@ from forms import LoginForm, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from orvsd_central import db, app, login_manager, google, celery
+from orvsd_central.utils import get_obj_by_category, get_obj_identifier
 
 """
 Custom Decorators
@@ -683,23 +684,6 @@ def build_accordion(objects, accordion_id, type, extra=None):
 
     return outer_t.render(accordion_id=accordion_id,
                           dump=inner)
-
-
-def get_obj_by_category(category):
-    # Checking for case insensitive categories
-    categories = {'districts': District, 'schools': School,
-                  'sites': Site, 'courses': Course, 'users': User,
-                  'coursedetails': CourseDetail, 'sitedetails': SiteDetail}
-
-    return categories.get(category.lower())
-
-
-def get_obj_identifier(category):
-    categories = {'districts': 'name', 'schools': 'name',
-                  'sites': 'name', 'courses': 'name', 'users': 'name',
-                  'coursedetails': 'filename', 'sitedetails': 'site_id'}
-
-    return categories.get(category.lower())
 
 
 def get_user():

@@ -156,3 +156,19 @@ def gather_siteinfo():
 
                 db.session.add(site_details)
                 db.session.commit()
+
+def get_obj_by_category(category):
+    # Checking for case insensitive categories
+    categories = {'districts': District, 'schools': School,
+                  'sites': Site, 'courses': Course, 'users': User,
+                  'coursedetails': CourseDetail, 'sitedetails': SiteDetail}
+
+    return categories.get(category.lower())
+
+
+def get_obj_identifier(category):
+    categories = {'districts': 'name', 'schools': 'name',
+                  'sites': 'name', 'courses': 'name', 'users': 'name',
+                  'coursedetails': 'filename', 'sitedetails': 'site_id'}
+
+    return categories.get(category.lower())
