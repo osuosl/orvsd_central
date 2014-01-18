@@ -1,16 +1,15 @@
-"""
-Utility class containing useful methods not tied to specific models or views
-"""
+import datetime
+import re
+
 from oursql import connect, DictCursor
+
 from orvsd_central import db, app
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-from flask.ext.sqlalchemy import SQLAlchemy
-from datetime import datetime, date, time, timedelta
-import json
-import re
-import datetime
 
+"""
+Utility class containing useful methods not tied to specific models or views
+"""
 
 def gather_siteinfo():
     user = app.config['SITEINFO_DATABASE_USER']
