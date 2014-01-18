@@ -1,24 +1,26 @@
+import datetime
+from functools import wraps
+import json
+import os
+import re
+import zipfile
+
+from bs4 import BeautifulSoup as Soup
+import celery
 from flask import (request, render_template, flash, session, redirect,
                    url_for, abort, jsonify)
 from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
-from orvsd_central import db, app, login_manager, google, celery
+import requests
+from requests.exceptions import HTTPError
+from sqlalchemy import  and_
+from sqlalchemy.sql.expression import desc
+
+import constants
 from forms import LoginForm, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-from sqlalchemy import  and_
-from sqlalchemy.sql.expression import desc
-import constants
-from functools import wraps
-import celery
-from bs4 import BeautifulSoup as Soup
-import os
-import json
-import re
-import requests
-from requests.exceptions import HTTPError
-import zipfile
-import datetime
+from orvsd_central import db, app, login_manager, google, celery
 
 """
 Custom Decorators
