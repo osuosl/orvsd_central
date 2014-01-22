@@ -430,6 +430,9 @@ def get_schools():
     for school in schools:
         sitedata = []
         sites = Site.query.filter(Site.school_id == school.id).all()
+        admincount = 0
+        teachercount = 0
+        usercount = 0
         for site in sites:
             admin = None
             sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
@@ -437,12 +440,19 @@ def get_schools():
                                  .first()
             if sd:
                 admin = sd.adminemail
+                admincount = admincount + sd.adminusers
+                teachercount = teachercount + sd.teachers
+                usercount = usercount + sd.totalusers
             sitedata.append({'name': site.name,
                              'baseurl': site.baseurl,
                              'sitetype': site.sitetype,
                              'admin': admin})
+        usercount = usercount - admincount - teachercount
         school_list[school.shortname] = {'name': school.name,
                                          'id': school.id,
+                                         'admincount': admincount,
+                                         'teachercount': teachercount,
+                                         'usercount': usercount,
                                          'sitedata': sitedata}
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
