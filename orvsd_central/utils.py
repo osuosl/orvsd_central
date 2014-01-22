@@ -8,7 +8,7 @@ from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 
 """
-Utility class containing useful methods not tied to specific models or views
+Utility methods not tied to specific models or view
 """
 
 def gather_dbs():
