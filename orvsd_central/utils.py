@@ -11,13 +11,7 @@ from models import (District, School, Site, SiteDetail,
 Utility class containing useful methods not tied to specific models or views
 """
 
-def gather_siteinfo():
-    user = app.config['SITEINFO_DATABASE_USER']
-    password = app.config['SITEINFO_DATABASE_PASS']
-    address = app.config['SITEINFO_DATABASE_HOST']
-    DEBUG = True
-
-    # Connect to gather the db list
+def gather_dbs():
     con = connect(host=address, user=user, passwd=password)
     curs = con.cursor()
 
@@ -28,8 +22,18 @@ def gather_siteinfo():
             "OR table_name = 'mdl_siteinfo';")
 
     curs.execute(find)
-    check = curs.fetchall()
+    dbs_to_check = curs.fetchall()
     con.close()
+
+    return dbs_to_check
+
+
+def gather_siteinfo():
+    user = app.config['SITEINFO_DATABASE_USER']
+    password = app.config['SITEINFO_DATABASE_PASS']
+    address = app.config['SITEINFO_DATABASE_HOST']
+
+    check = gather_dbs()
 
     # store the db names and table name in an array to sift through
     db_sites = []
