@@ -22,10 +22,10 @@ def gather_dbs():
             "OR table_name = 'mdl_siteinfo';")
 
     curs.execute(find)
-    dbs_to_check = curs.fetchall()
+    db_list = curs.fetchall()
     con.close()
 
-    return dbs_to_check
+    return db_list
 
 
 def gather_siteinfo():
@@ -33,12 +33,12 @@ def gather_siteinfo():
     password = app.config['SITEINFO_DATABASE_PASS']
     address = app.config['SITEINFO_DATABASE_HOST']
 
-    check = gather_dbs()
+    db_list = gather_dbs()
 
     # store the db names and table name in an array to sift through
     db_sites = []
-    if len(check):
-        for pair in check:
+    if len(db_list):
+        for pair in db_list:
             db_sites.append(pair)
 
         # for each relevent database, pull the siteinfo data
