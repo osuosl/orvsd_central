@@ -11,7 +11,7 @@ dump_schools = function(a, d) {
     // Add to the lists
     $.each(d.schools, function(k, v) {
         var link = "<li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a>";
-        var line = link + " <b>A:</b> " + v.admincount +
+        var line = link + " - <b>A:</b> " + v.admincount +
                           ", <b>T</b>: " + v.teachercount +
                           ", <b>U</b>: " + v.usercount + " </li>";
         if (v.sitedata != "") {
