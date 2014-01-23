@@ -21,7 +21,8 @@ from forms import LoginForm, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from orvsd_central import db, app, login_manager, google, celery
-from orvsd_central.utils import get_obj_by_category, get_obj_identifier
+from orvsd_central.utils import (build_accordion, get_obj_by_category,
+                                 get_obj_identifier)
 
 """
 Custom Decorators
@@ -666,24 +667,6 @@ def load_user(userid):
 @google.tokengetter
 def get_access_token():
     return session.get('access_token')
-
-
-def build_accordion(objects, accordion_id, type, extra=None):
-    inner_t = app.jinja_env.get_template('accordion_inner.html')
-    outer_t = app.jinja_env.get_template('accordion.html')
-
-    inner = ""
-
-    for obj in objects:
-        inner_id = re.sub(r'[^a-zA-Z0-9]', '', obj.shortname)
-        inner += inner_t.render(accordion_id=accordion_id,
-                                inner_id=inner_id,
-                                type=type,
-                                link=obj.name,
-                                extra=None if not extra else extra % obj.id)
-
-    return outer_t.render(accordion_id=accordion_id,
-                          dump=inner)
 
 
 def get_user():
