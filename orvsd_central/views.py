@@ -22,7 +22,7 @@ from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 from orvsd_central import db, app, login_manager, google, celery
 from orvsd_central.utils import (build_accordion, get_obj_by_category,
-                                 get_obj_identifier)
+                                 get_obj_identifier, get_user)
 
 """
 Custom Decorators
@@ -667,16 +667,6 @@ def load_user(userid):
 @google.tokengetter
 def get_access_token():
     return session.get('access_token')
-
-
-def get_user():
-    # A user id is sent in, to check against the session
-    # and based on the result of querying that id we
-    # return a user (whether it be a sqlachemy obj or an
-    # obj named guest
-
-    if 'user_id' in session:
-            return User.query.filter_by(id=session["user_id"]).first()
 
 
 def district_details(schools):

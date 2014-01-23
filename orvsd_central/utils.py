@@ -179,6 +179,7 @@ def gather_siteinfo():
                 db.session.add(site_details)
                 db.session.commit()
 
+
 def get_obj_by_category(category):
     # Checking for case insensitive categories
     categories = {'districts': District, 'schools': School,
@@ -194,3 +195,13 @@ def get_obj_identifier(category):
                   'coursedetails': 'filename', 'sitedetails': 'site_id'}
 
     return categories.get(category.lower())
+
+
+def get_user():
+    # A user id is sent in, to check against the session
+    # and based on the result of querying that id we
+    # return a user (whether it be a sqlachemy obj or an
+    # obj named guest
+
+    if 'user_id' in session:
+            return User.query.filter_by(id=session["user_id"]).first()
