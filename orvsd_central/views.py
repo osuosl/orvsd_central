@@ -364,7 +364,7 @@ def view_schools(id):
         Site.sitetype == 'drupal')).all()
 
 
-if moodle_sites or drupal_sites:
+    if moodle_sites or drupal_sites:
         moodle_sitedetails = []
         if moodle_sites:
             for site in moodle_sites:
@@ -374,7 +374,7 @@ if moodle_sites or drupal_sites:
                               .desc()) \
                     .first()
 
-            if site_detail and site_detail.courses:
+        if site_detail and site_detail.courses:
                 # adminemail usually defaults to '', rather than None.
                 site_detail.adminemail = site_detail.adminemail or None
                 # Filter courses to display based on num of users.
@@ -399,11 +399,11 @@ if moodle_sites or drupal_sites:
                 if site_detail:
                     site_detail.adminemail = site_detail.adminemail or None
 
-                drupal_sitedetails.append(site_detail)
+                    drupal_sitedetails.append(site_detail)
 
-        drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
+            drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
 
-        return render_template("school.html", school=school,
+            return render_template("school.html", school=school,
                                moodle_siteinfo=moodle_siteinfo,
                                drupal_siteinfo=drupal_siteinfo,
                                user=current_user)
@@ -928,4 +928,7 @@ def get_courses_by_site(site_id):
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html')
+    if not current_user.is_anonymous():
+        return redirect("/login") 
+    else:
+        return render_template('404.html')
