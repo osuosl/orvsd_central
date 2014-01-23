@@ -170,7 +170,6 @@ def site_by_id(site_id):
     return jsonify(name=name)
 
 
-
 @app.route('/install/course', methods=['GET', 'POST'])
 @requires_role('helpdesk')
 @login_required
@@ -187,9 +186,9 @@ def install_course():
 
         # Query all moodle 2.2 courses
         courses = db.session.query(CourseDetail).filter(
-                                        CourseDetail.moodle_version
-                                            .like('2.5%')
-                                    ).all()
+            CourseDetail.moodle_version
+            .like('2.5%')
+            ).all()
 
         # Query all moodle sites
         sites = db.session.query(Site).filter(
@@ -251,15 +250,15 @@ def install_course():
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
         site_ids = [site_id for site_id in request.form.getlist('site')]
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
-                        for site_id in site_ids]
+                     for site_id in site_ids]
 
         for site_url in site_urls:
             # The site to install the courses
             site = ("http://%s/webservice/rest/server.php?" +
-                   "wstoken=%s&wsfunction=%s") % (
-                   site_url,
-                   app.config['INSTALL_COURSE_WS_TOKEN'],
-                   app.config['INSTALL_COURSE_WS_FUNCTION'])
+                    "wstoken=%s&wsfunction=%s") % (
+                site_url,
+                app.config['INSTALL_COURSE_WS_TOKEN'],
+                app.config['INSTALL_COURSE_WS_FUNCTION'])
             site = str(site.encode('utf-8'))
 
             # Loop through the courses, generate the command to be run, run it,
@@ -273,7 +272,7 @@ def install_course():
                 install_course_to_site.delay(course, site)
 
             output += (str(len(courses)) + " course install(s) for " +
-                        site_url + " started.\n")
+                       site_url + " started.\n")
 
         return render_template('install_course_output.html',
                                output=output,
@@ -312,7 +311,6 @@ def get_course_folders():
             if folder not in folders:
                 folders.append(folder)
     return folders
-
 
 
 @celery.task(name='tasks.install_course')
@@ -358,32 +356,32 @@ def view_schools(id):
 
     # Keep them separated for organizational/display purposes
     moodle_sites = db.session.query(Site).filter(and_(
-                                    Site.school_id == id,
-                                    Site.sitetype == 'moodle')).all()
+        Site.school_id == id,
+        Site.sitetype == 'moodle')).all()
 
     drupal_sites = db.session.query(Site).filter(and_(
-                                    Site.school_id == id,
-                                    Site.sitetype == 'drupal')).all()
+        Site.school_id == id,
+        Site.sitetype == 'drupal')).all()
 
 
-    if moodle_sites or drupal_sites:
+if moodle_sites or drupal_sites:
         moodle_sitedetails = []
         if moodle_sites:
             for site in moodle_sites:
                 site_detail = SiteDetail.query.filter_by(site_id=site.id) \
-                                                        .order_by(SiteDetail
-                                                            .timemodified
-                                                            .desc()) \
-                                                  .first()
+                    .order_by(SiteDetail
+                              .timemodified
+                              .desc()) \
+                    .first()
 
-                if site_detail and site_detail.courses:
-                    # adminemail usually defaults to '', rather than None.
-                    site_detail.adminemail = site_detail.adminemail or None
-                    # Filter courses to display based on num of users.
-                    site_detail.courses = filter(
-                            lambda x: x['enrolled'] > min_users,
-                            json.loads(site_detail.courses)
-                        )
+            if site_detail and site_detail.courses:
+                # adminemail usually defaults to '', rather than None.
+                site_detail.adminemail = site_detail.adminemail or None
+                # Filter courses to display based on num of users.
+                site_detail.courses = filter(
+                    lambda x: x['enrolled'] > min_users,
+                    json.loads(site_detail.courses)
+                )
 
                 moodle_sitedetails.append(site_detail)
 
@@ -393,10 +391,10 @@ def view_schools(id):
         if drupal_sites:
             for site in drupal_sites:
                 site_detail = SiteDetail.query.filter_by(site_id=site.id) \
-                                                        .order_by(SiteDetail
-                                                            .timemodified
-                                                            .desc()) \
-                                                    .first()
+                    .order_by(SiteDetail
+                              .timemodified
+                              .desc()) \
+                    .first()
 
                 if site_detail:
                     site_detail.adminemail = site_detail.adminemail or None
@@ -406,11 +404,13 @@ def view_schools(id):
         drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
 
         return render_template("school.html", school=school,
-                        moodle_siteinfo=moodle_siteinfo,
-                        drupal_siteinfo=drupal_siteinfo, user=current_user)
-    else:
-        return render_template("school_data_notfound.html", school=school,
+                               moodle_siteinfo=moodle_siteinfo,
+                               drupal_siteinfo=drupal_siteinfo,
                                user=current_user)
+        else:
+            return render_template("school_data_notfound.html", school=school,
+                                   user=current_user)
+
 
 @app.route('/report/get_schools', methods=['POST'])
 def get_schools():
@@ -605,6 +605,7 @@ def string_to_type(string):
 MIGRATE
 """
 
+
 @app.route("/schools/migrate")
 def migrate_schools():
     districts = District.query.all()
@@ -612,7 +613,7 @@ def migrate_schools():
     schools = School.query.filter_by(district_id=0).all()
 
     return render_template("migrate.html", districts=districts,
-                            schools=schools, user=current_user)
+                           schools=schools, user=current_user)
 
 """
 REMOVE
@@ -831,9 +832,9 @@ def update_courselist():
             filenames.append(path)
 
         details = db.session.query(CourseDetail) \
-                        .join(CourseDetail.course) \
-                        .filter(CourseDetail.filename.in_(
-                            filenames)).all()
+            .join(CourseDetail.course) \
+            .filter(CourseDetail.filename.in_(
+                    filenames)).all()
 
         for detail in details:
             if detail.filename in filenames:
@@ -854,6 +855,7 @@ def get_path_and_source(base_path, file_path):
     path = file_path.strip(base_path).partition('/')
     return path[0]+'/', path[2]
 
+
 def create_course_from_moodle_backup(base_path, source, file_path):
     # Needed to delete extracted xml once operation is done
     project_folder = "/home/vagrant/orvsd_central/"
@@ -865,9 +867,9 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     info = xml.moodle_backup.information
 
     old_course = Course.query.filter_by(
-                    name=info.original_course_fullname.string) or \
-                 Course.query.filter_by(
-                    name=info.original_course_shortname.string)
+        name=info.original_course_fullname.string) or \
+        Course.query.filter_by(
+            name=info.original_course_shortname.string)
 
     if old_course is not None:
         # Create a course since one is unable to be found with that name.
@@ -923,6 +925,7 @@ def get_courses_by_site(site_id):
     else:
         return jsonify({'error:': 'No courses found.'})
 
+
 @app.errorhandler(404)
 def page_not_found(e):
-	return render_template('404.html')
+    return render_template('404.html')
