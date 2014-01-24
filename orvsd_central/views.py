@@ -928,7 +928,7 @@ def get_courses_by_site(site_id):
 
 @app.errorhandler(404)
 def page_not_found(e):
-    #if not current_user.is_anonymous():
-    #    return redirect("/login") 
-    #else:
-    return render_template('404.html')
+    if not current_user.is_anonymous():
+        return redirect("/login")
+    else:
+        return render_template('404.html'), 404
