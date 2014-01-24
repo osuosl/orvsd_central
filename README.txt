@@ -7,6 +7,14 @@ HOW TO do Migrations:
     This will initialize the migration repo.
     Then to perform migrations, run db_migrate.py.  This will update the db based on information in models.py.
 
+Running the server:
+
+    Currently there are two different ways to run the server (this will change very soon)
+    One is with run.py:
+        python run.py -i <host> -p <port>
+    The other is with manage.py:
+        python manage.py runserver -t <host> -p <port>
+
 Tests:
 
     With the virtualenv activated run 'nosetests' in the top directory
