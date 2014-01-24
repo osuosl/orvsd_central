@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <center>
-        <b>
-	        The URL you requested was not found.
-        </b>
-    </center>
+    <h1>
+        <center>
+            <b>
+                The URL you requested was not found.
+            </b>
+        </center>
+    </h1>
+    <p>
+        <a href="{{ url_for('report') }}">Reports</a>
+    </p>
 {% endblock %}
 
