@@ -1,15 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>
+    <center>
+        <h1>
+                <b>
+                    The URL you requested was not found.
+                </b>
+        </h1>
+        <p>
+        {% if user %}
+            <a href="{{ url_for('report') }}">Reports</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
         <center>
-            <b>
-                The URL you requested was not found.
-            </b>
-        </center>
-    </h1>
-    <p>
-        <a href="{{ url_for('report') }}">Reports</a>
-    </p>
+        </p>
+    </center>
 {% endblock %}
 
