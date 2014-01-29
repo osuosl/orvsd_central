@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <center>
+        <h1>
+                <b>
+                    The URL you requested was not found
+                </b>
+        </h1>
+        <p>
+        {% if user.is_authenticated() %}
+            <a href="{{ url_for('report') }}">Reports</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
+        <center>
+        </p>
+    </center>
+{% endblock %}
+
