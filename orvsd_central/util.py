@@ -16,42 +16,42 @@ from oursql import connect, DictCursor
 from orvsd_central import app, constants, celery, login_manager
 from orvsd_central.database import db_session
 from orvsd_central.models import (District, School, Site, SiteDetail,
-                                  Course, CourseDetail, User)
+                              Course, CourseDetail, User)
 
 
 def build_accordion(districts, accordion_id, type, extra=None):
     """
     Builds the accordion from pre-defined templates.
     """
-    inner_t = app.jinja_env.get_template('accordion_inner.html')
-    outer_t = app.jinja_env.get_template('accordion.html')
+inner_t = app.jinja_env.get_template('accordion_inner.html')
+outer_t = app.jinja_env.get_template('accordion.html')
 
-    inner = ""
+inner = ""
 
-    for district in districts:
-        if district.schools:
-            # Make sure the schools have relevant sites
-            school_ids = [school.id for school in district.schools]
-            sites = db_session.query(Site.id).filter(
-                Site.school_id.in_(school_ids)).all()
+for district in districts:
+    if district.schools:
+        # Make sure the schools have relevant sites
+        school_ids = [school.id for school in district.schools]
+        sites = db_session.query(Site.id).filter(
+            Site.school_id.in_(school_ids)).all()
 
-            if sites:
-                # Check for sitedetails for any of the sites
-                site_ids = [site.id for site in sites]
-                num_sds = db_session.query(SiteDetail).filter(
-                    SiteDetail.site_id.in_(site_ids)).count()
+        if sites:
+            # Check for sitedetails for any of the sites
+            site_ids = [site.id for site in sites]
+            num_sds = db_session.query(SiteDetail).filter(
+                SiteDetail.site_id.in_(site_ids)).count()
 
-                if num_sds:
-                    inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
-                    inner += inner_t.render(accordion_id=accordion_id,
-                                            inner_id=inner_id,
-                                            type=type,
-                                            link=district.name,
-                                            extra=None if not extra else
-                                                extra % district.id)
+            if num_sds:
+                inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
+                inner += inner_t.render(accordion_id=accordion_id,
+                                        inner_id=inner_id,
+                                        type=type,
+                                        link=district.name,
+                                        extra=None if not extra else
+                                            extra % district.id)
 
-    return outer_t.render(accordion_id=accordion_id,
-                          dump=inner)
+return outer_t.render(accordion_id=accordion_id,
+                      dump=inner)
 
 
 def create_course_from_moodle_backup(base_path, source, file_path):
@@ -75,91 +75,91 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     Returns:
         Nothing
     """
-    # Needed to delete extracted xml once operation is done
-    project_folder = "/home/vagrant/orvsd_central/"
+# Needed to delete extracted xml once operation is done
+project_folder = "/home/vagrant/orvsd_central/"
 
-    # Unzip the file to get the manifest (All course backups are zip files)
-    zip = zipfile.ZipFile(base_path+source+file_path)
-    xmlfile = file(zip.extract("moodle_backup.xml"), "r")
-    xml = Soup(xmlfile.read(), "xml")
-    info = xml.moodle_backup.information
+# Unzip the file to get the manifest (All course backups are zip files)
+zip = zipfile.ZipFile(base_path+source+file_path)
+xmlfile = file(zip.extract("moodle_backup.xml"), "r")
+xml = Soup(xmlfile.read(), "xml")
+info = xml.moodle_backup.information
 
-    old_course = Course.query.filter_by(
-        name=info.original_course_fullname.string) or \
-        Course.query.filter_by(
-            name=info.original_course_shortname.string)
+old_course = Course.query.filter_by(
+    name=info.original_course_fullname.string) or \
+    Course.query.filter_by(
+        name=info.original_course_shortname.string)
 
-    if old_course is not None:
-        # Create a course since one is unable to be found with that name.
-        new_course = Course(serial=1000 + len(Course.query.all()),
-                            source=source.replace('/', ''),
-                            name=info.original_course_fullname.string,
-                            shortname=info.original_course_shortname.string)
-        db_session.add(new_course)
+if old_course is not None:
+    # Create a course since one is unable to be found with that name.
+    new_course = Course(serial=1000 + len(Course.query.all()),
+                        source=source.replace('/', ''),
+                        name=info.original_course_fullname.string,
+                        shortname=info.original_course_shortname.string)
+    db_session.add(new_course)
 
-        # Until the session is committed, the new_course does not yet have
-        # an id.
-        db_session.commit()
-
-        course_id = new_course.id
-    else:
-        course_id = old_course.id
-
-    _version_re = re.findall(r'_v(\d)_', file_path)
-
-    # Regex will only be a list if it has a value in it
-    version = _version_re[0] if list(_version_re) else None
-
-    new_course_detail = CourseDetail(course_id=course_id,
-                                     filename=file_path,
-                                     version=version,
-                                     updated=datetime.now(),
-                                     active=True,
-                                     moodle_version=info.moodle_release.string,
-                                     moodle_course_id=info
-                                                     .original_course_id
-                                                     .string)
-
-    db_session.add(new_course_detail)
+    # Until the session is committed, the new_course does not yet have
+    # an id.
     db_session.commit()
 
-    #Get rid of moodle_backup.xml
-    os.remove(project_folder+"moodle_backup.xml")
+    course_id = new_course.id
+else:
+    course_id = old_course.id
+
+_version_re = re.findall(r'_v(\d)_', file_path)
+
+# Regex will only be a list if it has a value in it
+version = _version_re[0] if list(_version_re) else None
+
+new_course_detail = CourseDetail(course_id=course_id,
+                                 filename=file_path,
+                                 version=version,
+                                 updated=datetime.datetime.now(),
+                                 active=True,
+                                 moodle_version=info.moodle_release.string,
+                                 moodle_course_id=info
+                                                 .original_course_id
+                                                 .string)
+
+db_session.add(new_course_detail)
+db_session.commit()
+
+#Get rid of moodle_backup.xml
+os.remove(project_folder+"moodle_backup.xml")
 
 
 def district_details(schools):
-    """
-    district_details adds up the number of teachers, users, and admins of all
-    the district's school's sites.
+"""
+district_details adds up the number of teachers, users, and admins of all
+the district's school's sites.
 
-    Args:
-        schools (list): list of schools to total the users, teachers, and
-         admins.
+Args:
+    schools (list): list of schools to total the users, teachers, and
+     admins.
 
-    Returns:
-        dict. The total admins, teachers, and users of the schools
-    """
+Returns:
+    dict. The total admins, teachers, and users of the schools
+"""
 
-    admin_count = 0
-    teacher_count = 0
-    user_count = 0
+admin_count = 0
+teacher_count = 0
+user_count = 0
 
-    for school in schools:
-        sites = Site.query.filter_by(school_id=school.id).all()
-        for site in sites:
-            details = SiteDetail.query.filter_by(site_id=site.id) \
-                                      .order_by(SiteDetail
-                                                .timemodified
-                                                .desc()) \
-                                      .first()
-            if details:
-                admin_count += details.adminusers if details.adminusers else 0
-                teacher_count += details.teachers if details.teachers else 0
-                user_count += details.totalusers if details.totalusers else 0
+for school in schools:
+    sites = Site.query.filter_by(school_id=school.id).all()
+    for site in sites:
+        details = SiteDetail.query.filter_by(site_id=site.id) \
+                                  .order_by(SiteDetail
+                                            .timemodified
+                                            .desc()) \
+                                  .first()
+        if details:
+            admin_count += details.adminusers if details.adminusers else 0
+            teacher_count += details.teachers if details.teachers else 0
+            user_count += details.totalusers if details.totalusers else 0
 
-    return {'admins': admin_count,
-            'teachers': teacher_count,
-            'users': user_count}
+return {'admins': admin_count,
+        'teachers': teacher_count,
+        'users': user_count}
 
 
 def gather_siteinfo():
@@ -167,62 +167,60 @@ def gather_siteinfo():
     Gathers moodle/drupal site information to be put into our db.
     This is the source for all of our SiteDetail objects.
     """
-    user = app.config['SITEINFO_DATABASE_USER']
-    password = app.config['SITEINFO_DATABASE_PASS']
-    address = app.config['SITEINFO_DATABASE_HOST']
-    DEBUG = True
+user = app.config['SITEINFO_DATABASE_USER']
+password = app.config['SITEINFO_DATABASE_PASS']
+address = app.config['SITEINFO_DATABASE_HOST']
+DEBUG = True
 
-    # Connect to gather the db list
-    con = connect(host=address, user=user, passwd=password)
-    curs = con.cursor()
+# Connect to gather the db list
+con = connect(host=address, user=user, passwd=password)
+curs = con.cursor()
 
-    # find all the databases with a siteinfo table
-    find = ("SELECT table_schema, table_name "
-            "FROM information_schema.tables "
-            "WHERE table_name =  'siteinfo' "
-            "OR table_name = 'mdl_siteinfo';")
+# find all the databases with a siteinfo table
+find = ("SELECT table_schema, table_name "
+        "FROM information_schema.tables "
+        "WHERE table_name =  'siteinfo' "
+        "OR table_name = 'mdl_siteinfo';")
 
-    curs.execute(find)
-    check = curs.fetchall()
-    con.close()
+curs.execute(find)
+check = curs.fetchall()
+con.close()
 
-    # store the db names and table name in an array to sift through
-    db_sites = []
-    if len(check):
-        for pair in check:
-            db_sites.append(pair)
+# store the db names and table name in an array to sift through
+db_sites = []
+if len(check):
+    for pair in check:
+        db_sites.append(pair)
 
-        # for each relevent database, pull the siteinfo data
-        for database in db_sites:
-            cherry = connect(user=user,
-                             passwd=password,
-                             host=address,
-                             db=database[0])
+    # for each relevent database, pull the siteinfo data
+    for database in db_sites:
+        cherry = connect(user=user,
+                         passwd=password,
+                         host=address,
+                         db=database[0])
 
-            # use DictCursor here to get column names as well
-            pie = cherry.cursor(DictCursor)
+        # use DictCursor here to get column names as well
+        pie = cherry.cursor(DictCursor)
 
-            # Grab the site info data
-            pie.execute("select * from `%s`;" % database[1])
-            data = pie.fetchall()
-            cherry.close()
+        # Grab the site info data
+        pie.execute("select * from `%s`;" % database[1])
+        data = pie.fetchall()
+        cherry.close()
 
-            # For all the data, shove it into the central db
-            for d in data:
-                # what version of moodle is this from?
-                version = d['siterelease'][:3]
+        # For all the data, shove it into the central db
+        for d in data:
+            # what version of moodle is this from?
+            version = d['siterelease'][:3]
 
-                # what is our school domain? take the protocol
-                # off the baseurl
-                school_re = 'http[s]{0,1}:\/\/'
-                school_url = re.sub(school_re, '', d['baseurl'])
+            # what is our school domain? take the protocol
+            # off the baseurl
+            school_re = 'http[s]{0,1}:\/\/'
+            school_url = re.sub(school_re, '', d['baseurl'])
 
-                # try to figure out what machine this site lives on
-                if 'location' in d:
-                    if d['location'][:3] == 'php':
-                        location = 'platform'
-                    else:
-                        location = d['location']
+            # try to figure out what machine this site lives on
+            if 'location' in d:
+                if d['location'][:3] == 'php':
+                    location = 'platform'
                 else:
                     location = 'unknown'
 
@@ -238,9 +236,31 @@ def gather_siteinfo():
                                     license='',
                                     state_id=None,
                                     county="")
-                    school.district_id = 0
-                    db_session.add(school)
-                    db_session.commit()
+                    dist_id = 0
+                    if school_url:
+                        # Lets try the full school_url first.
+                        similar_schools = db.session.query(School).filter(
+                            School.domain.like("%" + school_url + "%")
+                        ).all()
+                        if not similar_schools:
+                            # Fine, let's cut off the first subdomain.
+                            broad_url = school_url[school_url.find('.'):]
+                            similar_schools = db.session.query(School) \
+                                .filter(School.domain.like(
+                                    "%" + broad_url + "%"
+                                )).all()
+                        if similar_schools:
+                            dist_id = similar_schools[0].district_id
+                            for school in similar_schools:
+                                if school.district_id != dist_id:
+                                    # If all results don't match, they
+                                    # aren't accurate enough.
+                                    dist_id = 0
+                                    break
+
+                    school.district_id = dist_id
+                    db.session.add(school)
+                    db.session.commit()
 
                 # find the site
                 site = Site.query.filter_by(baseurl=school_url).first()
@@ -259,8 +279,8 @@ def gather_siteinfo():
                 site.baseurl = school_url
                 site.basepath = d['basepath']
                 site.location = location
-                db_session.add(site)
-                db_session.commit()
+                db.session.add(site)
+                db.session.commit()
 
                 # create new site_details table
                 # site_id = site.id, timemodified = now()
@@ -310,8 +330,8 @@ def gather_siteinfo():
 
                     site_details.courses = d['courses']
 
-                db_session.add(site_details)
-                db_session.commit()
+                db.session.add(site_details)
+                db.session.commit()
 
 
 def get_course_folders(base_path):
