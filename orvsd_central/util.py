@@ -85,7 +85,29 @@ class Util():
                                         domain=school_url,
                                         license='',
                                         state_id=None)
-                        school.district_id = 0
+                        dist_id = 0
+                        if school_url:
+                            # Lets try the full school_url first.
+                            similar_schools = db.session.query(School).filter(
+                                School.domain.like("%" + school_url + "%")
+                            ).all()
+                            if not similar_schools:
+                                # Fine, let's cut off the first subdomain.
+                                broad_url = school_url[school_url.find('.'):]
+                                similar_schools = db.session.query(School) \
+                                    .filter(School.domain.like(
+                                        "%" + broad_url + "%"
+                                    ).all()
+                            if similar_schools:
+                                dist_id = similar_schools[0].district_id
+                                for school in similar_schools:
+                                    if school.district_id != dist_id:
+                                        # If all results don't match, they
+                                        # aren't accurate enough.
+                                        dist_id = 0
+                                        break
+
+                        school.district_id = dist_id
                         db.session.add(school)
                         db.session.commit()
 
