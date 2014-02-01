@@ -1,5 +1,5 @@
 from flask import Flask, render_template, g
-from flask.ext.login import LoginManager
+from flask.ext.login import LoginManager, current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.oauth import OAuth
 from celery import Celery
@@ -52,3 +52,6 @@ import views
 def before_request():
     g.db = db
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html', user=current_user), 404
