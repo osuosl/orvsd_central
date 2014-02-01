@@ -96,6 +96,13 @@ def google_login():
             return redirect(url_for('general.login'))
 
 
+@mod.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("general.login"))
+
+
 @mod.route(app.config['REDIRECT_URI'])
 @google.authorized_handler
 def authorized(resp):
@@ -104,11 +111,6 @@ def authorized(resp):
     return redirect(url_for('general.google_login'))
 
 
-@mod.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for("general.login"))
 @google.tokengetter
 def get_access_token():
     return session.get('access_token')
