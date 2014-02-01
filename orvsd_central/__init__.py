@@ -58,5 +58,7 @@ def page_not_found(e):
 
 
 from orvsd_central.controllers import general
+from orvsd_central.controllers import report
 
 app.register_blueprint(general.mod)
+app.register_blueprint(report.mod)

@@ -16,6 +16,24 @@ from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
 
 
+def build_accordion(objects, accordion_id, type, extra=None):
+    inner_t = app.jinja_env.get_template('accordion_inner.html')
+    outer_t = app.jinja_env.get_template('accordion.html')
+
+    inner = ""
+
+    for obj in objects:
+        inner_id = re.sub(r'[^a-zA-Z0-9]', '', obj.shortname)
+        inner += inner_t.render(accordion_id=accordion_id,
+                                inner_id=inner_id,
+                                type=type,
+                                link=obj.name,
+                                extra=None if not extra else extra % obj.id)
+
+    return outer_t.render(accordion_id=accordion_id,
+                          dump=inner)
+
+
 """
 Custom Decorators
 """

@@ -327,33 +327,6 @@ def get_schools():
 
 
 """
-REPORT
-"""
-
-
-@app.route("/report", methods=['GET'])
-@login_required
-def report():
-    all_districts = District.query.order_by("name").all()
-    dist_count = len(all_districts)
-    school_count = School.query.count()
-    site_count = Site.query.count()
-    course_count = Course.query.count()
-
-    accord_id = "dist_accord"
-    dist_id = "distid=%s"
-
-    data = build_accordion(all_districts, accord_id, "district", dist_id)
-
-    return render_template("report.html",
-                           datadump=data,
-                           dist_count=dist_count,
-                           school_count=school_count,
-                           site_count=site_count,
-                           course_count=course_count,
-                           user=current_user)
-
-"""
 UPDATE
 """
 
@@ -541,23 +514,6 @@ def load_user(userid):
 def get_access_token():
     return session.get('access_token')
 
-
-def build_accordion(objects, accordion_id, type, extra=None):
-    inner_t = app.jinja_env.get_template('accordion_inner.html')
-    outer_t = app.jinja_env.get_template('accordion.html')
-
-    inner = ""
-
-    for obj in objects:
-        inner_id = re.sub(r'[^a-zA-Z0-9]', '', obj.shortname)
-        inner += inner_t.render(accordion_id=accordion_id,
-                                inner_id=inner_id,
-                                type=type,
-                                link=obj.name,
-                                extra=None if not extra else extra % obj.id)
-
-    return outer_t.render(accordion_id=accordion_id,
-                          dump=inner)
 
 
 def get_obj_by_category(category):

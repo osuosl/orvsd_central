@@ -14,7 +14,7 @@ mod = Blueprint('general', __name__)
 @mod.route('/')
 def root():
     if not current_user.is_anonymous():
-        return redirect(url_for('report'))
+        return redirect(url_for('report.index'))
     return redirect(url_for('general.login'))
 
 
@@ -55,7 +55,7 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user)
             flash("Logged in successfully.")
-            return redirect("/report")
+            return redirect(url_for("report.index"))
         else:
             flash("Username/Password combo was not recognized.  "
                   "Please try again.")
@@ -90,7 +90,7 @@ def google_login():
         session.pop('access_token', None)
         if user is not None:
             login_user(user)
-            return redirect(url_for('report'))
+            return redirect(url_for('report.index'))
         else:
             flash("That google account does not have access.")
             return redirect(url_for('general.login'))
