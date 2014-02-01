@@ -24,7 +24,8 @@ from orvsd_central import app, celery, constants, db, google, login_manager
 from orvsd_central.forms import LoginForm, AddUser, InstallCourse
 from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
-from orvsd_central.util import requires_role
+from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
+                                requires_role)
 
 
 """
@@ -498,39 +499,6 @@ def remove_objects(category):
 HELPERS
 """
 
-
-@login_manager.unauthorized_handler
-def unauthorized():
-    flash('You are not authorized to view this page, please login.')
-    return redirect('/login')
-
-
-@login_manager.user_loader
-def load_user(userid):
-    return User.query.filter_by(id=userid).first()
-
-
-@google.tokengetter
-def get_access_token():
-    return session.get('access_token')
-
-
-
-def get_obj_by_category(category):
-    # Checking for case insensitive categories
-    categories = {'districts': District, 'schools': School,
-                  'sites': Site, 'courses': Course, 'users': User,
-                  'coursedetails': CourseDetail, 'sitedetails': SiteDetail}
-
-    return categories.get(category.lower())
-
-
-def get_obj_identifier(category):
-    categories = {'districts': 'name', 'schools': 'name',
-                  'sites': 'name', 'courses': 'name', 'users': 'name',
-                  'coursedetails': 'filename', 'sitedetails': 'site_id'}
-
-    return categories.get(category.lower())
 
 
 def get_user():

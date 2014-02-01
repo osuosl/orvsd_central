@@ -3,7 +3,7 @@ from flask.ext.login import (current_user, login_required,
                              login_user, logout_user)
 import requests
 
-from orvsd_central import app, db, google
+from orvsd_central import app, db, google, login_manager
 from orvsd_central.forms import AddUser, LoginForm
 from orvsd_central.models import User
 from orvsd_central.util import requires_role
@@ -109,3 +109,12 @@ def authorized(resp):
 def logout():
     logout_user()
     return redirect(url_for("general.login"))
+@google.tokengetter
+def get_access_token():
+    return session.get('access_token')
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    flash('You are not authorized to view this page, please login.')
+    return redirect(url_for('general.login'))

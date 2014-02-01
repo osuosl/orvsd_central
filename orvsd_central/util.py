@@ -7,11 +7,12 @@ from functools import wraps
 import json
 import re
 
+from flask import flash, session
 from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from oursql import connect, DictCursor
 
-from orvsd_central import app, db, constants
+from orvsd_central import app, constants, db, login_manager
 from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
 
@@ -179,6 +180,27 @@ def gather_siteinfo():
 
                 db.session.add(site_details)
                 db.session.commit()
+
+
+def get_obj_by_category(category):
+    # Checking for case insensitive categories
+    categories = {'districts': District, 'schools': School,
+                  'sites': Site, 'courses': Course, 'users': User,
+                  'coursedetails': CourseDetail, 'sitedetails': SiteDetail}
+
+    return categories.get(category.lower())
+
+
+def get_obj_identifier(category):
+    categories = {'districts': 'name', 'schools': 'name',
+                  'sites': 'name', 'courses': 'name', 'users': 'name',
+                  'coursedetails': 'filename', 'sitedetails': 'site_id'}
+
+    return categories.get(category.lower())
+
+@login_manager.user_loader
+def load_user(userid):
+    return User.query.filter_by(id=userid).first()
 
 
 # Decorator for defining access to certain actions.
