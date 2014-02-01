@@ -1,32 +1,29 @@
+import StringIO
+import datetime
+import json
+import os
+import re
+import subprocess
+import requests
+from requests.exceptions import HTTPError
+import zipfile
+
+from bs4 import BeautifulSoup as Soup
+import celery
+from celery.utils.encoding import safe_repr, safe_str
 from flask import (request, render_template, flash, g, session, redirect,
                    url_for, abort, jsonify)
 from flask.ext.login import (login_required, login_user, logout_user,
                              current_user)
-from werkzeug import check_password_hash, generate_password_hash
-from orvsd_central import db, app, login_manager, google, celery
-from forms import LoginForm, AddUser, InstallCourse
-from models import (District, School, Site, SiteDetail,
-                    Course, CourseDetail, User)
 from sqlalchemy import func, and_
-from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm import eagerload
-from models import (District, School, Site, SiteDetail,
-                    Course, CourseDetail, User)
-import constants
-import celery
-from bs4 import BeautifulSoup as Soup
-import os
-from celery.utils.encoding import safe_repr, safe_str
-import json
-import re
-import subprocess
-import StringIO
-import requests
-from requests.exceptions import HTTPError
-import zipfile
-import datetime
-import itertools
+from sqlalchemy.sql.expression import desc
+from werkzeug import check_password_hash, generate_password_hash
 
+from orvsd_central import app, celery, constants, db, google, login_manager
+from orvsd_central.forms import LoginForm, AddUser, InstallCourse
+from orvsd_central.models import (District, School, Site, SiteDetail,
+                                  Course, CourseDetail, User)
 from orvsd_central.util import requires_role
 
 """
