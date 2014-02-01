@@ -12,7 +12,6 @@ mod = Blueprint('general', __name__)
 
 
 @mod.route('/')
-@login_required
 def root():
     if not current_user.is_anonymous():
         return redirect(url_for('report'))
