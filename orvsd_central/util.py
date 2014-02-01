@@ -1,15 +1,17 @@
 """
 Utility class containing useful methods not tied to specific models or views
 """
-from oursql import connect, DictCursor
-from orvsd_central import db, app
-from models import (District, School, Site, SiteDetail,
-                    Course, CourseDetail, User)
-from flask.ext.sqlalchemy import SQLAlchemy
+import datetime
 from datetime import datetime, date, time, timedelta
 import json
 import re
-import datetime
+
+from flask.ext.sqlalchemy import SQLAlchemy
+from oursql import connect, DictCursor
+
+from orvsd_central import app, db
+from orvsd_central.models import (District, School, Site, SiteDetail,
+                                  Course, CourseDetail, User)
 
 
 class Util():
