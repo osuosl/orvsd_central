@@ -3,15 +3,39 @@ Utility class containing useful methods not tied to specific models or views
 """
 import datetime
 from datetime import datetime, date, time, timedelta
+from functools import wraps
 import json
 import re
 
+from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from oursql import connect, DictCursor
 
-from orvsd_central import app, db
+from orvsd_central import app, db, constants
 from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
+
+
+"""
+Custom Decorators
+"""
+
+# Decorator for defining access to certain actions.
+# 1 - General User (Implicit with login_required)
+# 2 - Help Desk
+# 3 - Admin
+def requires_role(role):
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            if not current_user.is_anonymous():
+                if current_user.role >= constants.USER_PERMS.get(role):
+                    return f(*args, **kwargs)
+                flash("You do not have permission to access this page.")
+                return redirect("/")
+            # Must check for a logged in user before checking it's attrs.
+            return f(*args, **kwargs)
+        return wraps(f)(wrapper)
+    return decorator
 
 
 class Util():

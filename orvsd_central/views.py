@@ -13,7 +13,6 @@ from sqlalchemy.orm import eagerload
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
 import constants
-from functools import wraps
 import celery
 from bs4 import BeautifulSoup as Soup
 import os
@@ -28,28 +27,7 @@ import zipfile
 import datetime
 import itertools
 
-"""
-Custom Decorators
-"""
-
-
-# Decorator for defining access to certain actions.
-# 1 - General User (Implicit with login_required)
-# 2 - Help Desk
-# 3 - Admin
-def requires_role(role):
-    def decorator(f):
-        def wrapper(*args, **kwargs):
-            if not current_user.is_anonymous():
-                if current_user.role >= constants.USER_PERMS.get(role):
-                    return f(*args, **kwargs)
-                flash("You do not have permission to access this page.")
-                return redirect("/")
-            # Must check for a logged in user before checking it's attrs.
-            return f(*args, **kwargs)
-        return wraps(f)(wrapper)
-    return decorator
-
+from orvsd_central.util import requires_role
 
 """
 ACCESS
