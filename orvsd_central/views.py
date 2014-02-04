@@ -363,7 +363,6 @@ def view_schools(id):
         Site.school_id == id,
         Site.sitetype == 'drupal')).all()
 
-
     if moodle_sites or drupal_sites:
         moodle_sitedetails = []
         if moodle_sites:
@@ -401,15 +400,15 @@ def view_schools(id):
 
                     drupal_sitedetails.append(site_detail)
 
-            drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
+        drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
 
-            return render_template("school.html", school=school,
+        return render_template("school.html", school=school,
                                moodle_siteinfo=moodle_siteinfo,
                                drupal_siteinfo=drupal_siteinfo,
                                user=current_user)
-        else:
-            return render_template("school_data_notfound.html", school=school,
-                                   user=current_user)
+    else:
+        return render_template("school_data_notfound.html", school=school,
+                               user=current_user)
 
 
 @app.route('/report/get_schools', methods=['POST'])
