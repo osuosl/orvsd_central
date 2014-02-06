@@ -97,7 +97,7 @@ class Util():
                                 similar_schools = db.session.query(School) \
                                     .filter(School.domain.like(
                                         "%" + broad_url + "%"
-                                    ).all()
+                                    )).all()
                             if similar_schools:
                                 dist_id = similar_schools[0].district_id
                                 for school in similar_schools:
