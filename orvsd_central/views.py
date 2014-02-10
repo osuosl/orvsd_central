@@ -680,12 +680,20 @@ def build_accordion(districts, accordion_id, type, extra=None):
     inner = ""
 
     for district in districts:
-        inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
-        inner += inner_t.render(accordion_id=accordion_id,
-                                inner_id=inner_id,
-                                type=type,
-                                link=district.name,
-                                extra=None if not extra else extra % district.id)
+        if district.schools:
+            # Make sure the schools have relevant sites
+            school_ids = [school.id for school in district.schools]
+            num_schools = db.session.query(Site).filter(
+                Site.school_id.in_(school_ids)).count()
+
+            if num_schools:
+                inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
+                inner += inner_t.render(accordion_id=accordion_id,
+                                        inner_id=inner_id,
+                                        type=type,
+                                        link=district.name,
+                                        extra=None if not extra else
+                                            extra % district.id)
 
     return outer_t.render(accordion_id=accordion_id,
                           dump=inner)
