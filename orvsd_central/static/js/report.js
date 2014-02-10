@@ -14,7 +14,9 @@ dump_schools = function(a, d) {
         var line = link + " - <b>A:</b> " + v.admincount +
                           ", <b>T</b>: " + v.teachercount +
                           ", <b>U</b>: " + v.usercount + " </li>";
+        var line = "";
         if (v.sitedata != "") {
+        line += "<li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a></li>";
             $.each(v.sitedata, function(j, l) {
                 line += "<hr>";
                 $.each(l, function(m, n) {
@@ -23,8 +25,6 @@ dump_schools = function(a, d) {
                     line += "<dd>" + m.charAt(0).toUpperCase() + m.slice(1) + ": " + n;
                 });
             });
-        }  else {
-            line += "<dd><hr>No site data available";
         }
         out.append(line);
     });
