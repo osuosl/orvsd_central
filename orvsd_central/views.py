@@ -442,11 +442,12 @@ def get_schools():
                 admincount = admincount + sd.adminusers
                 teachercount = teachercount + sd.teachers
                 usercount = usercount + sd.totalusers
-            sitedata.append({'name': site.name,
-                             'baseurl': site.baseurl,
-                             'sitetype': site.sitetype,
-                             'admin': admin})
+                sitedata.append({'name': site.name,
+                                 'baseurl': site.baseurl,
+                                 'sitetype': site.sitetype,
+                                 'admin': admin})
         usercount = usercount - admincount - teachercount
+
         school_list[school.shortname] = {'name': school.name,
                                          'id': school.id,
                                          'admincount': admincount,
@@ -693,17 +694,23 @@ def build_accordion(districts, accordion_id, type, extra=None):
         if district.schools:
             # Make sure the schools have relevant sites
             school_ids = [school.id for school in district.schools]
-            num_schools = db.session.query(Site).filter(
-                Site.school_id.in_(school_ids)).count()
+            sites = db.session.query(Site.id).filter(
+                Site.school_id.in_(school_ids)).all()
 
-            if num_schools:
-                inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
-                inner += inner_t.render(accordion_id=accordion_id,
-                                        inner_id=inner_id,
-                                        type=type,
-                                        link=district.name,
-                                        extra=None if not extra else
-                                            extra % district.id)
+            if sites:
+                # Check for sitedetails for any of the sites
+                site_ids = [site.id for site in sites]
+                num_sds = db.session.query(SiteDetail).filter(
+                    SiteDetail.site_id.in_(site_ids)).count()
+
+                if num_sds:
+                    inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
+                    inner += inner_t.render(accordion_id=accordion_id,
+                                            inner_id=inner_id,
+                                            type=type,
+                                            link=district.name,
+                                            extra=None if not extra else
+                                                extra % district.id)
 
     return outer_t.render(accordion_id=accordion_id,
                           dump=inner)
