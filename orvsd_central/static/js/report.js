@@ -10,8 +10,9 @@ dump_schools = function(a, d) {
 
     // Add to the lists
     $.each(d.schools, function(k, v) {
-        var line = "<li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a></li>";
+        var line = "";
         if (v.sitedata != "") {
+        line += "<li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a></li>";
             $.each(v.sitedata, function(j, l) {
                 $.each(l, function(m, n) {
                     if (n == undefined)
@@ -19,8 +20,6 @@ dump_schools = function(a, d) {
                     line += "<dd>" + m.charAt(0).toUpperCase() + m.slice(1) + ": " + n;
                 });
             });
-        }  else {
-            line += "<dd>No site data available";
         }
         out.append(line);
     });
