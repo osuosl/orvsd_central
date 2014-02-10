@@ -139,9 +139,9 @@ def district_details(schools):
                                                 .desc()) \
                                       .first()
             if details:
-                admin_count += details.adminusers
-                teacher_count += details.teachers
-                user_count += details.totalusers
+                admin_count += details.adminusers if details.adminusers else 0
+                teacher_count += details.teachers if details.teachers else 0
+                user_count += details.totalusers if details.totalusers else 0
 
     return {'admins': admin_count,
             'teachers': teacher_count,
