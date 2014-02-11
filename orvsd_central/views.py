@@ -443,6 +443,7 @@ def get_schools():
                 admincount = admincount + sd.adminusers
                 teachercount = teachercount + sd.teachers
                 usercount = usercount + sd.totalusers
+
                 sitedata.append({'name': site.name,
                                  'baseurl': site.baseurl,
                                  'sitetype': site.sitetype,
