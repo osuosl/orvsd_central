@@ -18,6 +18,7 @@ import celery
 from bs4 import BeautifulSoup as Soup
 import os
 from celery.utils.encoding import safe_repr, safe_str
+from collections import defaultdict
 import json
 import re
 import subprocess
@@ -463,6 +464,16 @@ def report():
     site_count = Site.query.count()
     course_count = Course.query.count()
 
+    stats = defaultdict(int)
+    fields = ['adminusers', 'teachers', 'totalusers', 'activeusers']
+    for district in all_districts:
+        temp = get_count(fields, district, {})
+        for field in fields:
+            stats[field] += temp.get(field, 0)
+
+    for stat in stats:
+        print stat + ": " + str(stats[stat])
+
     accord_id = "dist_accord"
     dist_id = "distid=%s"
 
@@ -474,6 +485,7 @@ def report():
                            school_count=school_count,
                            site_count=site_count,
                            course_count=course_count,
+                           stats=stats,
                            user=current_user)
 
 
@@ -766,6 +778,44 @@ def district_details(schools):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+
+# Must send in an object! No 'districts', 'courses', etc.
+def get_count(fields, base_obj, data):
+    association_objs, obj_present = get_association_obj(base_obj)
+    if association_objs:
+        if hasattr(association_objs, '__iter__'):
+            if len(association_objs) > 1:
+                for obj in association_objs:
+                    get_count(fields, obj, data)
+            else:
+                get_count(fields, association_objs[0], data)
+        else:
+            get_count(fields, association_objs, data)
+    elif not obj_present: # Base Case, it means we can't go any deeper.
+        serialized = base_obj.serialize()
+        for field in fields:
+            if serialized.get(field) is not None:
+                if not data.get(field):
+                    data[field] = 0
+                data[field] += int(serialized.get(field))
+    return data
+
+# This is just a tree that specifies how to traverse.
+# Input:  Object instance, that is a subclass of Model
+# Output: 1. Next object in the association graph
+#         2. Continue looking for associations?
+def get_association_obj(obj):
+    if isinstance(obj, District):
+        return (obj.schools, True)
+    elif isinstance(obj, School):
+        return (obj.sites, True)
+    elif isinstance(obj, Site):
+        details = sorted(obj.site_details, key=lambda x:
+                             x.timemodified)
+        if details:
+            return (details[-1], False)
+    return (None, False)
 
 #ORVSD Central API
 
