@@ -57,8 +57,10 @@ def page_not_found(e):
     return render_template('404.html', user=current_user), 404
 
 
+from orvsd_central.controllers import api
 from orvsd_central.controllers import general
 from orvsd_central.controllers import report
 
+app.register_blueprint(api.mod)
 app.register_blueprint(general.mod)
 app.register_blueprint(report.mod)

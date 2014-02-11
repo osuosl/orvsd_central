@@ -33,12 +33,6 @@ INSTALL
 """
 
 
-@app.route('/get_site_by/<int:site_id>', methods=['GET'])
-def site_by_id(site_id):
-    name = Site.query.filter_by(id=site_id).first().name
-    return jsonify(name=name)
-
-
 @app.route('/install/course', methods=['GET', 'POST'])
 @requires_role('helpdesk')
 @login_required
