@@ -1,8 +1,8 @@
 dump_schools = function(a, d) {
     // Find the count details and update them
-    a.find(".admins").html("Admins: " + d.counts.admins);
-    a.find(".users").html("Users: " + d.counts.users);
-    a.find(".teachers").html("Teachers: " + d.counts.teachers);
+    a.find(".admins").html("(A)dmins: " + d.counts.admins);
+    a.find(".users").html("(U)sers: " + d.counts.users);
+    a.find(".teachers").html("(T)eachers: " + d.counts.teachers);
 
     // Clear the list
     var out = a.find(".accordion-inner dl");
@@ -10,9 +10,13 @@ dump_schools = function(a, d) {
 
     // Add to the lists
     $.each(d.schools, function(k, v) {
-        var line = "<li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a></li>";
+        var link = "<hr><li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a>";
+        var line = link + " - <b>A:</b> " + v.admincount +
+                          ", <b>T</b>: " + v.teachercount +
+                          ", <b>U</b>: " + v.usercount + " </li>";
         if (v.sitedata != "") {
             $.each(v.sitedata, function(j, l) {
+                line += "<hr>";
                 $.each(l, function(m, n) {
                     if (n == undefined)
                         n = "Not available";
@@ -20,7 +24,7 @@ dump_schools = function(a, d) {
                 });
             });
         }  else {
-            line += "<dd>No site data available";
+            line += "<dd><hr>No site data available";
         }
         out.append(line);
     });
