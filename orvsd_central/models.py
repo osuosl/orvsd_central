@@ -188,6 +188,7 @@ class Site(db.Model):
     location = db.Column(db.String(255))
     api_key = db.Column(db.String(40))
 
+    schools = db.relationship("School", backref="sites")
     site_details = db.relationship("SiteDetail", backref=db.backref('sites'))
     courses = db.relationship("Course",
                               secondary='sites_courses',
