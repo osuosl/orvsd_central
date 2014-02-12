@@ -31,7 +31,15 @@ def get_course_list():
     return jsonify(courses=serialized_courses)
 
 
-@app.route('/report/get_schools', methods=['POST'])
+@mod.route("/1/sites/<baseurl>/moodle")
+def get_moodle_sites(baseurl):
+    school_id = Site.query.filter_by(baseurl=baseurl).first().school_id
+    moodle_sites = Site.query.filter_by(school_id=school_id).all()
+    data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
+    return jsonify(content=data)
+
+
+@mod.route('/report/get_schools', methods=['POST'])
 def get_schools():
     # From the POST, we need the district id, or distid
     dist_id = request.form.get('distid')
