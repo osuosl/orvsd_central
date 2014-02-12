@@ -84,6 +84,15 @@ def get_course_list():
     return jsonify(courses=serialized_courses)
 
 
+@mod.route("/<category>/keys")
+def get_keys(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        cols = dict((column.name, '') for column in
+                    obj.__table__.columns)
+        return jsonify(cols)
+
+
 @mod.route("/1/sites/<baseurl>/moodle")
 def get_moodle_sites(baseurl):
     school_id = Site.query.filter_by(baseurl=baseurl).first().school_id

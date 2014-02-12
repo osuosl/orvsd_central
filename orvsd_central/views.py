@@ -309,16 +309,6 @@ def delete_object(category, id):
     abort(404)
 
 
-@app.route("/<category>/keys")
-def get_keys(category):
-    obj = get_obj_by_category(category)
-    if obj:
-        cols = dict((column.name, '') for column in
-                    obj.__table__.columns)
-        return jsonify(cols)
-
-
-
 """
 MIGRATE
 """
