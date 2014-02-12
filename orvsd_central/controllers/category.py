@@ -14,7 +14,7 @@ Course
 """
 
 
-@mod.route('/install/course', methods=['GET', 'POST'])
+@mod.route('/course/install', methods=['GET', 'POST'])
 @requires_role('helpdesk')
 @login_required
 def install_course():
