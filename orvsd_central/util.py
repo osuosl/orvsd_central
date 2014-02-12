@@ -2,17 +2,18 @@
 Utility class containing useful methods not tied to specific models or views
 """
 import datetime
-from datetime import datetime, date, time, timedelta
-from functools import wraps
 import json
 import re
+from datetime import datetime, date, time, timedelta
+from functools import wraps
 
+import requests
 from flask import flash, session
 from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from oursql import connect, DictCursor
 
-from orvsd_central import app, constants, db, login_manager
+from orvsd_central import app, constants, celery, db, login_manager
 from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
 
@@ -217,6 +218,16 @@ def gather_siteinfo():
                 db.session.commit()
 
 
+def get_course_folders():
+    base_path = "/data/moodle2-masters/"
+    folders = ['None']
+    for root, sub_folders, files in os.walk(base_path):
+        for folder in sub_folders:
+            if folder not in folders:
+                folders.append(folder)
+    return folders
+
+
 def get_obj_by_category(category):
     # Checking for case insensitive categories
     categories = {'districts': District, 'schools': School,
@@ -232,6 +243,31 @@ def get_obj_identifier(category):
                   'coursedetails': 'filename', 'sitedetails': 'site_id'}
 
     return categories.get(category.lower())
+
+
+@celery.task(name='tasks.install_course')
+def install_course_to_site(course, site):
+    # To get the file path we need the text input, the lowercase of
+    # source, and the filename
+    fp = app.config['INSTALL_COURSE_FILE_PATH']
+    fp += 'flvs/'
+
+    data = {'filepath': fp,
+            'file': course.filename,
+            'courseid': course.course_id,
+            'coursename': course.course.name,
+            'shortname': course.course.shortname,
+            'category': '1',
+            'firstname': 'orvsd',
+            'lastname': 'central',
+            'city': 'none',
+            'username': 'admin',
+            'email': 'a@a.aa',
+            'pass': 'adminpass'}
+
+    resp = requests.post(site, data=data)
+
+    return "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
 
 
 @login_manager.user_loader
