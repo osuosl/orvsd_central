@@ -103,6 +103,15 @@ def get_site_by_url(baseurl):
     return jsonify(content={'error': 'Site not found'})
 
 
+@mod.route('/celery/status/<celery_id>')
+def get_task_status(celery_id):
+    status = db.session.query("status")\
+                       .from_statement("SELECT status FROM celery_taskmeta"
+                                       " WHERE id=:celery_id")\
+                       .params(celery_id=celery_id).first()
+    return jsonify(status=status)
+
+
 @mod.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
     name = Site.query.filter_by(id=site_id).first().name

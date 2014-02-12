@@ -439,15 +439,6 @@ def get_user():
 
 
 
-@app.route('/celery/status/<celery_id>')
-def get_task_status(celery_id):
-    status = db.session.query("status")\
-                       .from_statement("SELECT status FROM celery_taskmeta"
-                                       " WHERE id=:celery_id")\
-                       .params(celery_id=celery_id).first()
-    return jsonify(status=status)
-
-
 # Get all task IDs
 # TODO: Needs testing
 @app.route('/celery/id/all')
