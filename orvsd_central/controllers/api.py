@@ -1,10 +1,32 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, abort, jsonify, request
 
 from orvsd_central import db
 from orvsd_central.models import Course, CourseDetail, School, Site, SiteDetail
-from orvsd_central.util import district_details
+from orvsd_central.util import (district_details, get_obj_by_category,
+                                string_to_type)
 
 mod = Blueprint('api', __name__)
+
+
+@mod.route("/<category>/object/add", methods=["POST"])
+def add_object(category):
+    obj = get_obj_by_category(category)
+    if obj:
+        inputs = {}
+        # Here we update our dict with new values
+        # A one liner is too messy :(
+        for column in obj.__table__.columns:
+            if column.name is not 'id':
+                inputs.update({column.name: string_to_type(
+                               request.form.get(column.name))})
+
+        new_obj = obj(**inputs)
+        db.session.add(new_obj)
+        db.session.commit()
+        return jsonify({'id': new_obj.id,
+                        'message': "Object added successfully!"})
+
+    abort(404)
 
 
 # Get all task IDs

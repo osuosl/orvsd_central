@@ -276,26 +276,6 @@ def update(category):
     abort(404)
 
 
-@app.route("/<category>/object/add", methods=["POST"])
-def add_object(category):
-    obj = get_obj_by_category(category)
-    if obj:
-        inputs = {}
-        # Here we update our dict with new values
-        # A one liner is too messy :(
-        for column in obj.__table__.columns:
-            if column.name is not 'id':
-                inputs.update({column.name: string_to_type(
-                               request.form.get(column.name))})
-
-        new_obj = obj(**inputs)
-        db.session.add(new_obj)
-        db.session.commit()
-        return jsonify({'id': new_obj.id,
-                        'message': "Object added successfully!"})
-
-    abort(404)
-
 
 @app.route("/<category>/<id>", methods=["GET"])
 def get_object(category, id):
@@ -349,22 +329,6 @@ def get_keys(category):
                     obj.__table__.columns)
         return jsonify(cols)
 
-
-def string_to_type(string):
-    # Have to watch out for the format of true/false/null
-    # with javascript strings.
-    if string == "true":
-        return True
-    elif string == "false":
-        return False
-    elif string == "null":
-        return None
-    try:
-        return float(string)
-    except ValueError:
-        if string.isdigit():
-            return int(string)
-    return string
 
 
 """

@@ -239,6 +239,23 @@ def load_user(userid):
     return User.query.filter_by(id=userid).first()
 
 
+def string_to_type(string):
+    # Have to watch out for the format of true/false/null
+    # with javascript strings.
+    if string == "true":
+        return True
+    elif string == "false":
+        return False
+    elif string == "null":
+        return None
+    try:
+        return float(string)
+    except ValueError:
+        if string.isdigit():
+            return int(string)
+    return string
+
+
 # Decorator for defining access to certain actions.
 # 1 - General User (Implicit with login_required)
 # 2 - Help Desk
