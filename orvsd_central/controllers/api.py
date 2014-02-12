@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from orvsd_central import db
-from orvsd_central.models import Course, CourseDetail, Site
+from orvsd_central.models import Course, CourseDetail, School, Site, SiteDetail
+from orvsd_central.util import district_details
 
 mod = Blueprint('api', __name__)
 
@@ -28,6 +29,53 @@ def get_course_list():
                            'name': course.course.name}
                           for course in courses]
     return jsonify(courses=serialized_courses)
+
+
+@app.route('/report/get_schools', methods=['POST'])
+def get_schools():
+    # From the POST, we need the district id, or distid
+    dist_id = request.form.get('distid')
+
+    # Given the distid, we get all the schools
+    if dist_id:
+        schools = School.query.filter_by(district_id=dist_id) \
+                              .order_by("name").all()
+    else:
+        schools = School.query.order_by("name").all()
+
+    # the dict to be jsonify'd
+    school_list = {}
+
+    for school in schools:
+        sitedata = []
+        sites = Site.query.filter(Site.school_id == school.id).all()
+        admincount = 0
+        teachercount = 0
+        usercount = 0
+        for site in sites:
+            admin = None
+            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
+                                 .order_by(SiteDetail.timemodified.desc())\
+                                 .first()
+            if sd:
+                admin = sd.adminemail
+                admincount = admincount + sd.adminusers
+                teachercount = teachercount + sd.teachers
+                usercount = usercount + sd.totalusers
+            sitedata.append({'name': site.name,
+                             'baseurl': site.baseurl,
+                             'sitetype': site.sitetype,
+                             'admin': admin})
+        usercount = usercount - admincount - teachercount
+        school_list[school.shortname] = {'name': school.name,
+                                         'id': school.id,
+                                         'admincount': admincount,
+                                         'teachercount': teachercount,
+                                         'usercount': usercount,
+                                         'sitedata': sitedata}
+
+    # Returned the jsonify'd data of counts and schools for jvascript to parse
+    return jsonify(schools=school_list, counts=district_details(schools))
 
 
 @mod.route('/get_site_by/<int:site_id>', methods=['GET'])

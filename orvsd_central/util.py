@@ -35,6 +35,41 @@ def build_accordion(objects, accordion_id, type, extra=None):
                           dump=inner)
 
 
+def district_details(schools):
+    """
+    district_details adds up the number of teachers, users, and admins of all
+    the district's school's sites.
+
+    Args:
+        schools (list): list of schools to total the users, teachers, and
+         admins.
+
+    Returns:
+        dict. The total admins, teachers, and users of the schools
+    """
+
+    admin_count = 0
+    teacher_count = 0
+    user_count = 0
+
+    for school in schools:
+        sites = Site.query.filter_by(school_id=school.id).all()
+        for site in sites:
+            details = SiteDetail.query.filter_by(site_id=site.id) \
+                                      .order_by(SiteDetail
+                                                .timemodified
+                                                .desc()) \
+                                      .first()
+            if details:
+                admin_count += details.adminusers
+                teacher_count += details.teachers
+                user_count += details.totalusers
+
+    return {'admins': admin_count,
+            'teachers': teacher_count,
+            'users': user_count}
+
+
 def gather_siteinfo():
     user = app.config['SITEINFO_DATABASE_USER']
     password = app.config['SITEINFO_DATABASE_PASS']
@@ -197,6 +232,7 @@ def get_obj_identifier(category):
                   'coursedetails': 'filename', 'sitedetails': 'site_id'}
 
     return categories.get(category.lower())
+
 
 @login_manager.user_loader
 def load_user(userid):

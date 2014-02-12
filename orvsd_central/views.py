@@ -251,53 +251,6 @@ def view_schools(id):
                                user=current_user)
 
 
-@app.route('/report/get_schools', methods=['POST'])
-def get_schools():
-    # From the POST, we need the district id, or distid
-    dist_id = request.form.get('distid')
-
-    # Given the distid, we get all the schools
-    if dist_id:
-        schools = School.query.filter_by(district_id=dist_id) \
-                              .order_by("name").all()
-    else:
-        schools = School.query.order_by("name").all()
-
-    # the dict to be jsonify'd
-    school_list = {}
-
-    for school in schools:
-        sitedata = []
-        sites = Site.query.filter(Site.school_id == school.id).all()
-        admincount = 0
-        teachercount = 0
-        usercount = 0
-        for site in sites:
-            admin = None
-            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
-                                 .order_by(SiteDetail.timemodified.desc())\
-                                 .first()
-            if sd:
-                admin = sd.adminemail
-                admincount = admincount + sd.adminusers
-                teachercount = teachercount + sd.teachers
-                usercount = usercount + sd.totalusers
-            sitedata.append({'name': site.name,
-                             'baseurl': site.baseurl,
-                             'sitetype': site.sitetype,
-                             'admin': admin})
-        usercount = usercount - admincount - teachercount
-        school_list[school.shortname] = {'name': school.name,
-                                         'id': school.id,
-                                         'admincount': admincount,
-                                         'teachercount': teachercount,
-                                         'usercount': usercount,
-                                         'sitedata': sitedata}
-
-    # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return jsonify(schools=school_list, counts=district_details(schools))
-
-
 """
 UPDATE
 """
@@ -481,40 +434,6 @@ def get_user():
     if 'user_id' in session:
             return User.query.filter_by(id=session["user_id"]).first()
 
-
-def district_details(schools):
-    """
-    district_details adds up the number of teachers, users, and admins of all
-    the district's school's sites.
-
-    Args:
-        schools (list): list of schools to total the users, teachers, and
-         admins.
-
-    Returns:
-        dict. The total admins, teachers, and users of the schools
-    """
-
-    admin_count = 0
-    teacher_count = 0
-    user_count = 0
-
-    for school in schools:
-        sites = Site.query.filter_by(school_id=school.id).all()
-        for site in sites:
-            details = SiteDetail.query.filter_by(site_id=site.id) \
-                                      .order_by(SiteDetail
-                                                .timemodified
-                                                .desc()) \
-                                      .first()
-            if details:
-                admin_count += details.adminusers
-                teacher_count += details.teachers
-                user_count += details.totalusers
-
-    return {'admins': admin_count,
-            'teachers': teacher_count,
-            'users': user_count}
 
 #ORVSD Central API
 
