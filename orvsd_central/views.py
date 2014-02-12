@@ -276,18 +276,6 @@ def update(category):
     abort(404)
 
 
-
-@app.route("/<category>/<id>", methods=["GET"])
-def get_object(category, id):
-    obj = get_obj_by_category(category)
-    if obj:
-        modified_obj = obj.query.filter_by(id=id).first()
-        if modified_obj:
-            return jsonify(modified_obj.serialize())
-
-    abort(404)
-
-
 @app.route("/<category>/<id>/update", methods=["POST"])
 def update_object(category, id):
     obj = get_obj_by_category(category)
