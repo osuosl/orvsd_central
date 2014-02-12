@@ -438,21 +438,6 @@ def get_user():
 #ORVSD Central API
 
 
-
-# Get all task IDs
-# TODO: Needs testing
-@app.route('/celery/id/all')
-def get_all_ids():
-    # TODO: "result" is another column, but SQLAlchemy
-    # complains of some encoding error.
-    statuses = db.session.query("id", "task_id", "status",
-                                "date_done", "traceback")\
-                         .from_statement("SELECT * FROM celery_taskmeta")\
-                         .all()
-
-    return jsonify(status=statuses)
-
-
 @app.route("/courses/update", methods=['GET', 'POST'])
 @requires_role('helpdesk')
 @login_required

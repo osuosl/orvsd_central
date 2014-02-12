@@ -7,6 +7,20 @@ from orvsd_central.util import district_details
 mod = Blueprint('api', __name__)
 
 
+# Get all task IDs
+# TODO: Needs testing
+@mod.route('/celery/id/all')
+def get_all_ids():
+    # TODO: "result" is another column, but SQLAlchemy
+    # complains of some encoding error.
+    statuses = db.session.query("id", "task_id", "status",
+                                "date_done", "traceback")\
+                         .from_statement("SELECT * FROM celery_taskmeta")\
+                         .all()
+
+    return jsonify(status=statuses)
+
+
 @mod.route("/courses/filter", methods=["POST"])
 def get_course_list():
     dir = request.form.get('filter')
