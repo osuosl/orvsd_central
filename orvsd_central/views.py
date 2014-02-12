@@ -438,23 +438,6 @@ def get_user():
 #ORVSD Central API
 
 
-@app.route("/1/sites/<baseurl>")
-def get_site_by_url(baseurl):
-    site = Site.query.filter_by(baseurl=baseurl).first()
-    if site:
-        site_details = SiteDetail.query.filter_by(site_id=site.id) \
-                                       .order_by(SiteDetail
-                                                 .timemodified
-                                                 .desc()) \
-                                       .first()
-
-        site_info = dict(site.serialize().items() +
-                         site_details.serialize().items())
-
-        return jsonify(content=site_info)
-    return jsonify(content={'error': 'Site not found'})
-
-
 @app.route("/1/sites/<baseurl>/moodle")
 def get_moodle_sites(baseurl):
     school_id = Site.query.filter_by(baseurl=baseurl).first().school_id

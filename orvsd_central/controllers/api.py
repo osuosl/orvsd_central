@@ -78,6 +78,23 @@ def get_schools():
     return jsonify(schools=school_list, counts=district_details(schools))
 
 
+@mod.route("/1/sites/<baseurl>")
+def get_site_by_url(baseurl):
+    site = Site.query.filter_by(baseurl=baseurl).first()
+    if site:
+        site_details = SiteDetail.query.filter_by(site_id=site.id) \
+                                       .order_by(SiteDetail
+                                                 .timemodified
+                                                 .desc()) \
+                                       .first()
+
+        site_info = dict(site.serialize().items() +
+                         site_details.serialize().items())
+
+        return jsonify(content=site_info)
+    return jsonify(content={'error': 'Site not found'})
+
+
 @mod.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
     name = Site.query.filter_by(id=site_id).first().name
