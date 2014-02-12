@@ -21,6 +21,23 @@ def get_all_ids():
     return jsonify(status=statuses)
 
 
+@mod.route("/1/site/<site_id>/courses")
+def get_courses_by_site(site_id):
+    #SiteDetails hold the course information we are looking for
+    site_details = SiteDetail.query.filter_by(site_id=site_id) \
+                                   .order_by(SiteDetail
+                                             .timemodified
+                                             .desc()) \
+                                   .first()
+
+    if site_details and site_details.courses:
+        return jsonify(content=json.loads(site_details.courses))
+    elif not site_details:
+        return jsonify({'error:': 'Site not found.'})
+    else:
+        return jsonify({'error:': 'No courses found.'})
+
+
 @mod.route("/courses/filter", methods=["POST"])
 def get_course_list():
     dir = request.form.get('filter')
