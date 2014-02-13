@@ -29,60 +29,8 @@ from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
 
 
 """
-REMOVE
-"""
-
-
-@app.route("/display/<category>")
-@login_required
-def remove(category):
-    user = get_user()
-    obj = get_obj_by_category(category)
-    if obj:
-        objects = obj.query.all()
-        if objects:
-            # fancy way to get the properties of an object
-            properties = objects[0].get_properties()
-            return render_template('removal.html', category=category,
-                                   objects=objects, properties=properties,
-                                   user=user)
-
-    abort(404)
-
-
-@app.route("/remove/<category>", methods=['POST'])
-@login_required
-def remove_objects(category):
-    obj = get_obj_by_category(category)
-    remove_ids = request.form.getlist('remove')
-    for remove_id in remove_ids:
-        # obj.query returns a list, but should only have one element because
-        # ids are unique.
-        remove = obj.query.filter_by(id=remove_id)[0]
-        db.session.delete(remove)
-
-    db.session.commit()
-
-    return redirect('display/' + category)
-
-
-"""
 HELPERS
 """
-
-
-
-def get_user():
-    # A user id is sent in, to check against the session
-    # and based on the result of querying that id we
-    # return a user (whether it be a sqlachemy obj or an
-    # obj named guest
-
-    if 'user_id' in session:
-            return User.query.filter_by(id=session["user_id"]).first()
-
-
-#ORVSD Central API
 
 
 @app.route("/courses/update", methods=['GET', 'POST'])
