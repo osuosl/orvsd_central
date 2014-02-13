@@ -6,10 +6,35 @@ from flask.ext.login import current_user, login_required
 from orvsd_central import db
 from orvsd_central.forms import InstallCourse
 from orvsd_central.models import CourseDetail, School, Site, SiteDetail
-from orvsd_central.util import get_course_folders, requires_role
+from orvsd_central.util import (get_course_folders, get_obj_identifier,
+                                requires_role)
 
 mod = Blueprint('category', __name__)
 
+
+"""
+All
+"""
+
+
+@mod.route("/<category>/update")
+@requires_role('helpdesk')
+@login_required
+def update(category):
+    obj = get_obj_by_category(category)
+    identifier = get_obj_identifier(category)
+    if obj:
+        if 'details' in category:
+            category = category.split("details")[0] + " Details"
+        category = category[0].upper() + category[1:]
+
+        objects = obj.query.order_by(identifier).all()
+        if objects:
+            return render_template("update.html", objects=objects,
+                                   identifier=identifier, category=category,
+                                   user=current_user)
+
+    abort(404)
 
 """
 Course

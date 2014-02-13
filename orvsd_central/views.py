@@ -28,31 +28,6 @@ from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
                                 requires_role)
 
 
-"""
-UPDATE
-"""
-
-
-@app.route("/<category>/update")
-@requires_role('helpdesk')
-@login_required
-def update(category):
-    obj = get_obj_by_category(category)
-    identifier = get_obj_identifier(category)
-    if obj:
-        if 'details' in category:
-            category = category.split("details")[0] + " Details"
-        category = category[0].upper() + category[1:]
-
-        objects = obj.query.order_by(identifier).all()
-        if objects:
-            return render_template("update.html", objects=objects,
-                                   identifier=identifier, category=category,
-                                   user=current_user)
-
-    abort(404)
-
-
 @app.route("/<category>/<id>/update", methods=["POST"])
 def update_object(category, id):
     obj = get_obj_by_category(category)
