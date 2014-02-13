@@ -28,19 +28,6 @@ from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
                                 requires_role)
 
 
-@app.route("/<category>/<id>/delete", methods=["POST"])
-def delete_object(category, id):
-    obj = get_obj_by_category(category)
-    if obj:
-        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
-        if modified_obj:
-            db.session.delete(modified_obj)
-            db.session.commit()
-            return "Object deleted successful!"
-
-    abort(404)
-
-
 """
 MIGRATE
 """
