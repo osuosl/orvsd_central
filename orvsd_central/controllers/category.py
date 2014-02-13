@@ -5,7 +5,8 @@ from flask.ext.login import current_user, login_required
 
 from orvsd_central import db
 from orvsd_central.forms import InstallCourse
-from orvsd_central.models import CourseDetail, School, Site, SiteDetail
+from orvsd_central.models import (CourseDetail, District, School, Site,
+                                  SiteDetail)
 from orvsd_central.util import (get_course_folders, get_obj_by_category,
                                 get_obj_identifier, requires_role)
 
@@ -187,6 +188,16 @@ def install_course():
 """
 School
 """
+
+
+@mod.route("/schools/migrate")
+def migrate_schools():
+    districts = District.query.all()
+    # Unknown district is id = 0
+    schools = School.query.filter_by(district_id=0).all()
+
+    return render_template("migrate.html", districts=districts,
+                           schools=schools, user=current_user)
 
 
 @mod.route("/schools/<id>/view")

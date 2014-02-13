@@ -29,20 +29,6 @@ from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
 
 
 """
-MIGRATE
-"""
-
-
-@app.route("/schools/migrate")
-def migrate_schools():
-    districts = District.query.all()
-    # Unknown district is id = 0
-    schools = School.query.filter_by(district_id=0).all()
-
-    return render_template("migrate.html", districts=districts,
-                           schools=schools, user=current_user)
-
-"""
 REMOVE
 """
 
