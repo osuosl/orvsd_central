@@ -1,8 +1,10 @@
 """
 Utility class containing useful methods not tied to specific models or views
 """
+from bs4 import BeautifulSoup as Soup
 import datetime
 import json
+import os
 import re
 from datetime import datetime, date, time, timedelta
 from functools import wraps
@@ -34,6 +36,59 @@ def build_accordion(objects, accordion_id, type, extra=None):
 
     return outer_t.render(accordion_id=accordion_id,
                           dump=inner)
+
+
+def create_course_from_moodle_backup(base_path, source, file_path):
+    # Needed to delete extracted xml once operation is done
+    project_folder = "/home/vagrant/orvsd_central/"
+
+    # Unzip the file to get the manifest (All course backups are zip files)
+    zip = zipfile.ZipFile(base_path+source+file_path)
+    xmlfile = file(zip.extract("moodle_backup.xml"), "r")
+    xml = Soup(xmlfile.read(), "xml")
+    info = xml.moodle_backup.information
+
+    old_course = Course.query.filter_by(
+        name=info.original_course_fullname.string) or \
+        Course.query.filter_by(
+            name=info.original_course_shortname.string)
+
+    if old_course is not None:
+        # Create a course since one is unable to be found with that name.
+        new_course = Course(serial=1000 + len(Course.query.all()),
+                            source=source.replace('/', ''),
+                            name=info.original_course_fullname.string,
+                            shortname=info.original_course_shortname.string)
+        db.session.add(new_course)
+
+        # Until the session is committed, the new_course does not yet have
+        # an id.
+        db.session.commit()
+
+        course_id = new_course.id
+    else:
+        course_id = old_course.id
+
+    _version_re = re.findall(r'_v(\d)_', file_path)
+
+    # Regex will only be a list if it has a value in it
+    version = _version_re[0] if list(_version_re) else None
+
+    new_course_detail = CourseDetail(course_id=course_id,
+                                     filename=file_path,
+                                     version=version,
+                                     updated=datetime.datetime.now(),
+                                     active=True,
+                                     moodle_version=info.moodle_release.string,
+                                     moodle_course_id=info
+                                                     .original_course_id
+                                                     .string)
+
+    db.session.add(new_course_detail)
+    db.session.commit()
+
+    #Get rid of moodle_backup.xml
+    os.remove(project_folder+"moodle_backup.xml")
 
 
 def district_details(schools):
@@ -243,6 +298,12 @@ def get_obj_identifier(category):
                   'coursedetails': 'filename', 'sitedetails': 'site_id'}
 
     return categories.get(category.lower())
+
+
+# /base_path/source/path is the format of the parsed directories.
+def get_path_and_source(base_path, file_path):
+    path = file_path.strip(base_path).partition('/')
+    return path[0]+'/', path[2]
 
 
 @celery.task(name='tasks.install_course')

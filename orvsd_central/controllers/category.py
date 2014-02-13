@@ -1,14 +1,17 @@
 import json
+import os
 
-from flask import Blueprint, current_app, render_template, request
+from flask import Blueprint, current_app, flash, render_template, request
 from flask.ext.login import current_user, login_required
 
 from orvsd_central import db
 from orvsd_central.forms import InstallCourse
 from orvsd_central.models import (CourseDetail, District, School, Site,
                                   SiteDetail)
-from orvsd_central.util import (get_course_folders, get_obj_by_category,
-                                get_obj_identifier, requires_role)
+from orvsd_central.util import (create_course_from_moodle_backup,
+                                get_course_folders, get_path_and_source,
+                                get_obj_by_category, get_obj_identifier,
+                                requires_role)
 
 mod = Blueprint('category', __name__)
 
@@ -183,6 +186,52 @@ def install_course():
         return render_template('install_course_output.html',
                                output=output,
                                user=current_user)
+
+
+@mod.route("/courses/update", methods=['GET', 'POST'])
+@requires_role('helpdesk')
+@login_required
+def update_courselist():
+    """
+        Updates the database to contain the most recent course
+        and course detail entries, based on available files.
+    """
+    num_courses = 0
+    base_path = "/data/moodle2-masters/"
+    mdl_files = []
+    if request.method == "POST":
+        # Get a list of all moodle course files
+        # for source in os.listdir(base_path):
+        for root, sub_folders, files in os.walk(base_path):
+            for file in files:
+                full_file_path = os.path.join(root, file)
+                if os.path.isfile(full_file_path):
+                    mdl_files.append(full_file_path)
+
+        filenames = []
+        sources = []
+        for filename in mdl_files:
+            source, path = get_path_and_source(base_path, filename)
+            sources.append(source)
+            filenames.append(path)
+
+        details = db.session.query(CourseDetail) \
+            .join(CourseDetail.course) \
+            .filter(CourseDetail.filename.in_(
+                    filenames)).all()
+
+        for detail in details:
+            if detail.filename in filenames:
+                sources.pop(filenames.index(detail.filename))
+                filenames.pop(filenames.index(detail.filename))
+
+        for source, file_path in zip(sources, filenames):
+            create_course_from_moodle_backup(base_path, source, file_path)
+            num_courses += 1
+
+        if num_courses > 0:
+            flash(str(num_courses) + ' new courses added successfully!')
+    return render_template('update_courses.html', user=current_user)
 
 
 """
