@@ -28,26 +28,6 @@ from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
                                 requires_role)
 
 
-@app.route("/<category>/<id>/update", methods=["POST"])
-def update_object(category, id):
-    obj = get_obj_by_category(category)
-    if obj:
-        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
-        if modified_obj:
-            inputs = {}
-            # Here we update our dict with new
-            [inputs.update({key: string_to_type(request.form.get(key))})
-             for key in modified_obj.serialize().keys()]
-
-            db.session.query(obj).filter_by(id=request.form.get("id"))\
-                                 .update(inputs)
-            db.session.commit()
-
-            return "Object updated sucessfully!"
-
-    abort(404)
-
-
 @app.route("/<category>/<id>/delete", methods=["POST"])
 def delete_object(category, id):
     obj = get_obj_by_category(category)

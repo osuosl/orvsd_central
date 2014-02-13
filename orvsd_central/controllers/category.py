@@ -6,8 +6,8 @@ from flask.ext.login import current_user, login_required
 from orvsd_central import db
 from orvsd_central.forms import InstallCourse
 from orvsd_central.models import CourseDetail, School, Site, SiteDetail
-from orvsd_central.util import (get_course_folders, get_obj_identifier,
-                                requires_role)
+from orvsd_central.util import (get_course_folders, get_obj_by_category,
+                                get_obj_identifier, requires_role)
 
 mod = Blueprint('category', __name__)
 
@@ -35,6 +35,27 @@ def update(category):
                                    user=current_user)
 
     abort(404)
+
+
+@mod.route("/<category>/<id>/update", methods=["POST"])
+def update_object(category, id):
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            inputs = {}
+            # Here we update our dict with new
+            [inputs.update({key: string_to_type(request.form.get(key))})
+             for key in modified_obj.serialize().keys()]
+
+            db.session.query(obj).filter_by(id=request.form.get("id"))\
+                                 .update(inputs)
+            db.session.commit()
+
+            return "Object updated sucessfully!"
+
+    abort(404)
+
 
 """
 Course
