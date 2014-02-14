@@ -45,7 +45,6 @@ google = oauth.remote_app(
 
 
 import models
-import views
 
 
 @app.before_request
