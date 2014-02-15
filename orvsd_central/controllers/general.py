@@ -1,4 +1,5 @@
-from flask import Blueprint, flash, render_template, redirect, session, url_for
+from flask import (Blueprint, flash, redirect, render_template, request,
+                   session, url_for)
 from flask.ext.login import (current_user, login_required,
                              login_user, logout_user)
 import requests
