@@ -3,6 +3,7 @@ import os
 
 from flask import Blueprint, current_app, flash, render_template, request
 from flask.ext.login import current_user, login_required
+from sqlalchemy import and_
 
 from orvsd_central import db
 from orvsd_central.forms import InstallCourse
