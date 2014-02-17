@@ -7,7 +7,7 @@ from orvsd_central import db, app, login_manager, google, celery
 from forms import LoginForm, AddUser, InstallCourse
 from models import (District, School, Site, SiteDetail,
                     Course, CourseDetail, User)
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, distinct
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm import eagerload
 from models import (District, School, Site, SiteDetail,
@@ -476,14 +476,22 @@ def report():
     course_count = Course.query.count()
 
     stats = defaultdict(int)
-    fields = ['adminusers', 'teachers', 'totalusers', 'activeusers']
-    for district in all_districts:
-        temp = get_count(fields, district, {})
-        for field in fields:
-            stats[field] += temp.get(field, 0)
 
-    for stat in stats:
-        print stat + ": " + str(stats[stat])
+    # Get sites we have details for.
+    sds = db.session.query(SiteDetail.site_id).distinct()
+    # Convert the single element tuple with a long, to a simple integer.
+    for sd in map(lambda x: int(x[0]), sds):
+        # Get each's most recent result.
+        info = SiteDetail.query.filter_by(site_id=sd) \
+                                      .order_by(SiteDetail
+                                                .timemodified
+                                                .desc()) \
+                                      .first()
+
+        stats['adminusers'] += info.adminusers or 0
+        stats['teachers'] += info.teachers or 0
+        stats['totalusers'] += info.totalusers or 0
+        stats['activeusers'] += info.activeusers or 0
 
     accord_id = "dist_accord"
     dist_id = "distid=%s"
