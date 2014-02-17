@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template
 from flask.ext.login import current_user, login_required
+from sqlalchemy import distinct
 
 from orvsd_central.models import Course, District, School, Site
 from orvsd_central.util import build_accordion
@@ -20,6 +21,24 @@ def index():
     site_count = Site.query.count()
     course_count = Course.query.count()
 
+    stats = defaultdict(int)
+
+    # Get sites we have details for.
+    sds = db_session.query(SiteDetail.site_id).distinct()
+    # Convert the single element tuple with a long, to a simple integer.
+    for sd in map(lambda x: int(x[0]), sds):
+        # Get each's most recent result.
+        info = SiteDetail.query.filter_by(site_id=sd) \
+                                      .order_by(SiteDetail
+                                                .timemodified
+                                                .desc()) \
+                                      .first()
+
+        stats['adminusers'] += info.adminusers or 0
+        stats['teachers'] += info.teachers or 0
+        stats['totalusers'] += info.totalusers or 0
+        stats['activeusers'] += info.activeusers or 0
+
     accord_id = "dist_accord"
     dist_id = "distid=%s"
 
@@ -31,4 +50,7 @@ def index():
                            school_count=school_count,
                            site_count=site_count,
                            course_count=course_count,
+                           stats=stats,
                            user=current_user)
+
+
