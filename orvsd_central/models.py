@@ -1,9 +1,9 @@
-from orvsd_central import db
-from flask.ext.sqlalchemy import SQLAlchemy
-from datetime import datetime, date, time, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
 import hashlib
 import time
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from orvsd_central import db
 
 sites_courses = db.Table('sites_courses',
                          db.Model.metadata,
