@@ -1,14 +1,10 @@
 from celery import Celery
 from flask import Flask, render_template, g
 from flask.ext.login import LoginManager, current_user
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.oauth import OAuth
 
 app = Flask(__name__)
 app.config.from_object('config')
-
-db = SQLAlchemy(app)
-db.init_app(app)
 
 login_manager = LoginManager()
 login_manager.setup_app(app)
@@ -44,12 +40,6 @@ google = oauth.remote_app(
     consumer_secret=app.config['GOOGLE_CLIENT_SECRET'])
 
 
-import models
-
-
-@app.before_request
-def before_request():
-    g.db = db
 
 @app.errorhandler(404)
 def page_not_found(e):
