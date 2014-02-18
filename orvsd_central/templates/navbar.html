@@ -4,13 +4,13 @@
             <li><a class="brand" style="padding-left: 40px">ORVSD Central</a></li>
             {% if user %}
             <li>
-                <a href="{{ url_for('report') }}">Report</a>
+                <a href="{{ url_for('report.index') }}">Report</a>
             </li>
             <li>
-                <a href="{{ url_for('install_course') }}">Install Course</a>
+                <a href="{{ url_for('category.install_course') }}">Install Course</a>
             </li>
             <li>
-                <a href="{{ url_for('update_courselist') }}">Update Availble Courses</a>
+                <a href="{{ url_for('category.update_courselist') }}">Update Availble Courses</a>
             </li>
             <li class="dropdown">
                 <a  class="dropdown-toggle"
@@ -71,9 +71,9 @@
         <ul class="nav pull-right">
         {% if user %}
             <li><a>Logged in as: {{user.name}}</a></li>
-            <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+            <li><a href="{{ url_for('general.logout') }}">Log Out</a></li>
         {% else %}
-            <li><a href="{{ url_for('login') }}">Log In</a></li>
+            <li><a href="{{ url_for('general.login') }}">Log In</a></li>
         {% endif %}
         </ul>
     </div>

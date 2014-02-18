@@ -9,9 +9,9 @@
         </h1>
         <p>
         {% if user.is_authenticated() %}
-            <a href="{{ url_for('report') }}">Reports</a>
+            <a href="{{ url_for('report.index') }}">Reports</a>
         {% else %}
-            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('general.login') }}">Login</a>
         {% endif %}
         <center>
         </p>

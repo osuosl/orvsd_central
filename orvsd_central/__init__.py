@@ -1,5 +1,5 @@
 from flask import Flask, render_template, g
-from flask.ext.login import LoginManager
+from flask.ext.login import LoginManager, current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.oauth import OAuth
 from celery import Celery
@@ -45,10 +45,23 @@ google = oauth.remote_app(
 
 
 import models
-import views
 
 
 @app.before_request
 def before_request():
     g.db = db
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html', user=current_user), 404
+
+
+from orvsd_central.controllers import api
+from orvsd_central.controllers import category
+from orvsd_central.controllers import general
+from orvsd_central.controllers import report
+
+app.register_blueprint(api.mod)
+app.register_blueprint(category.mod)
+app.register_blueprint(general.mod)
+app.register_blueprint(report.mod)
