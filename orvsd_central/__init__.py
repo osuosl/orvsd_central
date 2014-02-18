@@ -1,8 +1,8 @@
+from celery import Celery
 from flask import Flask, render_template, g
 from flask.ext.login import LoginManager, current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.oauth import OAuth
-from celery import Celery
 
 app = Flask(__name__)
 app.config.from_object('config')
