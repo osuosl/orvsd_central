@@ -44,6 +44,11 @@ google = oauth.remote_app(
     consumer_secret=app.config['GOOGLE_CLIENT_SECRET'])
 
 
+@app.teardown_appcontext
+def shutdown_session(exception=False):
+    db_session.remove()
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html', user=current_user), 404
@@ -58,3 +63,6 @@ app.register_blueprint(api.mod)
 app.register_blueprint(category.mod)
 app.register_blueprint(general.mod)
 app.register_blueprint(report.mod)
+
+from orvsd_central.database import db_session
+
