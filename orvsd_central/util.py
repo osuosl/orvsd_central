@@ -15,7 +15,8 @@ from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from oursql import connect, DictCursor
 
-from orvsd_central import app, constants, celery, db, login_manager
+from orvsd_central import app, constants, celery, login_manager
+from orvsd_central.database import db_session
 from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
 
@@ -59,11 +60,11 @@ def create_course_from_moodle_backup(base_path, source, file_path):
                             source=source.replace('/', ''),
                             name=info.original_course_fullname.string,
                             shortname=info.original_course_shortname.string)
-        db.session.add(new_course)
+        db_session.add(new_course)
 
         # Until the session is committed, the new_course does not yet have
         # an id.
-        db.session.commit()
+        db_session.commit()
 
         course_id = new_course.id
     else:
@@ -84,8 +85,8 @@ def create_course_from_moodle_backup(base_path, source, file_path):
                                                      .original_course_id
                                                      .string)
 
-    db.session.add(new_course_detail)
-    db.session.commit()
+    db_session.add(new_course_detail)
+    db_session.commit()
 
     #Get rid of moodle_backup.xml
     os.remove(project_folder+"moodle_backup.xml")
@@ -198,8 +199,8 @@ def gather_siteinfo():
                                     license='',
                                     state_id=None)
                     school.district_id = 0
-                    db.session.add(school)
-                    db.session.commit()
+                    db_session.add(school)
+                    db_session.commit()
 
                 # find the site
                 site = Site.query.filter_by(baseurl=school_url).first()
@@ -218,8 +219,8 @@ def gather_siteinfo():
                 site.baseurl = school_url
                 site.basepath = d['basepath']
                 site.location = location
-                db.session.add(site)
-                db.session.commit()
+                db_session.add(site)
+                db_session.commit()
 
                 # create new site_details table
                 # site_id = site.id, timemodified = now()
@@ -269,8 +270,8 @@ def gather_siteinfo():
 
                     site_details.courses = d['courses']
 
-                db.session.add(site_details)
-                db.session.commit()
+                db_session.add(site_details)
+                db_session.commit()
 
 
 def get_course_folders():
