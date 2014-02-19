@@ -1,6 +1,6 @@
 from flask import Blueprint, abort, jsonify, request
 
-from orvsd_central import db
+from orvsd_central.database import db_session
 from orvsd_central.models import Course, CourseDetail, School, Site, SiteDetail
 from orvsd_central.util import (district_details, get_obj_by_category,
                                 string_to_type)
@@ -21,8 +21,8 @@ def add_object(category):
                                request.form.get(column.name))})
 
         new_obj = obj(**inputs)
-        db.session.add(new_obj)
-        db.session.commit()
+        db_session.add(new_obj)
+        db_session.commit()
         return jsonify({'id': new_obj.id,
                         'message': "Object added successfully!"})
 
@@ -35,7 +35,7 @@ def add_object(category):
 def get_all_ids():
     # TODO: "result" is another column, but SQLAlchemy
     # complains of some encoding error.
-    statuses = db.session.query("id", "task_id", "status",
+    statuses = db_session.query("id", "task_id", "status",
                                 "date_done", "traceback")\
                          .from_statement("SELECT * FROM celery_taskmeta")\
                          .all()
@@ -67,12 +67,12 @@ def get_course_list():
     if dir == "None":
         courses = CourseDetail.query.all()
     else:
-        courses = db.session.query(CourseDetail).join(Course) \
+        courses = db_session.query(CourseDetail).join(Course) \
                     .filter(Course.source == dir).all()
 
     # This means the folder selected was not the source folder or None.
     if not courses:
-        courses = db.session.query(CourseDetail).filter(CourseDetail.filename
+        courses = db_session.query(CourseDetail).filter(CourseDetail.filename
                                                         .like("%"+dir+"%"))\
                                                 .all()
 
@@ -178,7 +178,7 @@ def get_site_by_url(baseurl):
 
 @mod.route('/celery/status/<celery_id>')
 def get_task_status(celery_id):
-    status = db.session.query("status")\
+    status = db_session.query("status")\
                        .from_statement("SELECT status FROM celery_taskmeta"
                                        " WHERE id=:celery_id")\
                        .params(celery_id=celery_id).first()
