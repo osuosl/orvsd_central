@@ -12,7 +12,7 @@ from orvsd_central.models import (CourseDetail, District, School, Site,
 from orvsd_central.util import (create_course_from_moodle_backup,
                                 get_course_folders, get_path_and_source,
                                 get_obj_by_category, get_obj_identifier,
-                                requires_role)
+                                string_to_type, requires_role)
 
 mod = Blueprint('category', __name__)
 
