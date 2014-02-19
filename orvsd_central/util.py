@@ -12,7 +12,6 @@ from functools import wraps
 import requests
 from flask import flash, session
 from flask.ext.login import current_user
-from flask.ext.sqlalchemy import SQLAlchemy
 from oursql import connect, DictCursor
 
 from orvsd_central import app, constants, celery, login_manager
