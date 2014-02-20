@@ -47,7 +47,9 @@ class User(Model):
     def __init__(self, name, email, password, role):
         self.name = name
         self.email = email
-        self.password = generate_password_hash(password)
+        self.password = generate_password_hash(passworde=password,
+                                               method='pbkdf2:sha512',
+                                               salt_length=128)
         self.role = role
 
     def check_password(self, password):
