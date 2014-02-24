@@ -5,14 +5,14 @@ from flask import Blueprint, current_app, flash, render_template, request
 from flask.ext.login import current_user, login_required
 from sqlalchemy import and_
 
-from orvsd_central import db
+from orvsd_central.database import db_session
 from orvsd_central.forms import InstallCourse
 from orvsd_central.models import (CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (create_course_from_moodle_backup,
                                 get_course_folders, get_path_and_source,
                                 get_obj_by_category, get_obj_identifier,
-                                requires_role)
+                                string_to_type, requires_role)
 
 mod = Blueprint('category', __name__)
 
@@ -28,8 +28,8 @@ def delete_object(category, id):
     if obj:
         modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
         if modified_obj:
-            db.session.delete(modified_obj)
-            db.session.commit()
+            db_session.delete(modified_obj)
+            db_session.commit()
             return "Object deleted successful!"
 
     abort(404)
@@ -66,9 +66,9 @@ def update_object(category, id):
             [inputs.update({key: string_to_type(request.form.get(key))})
              for key in modified_obj.serialize().keys()]
 
-            db.session.query(obj).filter_by(id=request.form.get("id"))\
+            db_session.query(obj).filter_by(id=request.form.get("id"))\
                                  .update(inputs)
-            db.session.commit()
+            db_session.commit()
 
             return "Object updated sucessfully!"
 
@@ -95,22 +95,22 @@ def install_course():
         form = InstallCourse()
 
         # Query all moodle 2.2 courses
-        courses = db.session.query(CourseDetail).filter(
+        courses = db_session.query(CourseDetail).filter(
             CourseDetail.moodle_version
             .like('2.5%')
             ).all()
 
         # Query all moodle sites
-        sites = db.session.query(Site).filter(
+        sites = db_session.query(Site).filter(
             Site.sitetype == 'moodle')
-        site_details = db.session.query(SiteDetail).filter(
+        site_details = db_session.query(SiteDetail).filter(
             SiteDetail.siterelease.like('2.2%'))
 
         moodle_22_sites = []
 
         # For all sites query the SiteDetail to see if it's a moodle 2.2 site
         for site in sites:
-            details = db.session.query(SiteDetail) \
+            details = db_session.query(SiteDetail) \
                                 .filter(and_(SiteDetail.site_id == site.id,
                                              SiteDetail.siterelease
                                                        .like('2.2%'))) \
@@ -216,7 +216,7 @@ def update_courselist():
             sources.append(source)
             filenames.append(path)
 
-        details = db.session.query(CourseDetail) \
+        details = db_session.query(CourseDetail) \
             .join(CourseDetail.course) \
             .filter(CourseDetail.filename.in_(
                     filenames)).all()
@@ -262,11 +262,11 @@ def view_schools(id):
     school.license = school.license or None
 
     # Keep them separated for organizational/display purposes
-    moodle_sites = db.session.query(Site).filter(and_(
+    moodle_sites = db_session.query(Site).filter(and_(
         Site.school_id == id,
         Site.sitetype == 'moodle')).all()
 
-    drupal_sites = db.session.query(Site).filter(and_(
+    drupal_sites = db_session.query(Site).filter(and_(
         Site.school_id == id,
         Site.sitetype == 'drupal')).all()
 

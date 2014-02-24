@@ -1,27 +1,27 @@
+from celery import Celery
 from flask import Flask, render_template, g
 from flask.ext.login import LoginManager, current_user
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.oauth import OAuth
-from celery import Celery
 
 app = Flask(__name__)
 app.config.from_object('config')
 
-db = SQLAlchemy(app)
-db.init_app(app)
-
 login_manager = LoginManager()
 login_manager.setup_app(app)
+
 
 def init_celery(app):
     celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
     celery.conf.update(app.config)
     TaskBase = celery.Task
+
     class ContextTask(TaskBase):
         abstract = True
+
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return TaskBase.__call__(self, *args, **kwargs)
+
     celery.Task = ContextTask
     return celery
 
@@ -44,12 +44,10 @@ google = oauth.remote_app(
     consumer_secret=app.config['GOOGLE_CLIENT_SECRET'])
 
 
-import models
+@app.teardown_appcontext
+def shutdown_session(exception=False):
+    db_session.remove()
 
-
-@app.before_request
-def before_request():
-    g.db = db
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -65,3 +63,6 @@ app.register_blueprint(api.mod)
 app.register_blueprint(category.mod)
 app.register_blueprint(general.mod)
 app.register_blueprint(report.mod)
+
+from orvsd_central.database import db_session
+
