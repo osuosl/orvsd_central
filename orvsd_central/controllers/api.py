@@ -268,6 +268,34 @@ def get_task_status(celery_id):
     return jsonify(status=status)
 
 
+@mod.route("/1/report/stats")
+def report_stats():
+    stats = defaultdict(int)
+
+    stats['districts'] = District.query.count()
+    stats['schools'] = School.query.count()
+    stats['sites'] = Site.query.count()
+    stats['courses'] = Course.query.count()
+
+    # Get sites we have details for.
+    sds = db_session.query(SiteDetail.site_id).distinct()
+    # Convert the single element tuple with a long, to a simple integer.
+    for sd in map(lambda x: int(x[0]), sds):
+        # Get each's most recent result.
+        info = SiteDetail.query.filter_by(site_id=sd) \
+                                      .order_by(SiteDetail
+                                                .timemodified
+                                                .desc()) \
+                                      .first()
+
+        stats['adminusers'] += info.adminusers or 0
+        stats['teachers'] += info.teachers or 0
+        stats['totalusers'] += info.totalusers or 0
+        stats['activeusers'] += info.activeusers or 0
+
+    return jsonify(stats)
+
+
 @mod.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
     """

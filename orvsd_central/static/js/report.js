@@ -30,6 +30,14 @@ dump_schools = function(a, d) {
 };
 
 $(function() {
+    $(window).on("load", function() {
+        $.get("/api/1/report/stats", function(resp) {
+            for (var key in resp) {
+                $("#" + key).append(resp[key]);
+            }
+        });
+    });
+
     $(".districtcollapse").on("show", function() {
         var elem = $(this);
         $.ajax({
