@@ -683,20 +683,16 @@ def build_accordion(districts, accordion_id, type, extra=None):
 
     inner = ""
 
+    sites = [int(x[0]) for x in
+                db.session.query(SiteDetail.site_id).distinct().all()]
+    school_ids = dict((int(x[0]), True) for x in db.session.query(Site.school_id).filter(
+                    Site.id.in_(sites)).distinct().all())
+
     for district in districts:
         if district.schools:
             # Make sure the schools have relevant sites
-            school_ids = [school.id for school in district.schools]
-            sites = db.session.query(Site.id).filter(
-                Site.school_id.in_(school_ids)).all()
-
-            if sites:
-                # Check for sitedetails for any of the sites
-                site_ids = [site.id for site in sites]
-                num_sds = db.session.query(SiteDetail).filter(
-                    SiteDetail.site_id.in_(site_ids)).count()
-
-                if num_sds:
+            for school in district.schools:
+                if school_ids.get(school.id):
                     inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
                     inner += inner_t.render(accordion_id=accordion_id,
                                             inner_id=inner_id,
@@ -704,10 +700,10 @@ def build_accordion(districts, accordion_id, type, extra=None):
                                             link=district.name,
                                             extra=None if not extra else
                                                 extra % district.id)
+                    break
 
     return outer_t.render(accordion_id=accordion_id,
                           dump=inner)
-
 
 def get_obj_by_category(category):
     # Checking for case insensitive categories
