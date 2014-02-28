@@ -9,6 +9,9 @@ HOW TO do Migrations:
 
 Running the server:
 
+    Start by running:
+        python manage.py initdb
+
     Currently there are two different ways to run the server (this will change very soon)
     One is with run.py:
         python run.py -i <host> -p <port>
