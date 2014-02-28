@@ -273,8 +273,7 @@ def gather_siteinfo():
                 db_session.commit()
 
 
-def get_course_folders():
-    base_path = "/data/moodle2-masters/"
+def get_course_folders(base_path):
     folders = ['None']
     for root, sub_folders, files in os.walk(base_path):
         for folder in sub_folders:

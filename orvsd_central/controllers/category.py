@@ -146,7 +146,7 @@ def install_course():
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
         form.filter.choices = [(folder, folder)
                                for folder
-                               in get_course_folders()]
+                               in get_course_folders(current_app.config['INSTALL_COURSE_FILE_PATH'])]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
