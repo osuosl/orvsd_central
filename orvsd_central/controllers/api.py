@@ -1,9 +1,12 @@
 from flask import Blueprint, abort, jsonify, request
 
 from orvsd_central.database import db_session
-from orvsd_central.models import Course, CourseDetail, School, Site, SiteDetail
+from orvsd_central.models import (District, Course, CourseDetail, School, Site,
+                                  SiteDetail)
 from orvsd_central.util import (district_details, get_obj_by_category,
                                 string_to_type)
+
+from collections import defaultdict
 
 
 mod = Blueprint('api', __name__)
