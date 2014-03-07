@@ -24,10 +24,11 @@ sites_courses = Table('sites_courses',
                                            'fk_sites_courses_course_id')),
                          Column('celery_task_id',
                                 String,
-                                 ForeignKey('celery_taskmeta.task_id',
+                                ForeignKey('celery_taskmeta.task_id',
                                            use_alter=True,
                                            name=
-                                           'fk_sites_courses_celery_task_id')))
+                                           'fk_sites_courses_celery_task_id')),
+                         Column('students', Integer))
 
 
 class User(Model):
