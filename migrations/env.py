@@ -34,7 +34,7 @@ db_names = config.get_main_option('databases')
 #}
 import sys
 sys.path.append('./')
-from orvsd_central import db
+from orvsd_central import models
 target_metadata = {}
 
 
