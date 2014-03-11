@@ -1,19 +1,26 @@
 import mock
 import unittest
-import tempfile
-import time
-import re
-import os
-from orvsd_central import models
-from orvsd_central import util
+import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException
+from orvsd_central.database import db_session
+import orvsd_central
+from orvsd_central.models import User
+from flask.ext.login import (login_user, logout_user)
+from flask import redirect
+from controllers import test_roles_controller
+
 
 
 class TestRequiresRole(unittest.TestCase):
 
     def setUp(self):
-        # Init database
-        from orvsd_central import db, models
-        db.Metadata.create_all()
+        self.app = orvsd_central.app.test_client()
+        self.app = orvsd_central.app
+        orvsd_central.app.config['TESTING'] = True
         # Create web driver
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(30)
@@ -22,47 +29,38 @@ class TestRequiresRole(unittest.TestCase):
         self.accept_next_alert = True
 
     def test_requires_role_decorator(self):
-        # Mock out the Flask redirect function
-        redirect = mock.Mock(return_value=False)
-        current_user = mock.Mock()
-        # Define local methods decorated
-        # at the permission levels we are testing.
+        with self.app.test_request_context(''):
+            admin_user = User('admin', 'admin@example.com', 'password', role=3)
+            login_user(admin_user)
+            self.assertEqual('okay', test_roles_controller.test_role_admin())
+            self.assertEqual('okay', test_roles_controller.test_role_helpdesk())
+            self.assertEqual('okay', test_roles_controller.test_role_user())
+            logout_user()
 
-        @util.requires_role('admin')
-        def test_admin():
-            return true
+            helpdesk_user = User('helpdesk', 'helpdesk@example.com', 'password', role=2)
+            login_user(helpdesk_user)
+            # Check that the returned HTTP status code is 302, found.
+            self.assertEqual(302, test_roles_controller.test_role_admin().status_code)
+            self.assertEqual('okay', test_roles_controller.test_role_helpdesk())
+            self.assertEqual('okay', test_roles_controller.test_role_user())
+            logout_user()
 
-        @util.requires_role('helpdesk')
-        def test_helpdesk():
-            return true
+            normal_user = User('normal', 'normal@example.com', 'password', role=1)
+            login_user(normal_user)
+            self.assertEqual(302, test_roles_controller.test_role_admin().status_code)
+            self.assertEqual(302, test_roles_controller.test_role_helpdesk().status_code)
+            self.assertEqual('okay', test_roles_controller.test_role_user())
+            logout_user()
+        #response = self.app.get('/tests/admin')
+        #print 'data'
+        #print response, type(response)
+        #with self.app:
+        #    resp1 = test_roles_controller.test_role_admin()
+        #print resp, type(resp1)
+        #a = 1
+        #b  = 1 /0
 
-        @util.requires_role('user')
-        def test_user():
-            return true
+    def tearDown(self):
+        self.driver.quit()
+        self.assertEqual([], self.verificationErrors)
 
-        #We also need to test invalid permission levels.
-        @util.requires_role('gibberish')
-        def test_gibberish():
-            return true
-        # We need to test that users can enter
-        # the parts they are supposed to
-        # and also that they cannot enter the parts
-        # they are not supposed to.
-        # Test admin
-        current_user.role = 'admin'
-        self.assertTrue(test_admin())
-        self.assertTrue(test_helpdesk())
-        self.assertTrue(test_user())
-        self.assertFalse(test_gibberish())
-        # Test helpdesk
-        current_user.role = 'helpdesk'
-        self.assertTrue(test_helpdesk())
-        self.assertTrue(test_user())
-        self.assertFalse(test_gibberish())
-        self.assertFalse(test_admin())
-        # Test user
-        current_user.role = 'user'
-        self.assertTrue(test_user())
-        self.assertFalse(test_gibberish())
-        self.assertFalse(test_admin())
-        self.assertFalse(test_helpdesk())
