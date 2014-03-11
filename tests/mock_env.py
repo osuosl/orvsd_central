@@ -15,7 +15,7 @@ class TestBase(unittest.TestCase):
         Create a test database in memory
         """
         self.test_engine = create_engine("sqlite:///:memory:",
-                                          convert_unicode=True)
+                                         convert_unicode=True)
         self.db_session = scoped_session(sessionmaker(autocommit=True,
                                                       autoflush=True,
                                                       bind=self.test_engine))
