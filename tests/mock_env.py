@@ -12,8 +12,10 @@ class TestBase(unittest.TestCase):
 
     def setUp(self):
         """
-        Create a test database in memory
+        Create a test database in memory and a test app to be referenced as
+        self.db_session and self.app respectively.
         """
+
         self.test_engine = create_engine("sqlite:///:memory:",
                                          convert_unicode=True)
         self.db_session = scoped_session(sessionmaker(autocommit=True,
@@ -29,7 +31,9 @@ class TestBase(unittest.TestCase):
         self.app.testing = True
 
     def tearDown(self):
-        # Close the session and clean the db. Some tests may create
-        # data and we don't want to keep that around
+        """
+        Close the session and clean the db. Some tests may create
+        data and we don't want to keep that around
+        """
         self.db_session.remove()
         Model.metadata.drop_all(bind=self.test_engine)
