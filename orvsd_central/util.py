@@ -10,7 +10,7 @@ from datetime import datetime, date, time, timedelta
 from functools import wraps
 
 import requests
-from flask import flash, session
+from flask import flash, redirect, session
 from flask.ext.login import current_user
 from oursql import connect, DictCursor
 
