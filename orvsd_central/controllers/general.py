@@ -63,7 +63,7 @@ def login():
         else:
             flash("Username/Password combo was not recognized.  "
                   "Please try again.")
-    return render_template("login.html", form=form)
+    return render_template("login.html", user=current_user, form=form)
 
 
 @mod.route("/google_login")
