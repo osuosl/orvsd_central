@@ -2,7 +2,7 @@
     <div class="navbar-inner">
         <ul class="nav">
             <li><a class="brand" style="padding-left: 40px">ORVSD Central</a></li>
-            {% if user %}
+            {% if user.is_authenticated() %}
             <li>
                 <a href="{{ url_for('report.index') }}">Report</a>
             </li>
@@ -69,7 +69,7 @@
             </li>
         </ul>
         <ul class="nav pull-right">
-        {% if user %}
+        {% if user.is_authenticated() %}
             <li><a>Logged in as: {{user.name}}</a></li>
             <li><a href="{{ url_for('general.logout') }}">Log Out</a></li>
         {% else %}
