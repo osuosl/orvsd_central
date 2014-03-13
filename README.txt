@@ -21,3 +21,9 @@ Running the server:
 Tests:
 
     With the virtualenv activated run 'nosetests' in the top directory
+    To create your own tests, subclass BaseTest
+        from tests.mock_env import BaseTest
+        class MyTests(BaseTest):
+            ...
+    If you need to override setUp, you'll need to call BaseTest's setUp as well
+    with super
