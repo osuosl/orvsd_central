@@ -5,11 +5,22 @@ from orvsd_central.models import Course, CourseDetail, School, Site, SiteDetail
 from orvsd_central.util import (district_details, get_obj_by_category,
                                 string_to_type)
 
+
 mod = Blueprint('api', __name__)
 
 
 @mod.route("/<category>/object/add", methods=["POST"])
 def add_object(category):
+    """
+    Adds an object from a given Category to the database.
+
+    get_obj_by_category will determine which category the submitted form
+    is for.
+
+    Returns:
+        JSON response with the new object ID and a message on success or
+        failure.
+    """
     obj = get_obj_by_category(category)
     if obj:
         inputs = {}
@@ -33,6 +44,9 @@ def add_object(category):
 # TODO: Needs testing
 @mod.route('/celery/id/all')
 def get_all_ids():
+    """
+    Returns JSONified metadata for all celery tasks.
+    """
     # TODO: "result" is another column, but SQLAlchemy
     # complains of some encoding error.
     statuses = db_session.query("id", "task_id", "status",
@@ -45,6 +59,10 @@ def get_all_ids():
 
 @mod.route("/1/site/<site_id>/courses")
 def get_courses_by_site(site_id):
+    """
+    Returns a JSONified list of course details from the most recent
+    site_details object for a given site_id.
+    """
     #SiteDetails hold the course information we are looking for
     site_details = SiteDetail.query.filter_by(site_id=site_id) \
                                    .order_by(SiteDetail
@@ -62,6 +80,10 @@ def get_courses_by_site(site_id):
 
 @mod.route("/courses/filter", methods=["POST"])
 def get_course_list():
+    """
+    This returns a JSONified list of courses in a given folder, that is
+    provided in the 'filter' form element.
+    """
     dir = request.form.get('filter')
 
     if dir == "None":
@@ -86,6 +108,9 @@ def get_course_list():
 
 @mod.route("/<category>/keys")
 def get_keys(category):
+    """
+    Returns a JSONified dict of all model attributes for a given model.
+    """
     obj = get_obj_by_category(category)
     if obj:
         cols = dict((column.name, '') for column in
@@ -95,6 +120,10 @@ def get_keys(category):
 
 @mod.route("/1/sites/<baseurl>/moodle")
 def get_moodle_sites(baseurl):
+    """
+    Returns a JSONified list of moodle site ids and names for sites that are
+    part of a school with the given 'baseurl'.
+    """
     school_id = Site.query.filter_by(baseurl=baseurl).first().school_id
     moodle_sites = Site.query.filter_by(school_id=school_id).all()
     data = [{'id': site.id, 'name': site.name} for site in moodle_sites]
@@ -103,6 +132,10 @@ def get_moodle_sites(baseurl):
 
 @mod.route("/<category>/<id>", methods=["GET"])
 def get_object(category, id):
+    """
+    Returns a JSONified dict of attributes on an object defined by it's 'id'
+    and the 'category' (model) it is.
+    """
     obj = get_obj_by_category(category)
     if obj:
         modified_obj = obj.query.filter_by(id=id).first()
@@ -114,6 +147,11 @@ def get_object(category, id):
 
 @mod.route('/report/get_schools', methods=['POST'])
 def get_schools():
+    """
+    Returns a JSONified list of all schools or for a given district.
+    Each 'school' contains the number of admins, teachers, and totalusers
+    for the given school too.
+    """
     # From the POST, we need the district id, or distid
     dist_id = request.form.get('distid')
 
@@ -161,6 +199,10 @@ def get_schools():
 
 @mod.route("/1/sites/<baseurl>")
 def get_site_by_url(baseurl):
+    """
+    Returns a combined JSONified of both Site and SiteDetail information
+    for a given 'baseurl'.
+    """
     site = Site.query.filter_by(baseurl=baseurl).first()
     if site:
         site_details = SiteDetail.query.filter_by(site_id=site.id) \
@@ -178,6 +220,9 @@ def get_site_by_url(baseurl):
 
 @mod.route('/celery/status/<celery_id>')
 def get_task_status(celery_id):
+    """
+    Returns a JSONified status of a celery job identified by 'celery_id'.
+    """
     status = db_session.query("status")\
                        .from_statement("SELECT status FROM celery_taskmeta"
                                        " WHERE id=:celery_id")\
@@ -187,5 +232,8 @@ def get_task_status(celery_id):
 
 @mod.route('/get_site_by/<int:site_id>', methods=['GET'])
 def site_by_id(site_id):
+    """
+    Returns a JSONified name of a site, identifed by it's 'site_id'.
+    """
     name = Site.query.filter_by(id=site_id).first().name
     return jsonify(name=name)
