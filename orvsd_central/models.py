@@ -167,7 +167,8 @@ class School(Model):
                  'name' : self.name,
                  'shortname' : self.shortname,
                  'domain' : self.domain,
-                 'license' : self.license }
+                 'license' : self.license,
+                 'county' : self.county }
 
 
 class Site(Model):
