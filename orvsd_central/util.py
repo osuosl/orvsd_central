@@ -9,8 +9,9 @@ from datetime import datetime, date, time, timedelta
 from functools import wraps
 
 import requests
-from flask import flash, redirect, session
+from flask import flash, jsonify, redirect, session
 from flask.ext.login import current_user
+from sqlalchemy import not_
 from oursql import connect, DictCursor
 
 from orvsd_central import app, constants, celery, login_manager
@@ -19,36 +20,64 @@ from orvsd_central.models import (District, School, Site, SiteDetail,
                               Course, CourseDetail, User)
 
 
-def build_accordion(districts, accordion_id, type, extra=None):
+def build_accordion(districts, active_accordion_id, inactive_accordion_id,
+                    type, extra=None):
     """
     Builds the accordion from pre-defined templates.
     """
     inner_t = app.jinja_env.get_template('accordion_inner.html')
     outer_t = app.jinja_env.get_template('accordion.html')
 
-    inner = ""
+    active_inner = ""
+    inactive_inner = ""
 
-    sites = [int(x[0]) for x in
-                db_session.query(SiteDetail.site_id).distinct().all()]
-    school_ids = dict((int(x[0]), True) for x in db_session.query(Site.school_id).filter(
-                    Site.id.in_(sites)).distinct().all())
+    # Get a list of all sites from SiteDetails
+    active_sites = [int(x[0]) for x in
+                    db_session.query(SiteDetail.site_id).distinct().all()]
+
+    inactive_sites = [int(x[0]) for x in
+                        db_session.query(Site.id).filter(
+                                        not_(Site.id.in_(active_sites))
+                                    ).all()]
+
+    # Parse in/active_sites for all in/active school ids
+    active_school_ids = dict((int(x[0]), True) for x in db_session.query(Site.school_id).filter(
+                    Site.id.in_(active_sites)).distinct().all())
+
+    inactive_school_ids = dict((int(x[0]), True) for x in db_session.query(Site.school_id).filter(
+                    Site.id.in_(inactive_sites)).distinct().all())
 
     for district in districts:
         if district.schools:
             # Make sure the schools have relevant sites
+            active_found, inactive_found = False, False
             for school in district.schools:
-                if school_ids.get(school.id):
-                    inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
-                    inner += inner_t.render(accordion_id=accordion_id,
-                                            inner_id=inner_id,
-                                            type=type,
-                                            link=district.name,
-                                            extra=None if not extra else
-                                                extra % district.id)
+                inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
+                if active_school_ids.get(school.id) and not active_found:
+                    inner_id += '_active'
+                    active_found = True
+                    active_inner += inner_t.render(accordion_id=active_accordion_id,
+                                                   inner_id=inner_id,
+                                                   type=type,
+                                                   link=district.name,
+                                                   extra=None if not extra else
+                                                       extra % district.id)
+                elif inactive_school_ids.get(school.id) and not inactive_found:
+                    inner_id += '_inactive'
+                    inactive_found = True
+                    inactive_inner += inner_t.render(accordion_id=inactive_accordion_id,
+                                                   inner_id=inner_id,
+                                                   type=type,
+                                                   link=district.name,
+                                                   extra=None if not extra else
+                                                       extra % district.id)
+                if active_found and inactive_found:
                     break
 
-    return outer_t.render(accordion_id=accordion_id,
-                          dump=inner)
+    return outer_t.render(active_accordion_id=active_accordion_id,
+                          inactive_accordion_id=inactive_accordion_id,
+                          active=active_inner,
+                          inactive=inactive_inner)
 
 
 def create_course_from_moodle_backup(base_path, source, file_path):
@@ -395,6 +424,62 @@ def get_path_and_source(base_path, file_path):
     """
     path = file_path.strip(base_path).partition('/')
     return path[0]+'/', path[2]
+
+
+def get_schools(dist_id, active):
+    """
+    Gets the active or inactive schools for a given ditrict.
+    """
+
+    # Given the distid, we get all the schools
+    if dist_id:
+        schools = School.query.filter_by(district_id=dist_id) \
+                              .order_by("name").all()
+    else:
+        schools = School.query.order_by("name").all()
+
+    # the dict to be jsonify'd
+    school_list = {}
+
+    for school in schools:
+        sitedata = []
+        admincount = 0
+        teachercount = 0
+        usercount = 0
+
+        sites = Site.query.filter(Site.school_id == school.id).all()
+        print sites
+        for site in sites:
+            admin = None
+            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
+                                 .order_by(SiteDetail.timemodified.desc())\
+                                 .first()
+            if sd and active:
+                admin = sd.adminemail
+                admincount = admincount + sd.adminusers
+                teachercount = teachercount + sd.teachers
+                usercount = usercount + sd.totalusers
+                sitedata.append({'name': site.name,
+                                 'baseurl': site.baseurl,
+                                 'sitetype': site.sitetype,
+                                 'admin': admin})
+
+            elif not sd and not active:
+                sitedata.append({'name': site.name,
+                                 'baseurl': site.baseurl,
+                                 'sitetype': site.sitetype,
+                                 'admin': admin})
+
+        usercount = usercount - admincount - teachercount
+        school_list[school.shortname] = {'name': school.name,
+                                         'id': school.id,
+                                         'admincount': admincount,
+                                         'teachercount': teachercount,
+                                         'usercount': usercount,
+                                         'sitedata': sitedata}
+
+    # Returned the jsonify'd data of counts and schools for jvascript to parse
+    return jsonify(schools=school_list, counts=district_details(schools))
 
 
 @celery.task(name='tasks.install_course')

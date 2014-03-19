@@ -1,3 +1,10 @@
-<div id="{{ accordion_id }}">
-    {{ dump|safe }}
+<h2 title="Districts and their schools that we have information on.">Active Districts</h2>
+<div id="{{ active_accordion_id }}">
+    {{ active|safe }}
+</div>
+</br>
+
+<h2 title="Districts and their schools that we do not have information on.">Inactive Districts</h2>
+<div id="{{ inactive_accordion_id }}">
+    {{ inactive|safe }}
 </div>

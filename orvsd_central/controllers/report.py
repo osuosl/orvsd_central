@@ -17,10 +17,12 @@ def index():
     """
     all_districts = District.query.order_by("name").all()
 
-    accord_id = "dist_accord"
+    active_accord_id = "dist_accord_active"
+    inactive_accord_id = "dist_accord_inactive"
     dist_id = "distid=%s"
 
-    data = build_accordion(all_districts, accord_id, "district", dist_id)
+    data = build_accordion(all_districts, active_accord_id,
+                           inactive_accord_id, "district", dist_id)
 
     return render_template("report.html",
                            datadump=data,

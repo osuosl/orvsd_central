@@ -40,14 +40,26 @@ $(function() {
 
     $(".districtcollapse").on("show", function() {
         var elem = $(this);
-        $.ajax({
-            type: "POST",
-            url: "/report/get_schools",
-            data: {'distid': $(this).attr('distid')},
-            success: function(data) {
-                dump_schools(elem, data);
-            }
-        });
+        if (elem.parent().parent().attr('id') == 'dist_accord_active') {
+            $.ajax({
+                type: "POST",
+                url: "/report/get_active_schools",
+                data: {'distid': $(this).attr('distid')},
+                success: function(data) {
+                    dump_schools(elem, data);
+                }
+            });
+        }
+        else if (elem.parent().parent().attr('id') == 'dist_accord_inactive') {
+            $.ajax({
+                type: "POST",
+                url: "/report/get_inactive_schools",
+                data: {'distid': $(this).attr('distid')},
+                success: function(data) {
+                    dump_schools(elem, data);
+                }
+            });
+        }
     });
 });
 

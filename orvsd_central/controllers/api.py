@@ -4,7 +4,7 @@ from orvsd_central.database import db_session
 from orvsd_central.models import (District, Course, CourseDetail, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (district_details, get_obj_by_category,
-                                string_to_type)
+                                get_schools, string_to_type)
 
 from collections import defaultdict
 
@@ -148,56 +148,24 @@ def get_object(category, id):
     abort(404)
 
 
-@mod.route('/report/get_schools', methods=['POST'])
-def get_schools():
+@mod.route('/report/get_active_schools', methods=['POST'])
+def get_active_schools():
     """
-    Returns a JSONified list of all schools or for a given district.
-    Each 'school' contains the number of admins, teachers, and totalusers
-    for the given school too.
+    Returns all active schools for a district.
     """
     # From the POST, we need the district id, or distid
     dist_id = request.form.get('distid')
+    return get_schools(dist_id, True)
 
-    # Given the distid, we get all the schools
-    if dist_id:
-        schools = School.query.filter_by(district_id=dist_id) \
-                              .order_by("name").all()
-    else:
-        schools = School.query.order_by("name").all()
 
-    # the dict to be jsonify'd
-    school_list = {}
-
-    for school in schools:
-        sitedata = []
-        sites = Site.query.filter(Site.school_id == school.id).all()
-        admincount = 0
-        teachercount = 0
-        usercount = 0
-        for site in sites:
-            admin = None
-            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
-                                 .order_by(SiteDetail.timemodified.desc())\
-                                 .first()
-            if sd:
-                admin = sd.adminemail
-                admincount = admincount + sd.adminusers
-                teachercount = teachercount + sd.teachers
-                usercount = usercount + sd.totalusers
-                sitedata.append({'name': site.name,
-                                 'baseurl': site.baseurl,
-                                 'sitetype': site.sitetype,
-                                 'admin': admin})
-        usercount = usercount - admincount - teachercount
-        school_list[school.shortname] = {'name': school.name,
-                                         'id': school.id,
-                                         'admincount': admincount,
-                                         'teachercount': teachercount,
-                                         'usercount': usercount,
-                                         'sitedata': sitedata}
-
-    # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return jsonify(schools=school_list, counts=district_details(schools))
+@mod.route('/report/get_inactive_schools', methods=['POST'])
+def get_inactive_schools():
+    """
+    Returns all inactive schools for a district.
+    """
+    # From the POST, we need the district id, or distid
+    dist_id = request.form.get('distid')
+    return get_schools(dist_id, False)
 
 
 @mod.route("/1/sites/<baseurl>")
