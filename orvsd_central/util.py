@@ -493,8 +493,8 @@ def get_path_and_source(base_path, file_path):
     Returns:
         A tuple with the source and file path (as listed above).
     """
-    path = file_path.strip(base_path).partition('/')
-    return path[0]+'/', path[2]
+    path = file_path.replace(base_path, '').partition('/')
+    return path[0] + '/', path[2]
 
 
 def get_schools(dist_id, active):
