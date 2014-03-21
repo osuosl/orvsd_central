@@ -21,6 +21,9 @@ from orvsd_central.models import (District, School, Site, SiteDetail,
 
 
 def build_accordion(objects, accordion_id, type, extra=None):
+    """
+    Builds the accordion from pre-defined templates.
+    """
     inner_t = app.jinja_env.get_template('accordion_inner.html')
     outer_t = app.jinja_env.get_template('accordion.html')
 
@@ -39,6 +42,26 @@ def build_accordion(objects, accordion_id, type, extra=None):
 
 
 def create_course_from_moodle_backup(base_path, source, file_path):
+    """
+    This creates a Course object from a backup xml file for FLVS/NROC courses.
+
+    We do this by extracting the zip file containing the xml, pulling the
+    required data from moodle.xml, and then creating our Course object.
+
+    The full file path format looks something like this:
+        base_path          |   source  |          file_path
+    /data/moodle2_masters      /flvs       /flvs_osl_2012/backup_algebra2.xml
+
+    Args:
+        base_path (string) - The path to our FLVS/NROC folders.
+        source (string) - FLVS/NROC/other course types.
+        file_path (string) - File path to the file we are extracting.
+                    * This may have folders in the file name, for example:
+                    "flvs_osl_2912/backup_algebra2.xml" is a valid file_path.
+
+    Returns:
+        Nothing
+    """
     # Needed to delete extracted xml once operation is done
     project_folder = "/home/vagrant/orvsd_central/"
 
@@ -127,6 +150,10 @@ def district_details(schools):
 
 
 def gather_siteinfo():
+    """
+    Gathers moodle/drupal site information to be put into our db.
+    This is the source for all of our SiteDetail objects.
+    """
     user = app.config['SITEINFO_DATABASE_USER']
     password = app.config['SITEINFO_DATABASE_PASS']
     address = app.config['SITEINFO_DATABASE_HOST']
@@ -274,6 +301,19 @@ def gather_siteinfo():
 
 
 def get_course_folders(base_path):
+    """
+    Retrieves all folders in a given directory and their subdirectories.
+        * This only traverses 1 level deep.
+
+    This is meant to get a list of folders for us to look through for
+    filtering courses on the 'Course Install' page.
+
+    Args:
+        base_path (string): Path to the top level directory to look through
+
+    Returns:
+        All folders in a given directory and their subdirectories.
+    """
     folders = ['None']
     for root, sub_folders, files in os.walk(base_path):
         for folder in sub_folders:
@@ -283,6 +323,9 @@ def get_course_folders(base_path):
 
 
 def get_obj_by_category(category):
+    """
+    Maps categories to model objects.
+    """
     # Checking for case insensitive categories
     categories = {'districts': District, 'schools': School,
                   'sites': Site, 'courses': Course, 'users': User,
@@ -292,6 +335,11 @@ def get_obj_by_category(category):
 
 
 def get_obj_identifier(category):
+    """
+    Maps categories to their identifier.
+    An identifier is which piece of information we show to users
+    to help them identify a specific object.
+    """
     categories = {'districts': 'name', 'schools': 'name',
                   'sites': 'name', 'courses': 'name', 'users': 'name',
                   'coursedetails': 'filename', 'sitedetails': 'site_id'}
@@ -301,12 +349,29 @@ def get_obj_identifier(category):
 
 # /base_path/source/path is the format of the parsed directories.
 def get_path_and_source(base_path, file_path):
+    """
+    Takes a base_path and full_file_path and returns the source and file_path.
+
+    The full file path format looks something like this:
+        base_path          |   source  |          file_path
+    /data/moodle2_masters      /flvs       /flvs_osl_2012/backup_algebra2.xml
+
+    Args:
+        base_path (string) - The path to our FLVS/NROC folders.
+        file_path (string) - Full file path to the file we are extracting.
+
+    Returns:
+        A tuple with the source and file path (as listed above).
+    """
     path = file_path.strip(base_path).partition('/')
     return path[0]+'/', path[2]
 
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course, site):
+    """
+    Installs 'course' to 'site'.
+    """
     # To get the file path we need the text input, the lowercase of
     # source, and the filename
     fp = app.config['INSTALL_COURSE_FILE_PATH']
@@ -336,6 +401,9 @@ def load_user(userid):
 
 
 def string_to_type(string):
+    """
+    Conversion of javascript strings from forms to correct types for python.
+    """
     # Have to watch out for the format of true/false/null
     # with javascript strings.
     if string == "true":
@@ -352,11 +420,15 @@ def string_to_type(string):
     return string
 
 
-# Decorator for defining access to certain actions.
-# 1 - General User (Implicit with login_required)
-# 2 - Help Desk
-# 3 - Admin
 def requires_role(role):
+    """
+    Decorator for defining access to certain actions.
+
+    Levels (as defined in constants.py):
+        1 - General User (Implicit with login_required)
+        2 - Help Desk
+        3 - Admin
+    """
     def decorator(f):
         def wrapper(*args, **kwargs):
             if not current_user.is_anonymous():

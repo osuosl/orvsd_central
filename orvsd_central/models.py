@@ -89,8 +89,8 @@ class District(Model):
     """
     Districts have many schools
     """
-
     __tablename__ = 'districts'
+
     id = Column(Integer, primary_key=True)
     # State given ID number
     state_id = Column(Integer)
@@ -125,8 +125,8 @@ class School(Model):
     """
     Schools belong to one district, have many sites and  many courses
     """
-
     __tablename__ = 'schools'
+
     id = Column(Integer, primary_key=True)
     # points to the owning district
     district_id = Column(Integer,
@@ -169,7 +169,11 @@ class School(Model):
 
 
 class Site(Model):
+    """
+    A Site belongs to one school, and may have many SiteDetails.
+    """
     __tablename__ = 'sites'
+
     id = Column(Integer, primary_key=True)
     # points to the owning school
     school_id = Column(Integer, ForeignKey('schools.id',
@@ -242,8 +246,8 @@ class SiteDetail(Model):
     siteinfo tables, except the date - a new record is added with each
     update. See siteinfo notes.
     """
-
     __tablename__ = 'site_details'
+
     id = Column(Integer, primary_key=True)
     # points to the owning site
     site_id = Column(Integer, ForeignKey('sites.id',
@@ -299,8 +303,8 @@ class Course(Model):
     """
     Courses belong to many schools
     """
-
     __tablename__ = 'courses'
+
     id = Column(Integer, primary_key=True)
     serial = Column(Integer)
     name = Column(String(255))

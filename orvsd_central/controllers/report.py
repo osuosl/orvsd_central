@@ -11,6 +11,9 @@ mod = Blueprint("report", __name__, url_prefix='/report')
 @mod.route("/", methods=['GET'])
 @login_required
 def index():
+    """
+    Returns a rendered template for the index/report page.
+    """
     all_districts = District.query.order_by("name").all()
     dist_count = len(all_districts)
     school_count = School.query.count()

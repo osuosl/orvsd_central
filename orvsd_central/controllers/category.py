@@ -24,6 +24,9 @@ All
 
 @mod.route("/<category>/<id>/delete", methods=["POST"])
 def delete_object(category, id):
+    """
+    Given an 'category' and 'id' deletes the given object from the db.
+    """
     obj = get_obj_by_category(category)
     if obj:
         modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
@@ -39,6 +42,9 @@ def delete_object(category, id):
 @requires_role('helpdesk')
 @login_required
 def update(category):
+    """
+    Returns a rendered template that shows all objects in a given 'category'.
+    """
     obj = get_obj_by_category(category)
     identifier = get_obj_identifier(category)
     if obj:
@@ -57,6 +63,10 @@ def update(category):
 
 @mod.route("/<category>/<id>/update", methods=["POST"])
 def update_object(category, id):
+    """
+    Given an 'category' and 'id' updates the given object with data included
+    in the form.
+    """
     obj = get_obj_by_category(category)
     if obj:
         modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
@@ -194,8 +204,8 @@ def install_course():
 @login_required
 def update_courselist():
     """
-        Updates the database to contain the most recent course
-        and course detail entries, based on available files.
+    Updates the database to contain the most recent course
+    and course detail entries, based on available files.
     """
     num_courses = 0
     base_path = "/data/moodle2-masters/"
@@ -242,6 +252,10 @@ School
 
 @mod.route("/schools/migrate")
 def migrate_schools():
+    """
+    Returns a rendered template for moving schools from the unknown school
+    district to other districts.
+    """
     districts = District.query.all()
     # Unknown district is id = 0
     schools = School.query.filter_by(district_id=0).all()
@@ -254,6 +268,9 @@ def migrate_schools():
 @requires_role('helpdesk')
 @login_required
 def view_schools(id):
+    """
+    Returns and renders a template with a list of sites for a given school.
+    """
     min_users = 1  # This should be an editable field on the template
                    # that modifies which courses are shown via js.
 
