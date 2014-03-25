@@ -1,6 +1,8 @@
 *.pyc
 *.swp
 config.py
+config/*.py
+!config/__init__.py
 env/
 venv/
 db/
