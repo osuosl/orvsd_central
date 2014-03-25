@@ -1,68 +1,17 @@
-from celery import Celery
-from flask import Flask, render_template, g
-from flask.ext.login import LoginManager, current_user
-from flask.ext.oauth import OAuth
+from flask import Flask, current_app
 
-app = Flask(__name__)
-app.config.from_object('config')
+def create_app(config='config.default'):
+    app = Flask(__name__)
+    app.config.from_object(config)
+    return app
 
-login_manager = LoginManager()
-login_manager.setup_app(app)
+def attach_blueprints():
+    from orvsd_central.controllers import api
+    from orvsd_central.controllers import category
+    from orvsd_central.controllers import general
+    from orvsd_central.controllers import report
 
-
-def init_celery(app):
-    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
-
-celery = init_celery(app)
-
-oauth = OAuth()
-google = oauth.remote_app(
-    'google',
-    base_url='https://www.google.com/accounts/',
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-    request_token_url=None,
-    request_token_params={
-        'scope':
-        'https://www.googleapis.com/auth/userinfo.email', 'response_type':
-        'code'},
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    access_token_method='POST',
-    access_token_params={'grant_type': 'authorization_code'},
-    consumer_key=app.config['GOOGLE_CLIENT_ID'],
-    consumer_secret=app.config['GOOGLE_CLIENT_SECRET'])
-
-
-@app.teardown_appcontext
-def shutdown_session(exception=False):
-    db_session.remove()
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html', user=current_user), 404
-
-
-from orvsd_central.controllers import api
-from orvsd_central.controllers import category
-from orvsd_central.controllers import general
-from orvsd_central.controllers import report
-
-app.register_blueprint(api.mod)
-app.register_blueprint(category.mod)
-app.register_blueprint(general.mod)
-app.register_blueprint(report.mod)
-
-from orvsd_central.database import db_session
-
+    current_app.register_blueprint(api.mod)
+    current_app.register_blueprint(category.mod)
+    current_app.register_blueprint(general.mod)
+    current_app.register_blueprint(report.mod)

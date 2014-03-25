@@ -8,16 +8,64 @@ import re
 from datetime import datetime, date, time, timedelta
 from functools import wraps
 
+from celery import Celery
+from flask import current_app, flash, g, jsonify, redirect, session
+from flask.ext.login import LoginManager, current_user
+from flask.ext.oauth import OAuth
+from oursql import DictCursor, connect
 import requests
-from flask import flash, jsonify, redirect, session
-from flask.ext.login import current_user
 from sqlalchemy import not_
-from oursql import connect, DictCursor
 
-from orvsd_central import app, constants, celery, login_manager
-from orvsd_central.database import db_session
+from orvsd_central import constants
 from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
+
+google = OAuth().remote_app(
+    'google',
+    base_url='https://www.google.com/accounts/',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    request_token_url=None,
+    request_token_params={
+        'scope':
+        'https://www.googleapis.com/auth/userinfo.email', 'response_type':
+        'code'},
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_method='POST',
+    access_token_params={'grant_type': 'authorization_code'},
+    consumer_key=current_app.config['GOOGLE_CLIENT_ID'],
+    consumer_secret=current_app.config['GOOGLE_CLIENT_SECRET'])
+
+login_manager = LoginManager()
+login_manager.setup_app(current_app)
+
+
+def init_celery():
+    celery = Celery(current_app.import_name,
+                    broker=current_app.config['CELERY_BROKER_URL'])
+    celery.conf.update(current_app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with current_app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+
+celery = init_celery()
+
+@current_app.teardown_appcontext
+def shutdown_session(exception=False):
+    if g.get('db_session'):
+        g.db_session.remove()
+
+
+@current_app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html', user=current_user), 404#
 
 
 def build_accordion(districts, active_accordion_id, inactive_accordion_id,
@@ -25,8 +73,8 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
     """
     Builds the accordion from pre-defined templates.
     """
-    inner_t = app.jinja_env.get_template('accordion_inner.html')
-    outer_t = app.jinja_env.get_template('accordion.html')
+    inner_t = current_app.jinja_env.get_template('accordion_inner.html')
+    outer_t = current_app.jinja_env.get_template('accordion.html')
 
     active_inner = ""
     inactive_inner = ""
@@ -121,11 +169,11 @@ def create_course_from_moodle_backup(base_path, source, file_path):
                             source=source.replace('/', ''),
                             name=info.original_course_fullname.string,
                             shortname=info.original_course_shortname.string)
-        db_session.add(new_course)
+        g.db_session.add(new_course)
 
         # Until the session is committed, the new_course does not yet have
         # an id.
-        db_session.commit()
+        g.db_session.commit()
 
         course_id = new_course.id
     else:
@@ -146,8 +194,8 @@ def create_course_from_moodle_backup(base_path, source, file_path):
                                                      .original_course_id
                                                      .string)
 
-    db_session.add(new_course_detail)
-    db_session.commit()
+    g.db_session.add(new_course_detail)
+    g.db_session.commit()
 
     #Get rid of moodle_backup.xml
     os.remove(project_folder+"moodle_backup.xml")
@@ -193,9 +241,9 @@ def gather_siteinfo():
     Gathers moodle/drupal site information to be put into our db.
     This is the source for all of our SiteDetail objects.
     """
-    user = app.config['SITEINFO_DATABASE_USER']
-    password = app.config['SITEINFO_DATABASE_PASS']
-    address = app.config['SITEINFO_DATABASE_HOST']
+    user = current_app.config['SITEINFO_DATABASE_USER']
+    password = current_app.config['SITEINFO_DATABASE_PASS']
+    address = current_app.config['SITEINFO_DATABASE_HOST']
     DEBUG = True
 
     # Connect to gather the db list
@@ -488,7 +536,7 @@ def install_course_to_site(course, site):
     """
     # To get the file path we need the text input, the lowercase of
     # source, and the filename
-    fp = app.config['INSTALL_COURSE_FILE_PATH']
+    fp = current_app.config['INSTALL_COURSE_FILE_PATH']
     fp += 'flvs/'
 
     data = {'filepath': fp,

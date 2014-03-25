@@ -1,16 +1,15 @@
 import re
 
-from flask import (Blueprint, flash, redirect, render_template, request,
-                   session, url_for)
+from flask import (Blueprint, current_app, flash, g, redirect, render_template,
+                   request, session, url_for)
 from flask.ext.login import (current_user, login_required,
                              login_user, logout_user)
 import requests
 
-from orvsd_central import app, constants, google, login_manager
-from orvsd_central.database import db_session
+from orvsd_central import constants
 from orvsd_central.forms import AddUser, LoginForm
 from orvsd_central.models import User
-from orvsd_central.util import requires_role
+from orvsd_central.util import google, login_manager, requires_role
 
 mod = Blueprint('general', __name__)
 
@@ -38,12 +37,12 @@ def register():
             message = "Invalid email address!\n"
         else:
             # Add user to db
-            db_session.add(User(name=form.user.data,
+            g.db_session.add(User(name=form.user.data,
                                 email=form.email.data,
                                 password=form.password.data,
                                 role=constants.USER_PERMS
                                               .get(form.role.data, 1)))
-            db_session.commit()
+            g.db_session.commit()
             message = form.user.data + " has been added successfully!\n"
 
     return render_template('add_user.html', form=form,
@@ -107,7 +106,7 @@ def logout():
     return redirect(url_for("general.login"))
 
 
-@mod.route(app.config['REDIRECT_URI'])
+@mod.route(current_app.config['REDIRECT_URI'])
 @google.authorized_handler
 def authorized(resp):
     access_token = resp['access_token']
