@@ -1,23 +1,11 @@
 import os
 _basedir = os.path.abspath(os.path.dirname(__file__))
 
-#use 'dev', 'test', or 'production'
-DATABASE_TYPE = 'test'
-
 DEBUG = False
 
 SECRET_KEY = "your secret key, keep this secret!"
 
-if DATABASE_TYPE == 'test' or DATABASE_TYPE == 'dev':
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(_basedir,
-                                                          'db/orvsd_%s.db' %
-                                                          DATABASE_TYPE)
-elif DATABASE_TYPE == 'production':
-    #Add mysql URI
-    SQLALCHEMY_DATABASE_URI = 'mysql://user:password@host/dbname'
-else:
-    raise NameError("DATABASE_TYPE '%s' is not an accepted value." %
-                    DATABASE_TYPE)
+SQLALCHEMY_DATABASE_URI = 'mysql://user:password@host/dbname'
 DATABASE_CONNECT_OPTIONS = {}
 
 CSRF_ENABLED = True
@@ -42,10 +30,6 @@ GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
 
 # Celery config info
-CELERY_BROKER_URL = 'sqla+sqlite:///' + os.path.join(_basedir,
-                                                      'db/orvsd_%s.db' %
-                                                      DATABASE_TYPE)
+CELERY_BROKER_URL = 'sqla+sqlite:///'
 CELERY_RESULT_BACKEND = 'database'
-CELERY_RESULT_DBURI = 'sqlite:///' + os.path.join(_basedir,
-                                                      'db/orvsd_%s.db' %
-                                                      DATABASE_TYPE)
+CELERY_RESULT_DBURI = 'sqlite:///'
