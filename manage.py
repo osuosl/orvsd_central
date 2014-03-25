@@ -14,11 +14,12 @@ def setup_app(config):
 manager = Manager(setup_app)
 manager.add_option('-c', '--config', dest='config')
 
-@manager.command
-def initdb():
-    from orvsd_central.database import init_db
-    init_db()
-
+@manager.option('-d', '--dbconf', dest='conf')
+def initdb(conf):
+    app = create_app(conf)
+    with app.app_context():
+        g.db_session = create_db_session()
+        init_db()
 
 if __name__ == '__main__':
     manager.run()
