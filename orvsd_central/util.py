@@ -139,7 +139,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     new_course_detail = CourseDetail(course_id=course_id,
                                      filename=file_path,
                                      version=version,
-                                     updated=datetime.datetime.now(),
+                                     updated=datetime.now(),
                                      active=True,
                                      moodle_version=info.moodle_release.string,
                                      moodle_course_id=info
@@ -309,7 +309,7 @@ def gather_siteinfo():
 
                     # create new site_details table
                     # site_id = site.id, timemodified = now()
-                    now = datetime.datetime.now()
+                    now = datetime.now()
                     site_details = SiteDetail(siteversion=d['siteversion'],
                                               siterelease=d['siterelease'],
                                               adminemail=d['adminemail'],
