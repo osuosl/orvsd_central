@@ -101,12 +101,6 @@ class District(Model):
     # root path in which school sites are stored - maybe redundant
     base_path = Column(String(255))
 
-    def __init__(self, state_id, name, shortname, base_path):
-        self.state_id = state_id
-        self.name = name
-        self.shortname = shortname
-        self.base_path = base_path
-
     def __repr__(self):
         return "<Disctrict('%s')>" % (self.name)
 
