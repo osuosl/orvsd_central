@@ -172,7 +172,7 @@ class Site(Model):
     # name of the site - (from siteinfo)
     name = Column(String(255))
     # Dev site?
-    dev = Column(Boolean)
+    dev = Column(Boolean, default=False)
     # (from siteinfo)
     sitetype = Column(Enum('moodle', 'drupal', name='site_types'))
     # moodle or drupal's base_url - (from siteinfo)
@@ -192,17 +192,6 @@ class Site(Model):
 
     def generate_new_key(self):
         self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
-
-    def __init__(self, name, school_id, sitetype, baseurl,
-                 basepath, jenkins_cron_job, location, dev=False):
-        self.name = name
-        self.school_id = school_id
-        self.dev = dev
-        self.sitetype = sitetype
-        self.baseurl = baseurl
-        self.basepath = basepath
-        self.jenkins_cron_job = jenkins_cron_job
-        self.location = location
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % (self.name,
