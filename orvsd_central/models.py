@@ -143,16 +143,9 @@ class School(Model):
     district = relationship("District",
                                backref=backref('schools', order_by=id))
 
-    def __init__(self, state_id, name, shortname, domain, license, county=""):
-        self.state_id = state_id
-        self.name = name
-        self.shortname = shortname
-        self.domain = domain
-        self.license = license
-        self.county = county
-
     def get_properties(self):
-        return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license']
+        return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license',
+                'county']
 
     def serialize(self):
         return { 'id' : self.id,
