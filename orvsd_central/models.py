@@ -43,10 +43,10 @@ class User(Model):
     # 1 = Standard User
     # 2 = Helpdesk
     # 3 = Admin
-    role = Column(SmallInteger)
+    role = Column(SmallInteger, default=1)
     #Possibly another column for current status
 
-    def __init__(self, name=None, email=None, password=None, role=1):
+    def __init__(self, name, email, password, role):
         self.name = name
         self.email = email
         self.password = generate_password_hash(password)
