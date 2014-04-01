@@ -144,16 +144,18 @@ class School(Model):
     # list of tokens indicating licenses for some courses - courses with
     # license tokens in this list can be installed in this school
     license = Column(String(255))
-    # NEED TO FIND FLASK FOR THIS
+    county = Column(String(255))
+
     district = relationship("District",
                                backref=backref('schools', order_by=id))
 
-    def __init__(self, state_id, name, shortname, domain, license):
+    def __init__(self, state_id, name, shortname, domain, license, county=""):
         self.state_id = state_id
         self.name = name
         self.shortname = shortname
         self.domain = domain
         self.license = license
+        self.county = county
 
     def get_properties(self):
         return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license']
@@ -165,7 +167,8 @@ class School(Model):
                  'name' : self.name,
                  'shortname' : self.shortname,
                  'domain' : self.domain,
-                 'license' : self.license }
+                 'license' : self.license,
+                 'county' : self.county }
 
 
 class Site(Model):

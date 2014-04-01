@@ -222,7 +222,8 @@ def gather_siteinfo():
                                     shortname=d['sitename'],
                                     domain=school_url,
                                     license='',
-                                    state_id=None)
+                                    state_id=None,
+                                    county="")
                     school.district_id = 0
                     db_session.add(school)
                     db_session.commit()
