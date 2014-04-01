@@ -244,19 +244,6 @@ class SiteDetail(Model):
     totalcourses = Column(Integer)
     timemodified = Column(DateTime)
 
-    def __init__(self, siteversion, siterelease, adminemail,
-                 totalusers, adminusers, teachers, activeusers,
-                 totalcourses, timemodified):
-        self.siteversion = siteversion
-        self.siterelease = siterelease
-        self.adminemail = adminemail
-        self.totalusers = totalusers
-        self.adminusers = adminusers
-        self.teachers = teachers
-        self.activeusers = activeusers
-        self.totalcourses = totalcourses
-        self.timemodified = timemodified
-
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % \
                (self.siteversion, self.siterelease, self.adminemail,
