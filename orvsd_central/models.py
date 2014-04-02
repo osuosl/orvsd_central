@@ -124,9 +124,9 @@ class School(Model):
     id = Column(Integer, primary_key=True)
     # points to the owning district
     district_id = Column(Integer,
-                            ForeignKey('districts.id',
-                                          use_alter=True,
-                                          name='fk_school_to_district_id'))
+                         ForeignKey('districts.id',
+                                    use_alter=True,
+                                    name='fk_school_to_district_id'))
     # state assigned id
     state_id = Column(Integer)
     # school name
@@ -141,21 +141,21 @@ class School(Model):
     county = Column(String(255))
 
     district = relationship("District",
-                               backref=backref('schools', order_by=id))
+                            backref=backref('schools', order_by=id))
 
     def get_properties(self):
         return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license',
                 'county']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'district_id' : self.district_id,
-                 'state_id': self.state_id,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'domain' : self.domain,
-                 'license' : self.license,
-                 'county' : self.county }
+        return {'id': self.id,
+                'district_id': self.district_id,
+                'state_id': self.state_id,
+                'name': self.name,
+                'shortname': self.shortname,
+                'domain': self.domain,
+                'license': self.license,
+                'county': self.county}
 
 
 class Site(Model):
