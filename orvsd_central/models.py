@@ -301,9 +301,9 @@ class CourseDetail(Model):
     __tablename__ = 'course_details'
     id = Column(Integer, primary_key=True)
     course_id = Column(Integer,
-                          ForeignKey('courses.id',
-                                        use_alter=True,
-                                        name='fk_course_details_site_id'))
+                       ForeignKey('courses.id',
+                                  use_alter=True,
+                                  name='fk_course_details_site_id'))
     # just the name, with extension, no path
     filename = Column(String(255))
     # course version number (could be a string, ask client on format)
@@ -321,11 +321,11 @@ class CourseDetail(Model):
                 self.moodle_course_version)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'course_id' : self.course_id,
-                 'filename' : self.filename,
-                 'version' : self.version,
-                 'updated' : self.updated,
-                 'active' : self.active,
-                 'moodle_version' : self.moodle_version,
-                 'moodle_course_id' : self.moodle_course_id }
+        return {'id': self.id,
+                'course_id': self.course_id,
+                'filename': self.filename,
+                'version': self.version,
+                'updated': self.updated,
+                'active': self.active,
+                'moodle_version': self.moodle_version,
+                'moodle_course_id': self.moodle_course_id}
