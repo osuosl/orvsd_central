@@ -320,16 +320,6 @@ class CourseDetail(Model):
     moodle_version = Column(String(255))
     moodle_course_id = Column(Integer)
 
-    def __init__(self, course_id, filename, version, updated,
-                 active, moodle_version, moodle_course_id):
-        self.course_id = course_id
-        self.filename = filename
-        self.version = version
-        self.updated = updated
-        self.active = active
-        self.moodle_version = moodle_version
-        self.moodle_course_id = moodle_course_id
-
     def __repr__(self):
         return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
                (self.course_id, self.filename, self.version, self.updated,
@@ -343,4 +333,5 @@ class CourseDetail(Model):
                  'version' : self.version,
                  'updated' : self.updated,
                  'active' : self.active,
-                 'moodle_version' : self.moodle_version }
+                 'moodle_version' : self.moodle_version,
+                 'moodle_course_id' : self.moodle_course_id }
