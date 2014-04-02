@@ -14,10 +14,9 @@ def setup_app(config):
 manager = Manager(setup_app)
 manager.add_option('-c', '--config', dest='config')
 
-@manager.option('-d', '--dbconf', dest='conf')
-def initdb(conf):
-    app = create_app(conf)
-    with app.app_context():
+@manager.command
+def initdb():
+    with current_app.app_context():
         g.db_session = create_db_session()
         init_db()
 
