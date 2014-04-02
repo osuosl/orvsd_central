@@ -108,11 +108,11 @@ class District(Model):
         return ['id', 'state_id', 'name', 'shortname', 'base_path']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'state_id': self.state_id,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'base_path' : self.base_path }
+        return {'id': self.id,
+                'state_id': self.state_id,
+                'name': self.name,
+                'shortname': self.shortname,
+                'base_path': self.base_path}
 
 
 class School(Model):
