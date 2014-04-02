@@ -285,15 +285,6 @@ class Course(Model):
                                      backref=backref('course',
                                                         order_by=id))
 
-    def __init__(self, serial, name, shortname,
-                 license=None, category=None, source=None):
-        self.serial = serial
-        self.name = name
-        self.shortname = shortname
-        self.license = license
-        self.category = category
-        self.source = source
-
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % \
                (self.serial, self.name, self.shortname,
