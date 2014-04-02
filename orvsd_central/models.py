@@ -9,26 +9,24 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from orvsd_central.database import Model
 
 sites_courses = Table('sites_courses',
-                         Model.metadata,
-                         Column('site_id',
-                                Integer,
-                                ForeignKey('sites.id',
-                                           use_alter=True,
-                                           name=
-                                           'fk_sites_courses_site_id')),
-                         Column('course_id',
-                                Integer,
-                                ForeignKey('courses.id',
-                                           use_alter=True,
-                                           name=
-                                           'fk_sites_courses_course_id')),
-                         Column('celery_task_id',
-                                String,
-                                ForeignKey('celery_taskmeta.task_id',
-                                           use_alter=True,
-                                           name=
-                                           'fk_sites_courses_celery_task_id')),
-                         Column('students', Integer))
+                      Model.metadata,
+                      Column('site_id',
+                             Integer,
+                             ForeignKey('sites.id',
+                                        use_alter=True,
+                                        name='fk_sites_courses_site_id')),
+                      Column('course_id',
+                             Integer,
+                             ForeignKey('courses.id',
+                                        use_alter=True,
+                                        name='fk_sites_courses_course_id')),
+                      Column('celery_task_id',
+                             String,
+                             ForeignKey('celery_taskmeta.task_id',
+                                        use_alter=True,
+                                        name=
+                                        'fk_sites_courses_celery_task_id')),
+                      Column('students', Integer))
 
 
 class User(Model):
