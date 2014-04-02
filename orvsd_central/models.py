@@ -77,12 +77,12 @@ class User(Model):
         return '<User %r>' % (self.name)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'name' : self.name,
-                 'email' : self.email,
-                 # Don't reveal passwords
-                 'password' : '********',
-                 'role' : self.role }
+        return {'id': self.id,
+                'name': self.name,
+                'email': self.email,
+                # Don't reveal passwords
+                'password': '********',
+                'role': self.role}
 
 
 class District(Model):
