@@ -277,8 +277,7 @@ class Course(Model):
     source = Column(String(255))
 
     course_details = relationship("CourseDetail",
-                                     backref=backref('course',
-                                                        order_by=id))
+                                  backref=backref('course', order_by=id))
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % \
@@ -289,13 +288,13 @@ class Course(Model):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'serial' : self.serial,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'license' : self.license,
-                 'category' : self.category,
-                 'source' : self.source }
+        return {'id': self.id,
+                'serial': self.serial,
+                'name': self.name,
+                'shortname': self.shortname,
+                'license': self.license,
+                'category': self.category,
+                'source': self.source}
 
 
 class CourseDetail(Model):
