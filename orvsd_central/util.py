@@ -9,7 +9,8 @@ from datetime import datetime, date, time, timedelta
 from functools import wraps
 
 from celery import Celery
-from flask import current_app, flash, g, jsonify, redirect, session
+from flask import (current_app, flash, g, jsonify, redirect, render_template,
+                   session)
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
 from oursql import DictCursor, connect
