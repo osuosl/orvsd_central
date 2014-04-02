@@ -167,8 +167,8 @@ class Site(Model):
     id = Column(Integer, primary_key=True)
     # points to the owning school
     school_id = Column(Integer, ForeignKey('schools.id',
-                                                    use_alter=True,
-                                                    name="fk_sites_school_id"))
+                                           use_alter=True,
+                                           name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
     name = Column(String(255))
     # Dev site?
@@ -187,36 +187,32 @@ class Site(Model):
 
     site_details = relationship("SiteDetail", backref=backref('sites'))
     courses = relationship("Course",
-                              secondary='sites_courses',
-                              backref='sites')
+                           secondary='sites_courses',
+                           backref='sites')
 
     def generate_new_key(self):
         self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % (self.name,
-                                                     self.school_id,
-                                                     self.dev,
-                                                     self.sitetype,
-                                                     self.baseurl,
-                                                     self.basepath,
-                                                     self.jenkins_cron_job)
+        return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % \
+               (self.name, self.school_id, self.dev, self.sitetype,
+                self.baseurl, self.basepath, self.jenkins_cron_job)
 
     def get_properties(self):
         return ['id', 'school_id', 'name', 'sitetype',
                 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
     def serialize(self):
-        return { 'id': self.id,
-                 'school_id': self.school_id,
-                 'name': self.name,
-                 'dev': self.dev,
-                 'sitetype': self.sitetype,
-                 'baseurl': self.baseurl,
-                 'basepath': self.basepath,
-                 'jenkins_cron_job': self.jenkins_cron_job,
-                 'location': self.location,
-                 'api_key': self.api_key}
+        return {'id': self.id,
+                'school_id': self.school_id,
+                'name': self.name,
+                'dev': self.dev,
+                'sitetype': self.sitetype,
+                'baseurl': self.baseurl,
+                'basepath': self.basepath,
+                'jenkins_cron_job': self.jenkins_cron_job,
+                'location': self.location,
+                'api_key': self.api_key}
 
 
 class SiteDetail(Model):
