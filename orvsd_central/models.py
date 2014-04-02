@@ -226,9 +226,8 @@ class SiteDetail(Model):
     id = Column(Integer, primary_key=True)
     # points to the owning site
     site_id = Column(Integer, ForeignKey('sites.id',
-                                                  use_alter=True,
-                                                  name=
-                                                  'fk_site_details_site_id'))
+                                         use_alter=True,
+                                         name='fk_site_details_site_id'))
     courses = Column(Text())
     siteversion = Column(String(255))
     siterelease = Column(String(255))
@@ -247,18 +246,18 @@ class SiteDetail(Model):
                 self.activeusers, self.totalcourses, self.timemodified)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'site_id' : self.site_id,
-                 'courses' : self.courses,
-                 'siteversion' : self.siteversion,
-                 'siterelease' : self.siterelease,
-                 'adminemail' : self.adminemail,
-                 'totalusers' : self.totalusers,
-                 'adminusers' : self.adminusers,
-                 'teachers' : self.teachers,
-                 'activeusers' : self.activeusers,
-                 'totalcourses' : self.totalcourses,
-                 'timemodified' : self.timemodified }
+        return {'id': self.id,
+                'site_id': self.site_id,
+                'courses': self.courses,
+                'siteversion': self.siteversion,
+                'siterelease': self.siterelease,
+                'adminemail': self.adminemail,
+                'totalusers': self.totalusers,
+                'adminusers': self.adminusers,
+                'teachers': self.teachers,
+                'activeusers': self.activeusers,
+                'totalcourses': self.totalcourses,
+                'timemodified': self.timemodified}
 
 
 class Course(Model):
