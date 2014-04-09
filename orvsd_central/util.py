@@ -448,7 +448,6 @@ def get_schools(dist_id, active):
         usercount = 0
 
         sites = Site.query.filter(Site.school_id == school.id).all()
-        print sites
         for site in sites:
             admin = None
             sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
