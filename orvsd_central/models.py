@@ -9,26 +9,24 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from orvsd_central.database import Model
 
 sites_courses = Table('sites_courses',
-                         Model.metadata,
-                         Column('site_id',
-                                Integer,
-                                ForeignKey('sites.id',
-                                           use_alter=True,
-                                           name=
-                                           'fk_sites_courses_site_id')),
-                         Column('course_id',
-                                Integer,
-                                ForeignKey('courses.id',
-                                           use_alter=True,
-                                           name=
-                                           'fk_sites_courses_course_id')),
-                         Column('celery_task_id',
-                                String,
-                                ForeignKey('celery_taskmeta.task_id',
-                                           use_alter=True,
-                                           name=
-                                           'fk_sites_courses_celery_task_id')),
-                         Column('students', Integer))
+                      Model.metadata,
+                      Column('site_id',
+                             Integer,
+                             ForeignKey('sites.id',
+                                        use_alter=True,
+                                        name='fk_sites_courses_site_id')),
+                      Column('course_id',
+                             Integer,
+                             ForeignKey('courses.id',
+                                        use_alter=True,
+                                        name='fk_sites_courses_course_id')),
+                      Column('celery_task_id',
+                             String,
+                             ForeignKey('celery_taskmeta.task_id',
+                                        use_alter=True,
+                                        name=
+                                        'fk_sites_courses_celery_task_id')),
+                      Column('students', Integer))
 
 
 class User(Model):
@@ -43,10 +41,10 @@ class User(Model):
     # 1 = Standard User
     # 2 = Helpdesk
     # 3 = Admin
-    role = Column(SmallInteger)
+    role = Column(SmallInteger, default=1)
     #Possibly another column for current status
 
-    def __init__(self, name=None, email=None, password=None, role=1):
+    def __init__(self, name, email, password, role):
         self.name = name
         self.email = email
         self.password = generate_password_hash(password)
@@ -77,12 +75,12 @@ class User(Model):
         return '<User %r>' % (self.name)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'name' : self.name,
-                 'email' : self.email,
-                 # Don't reveal passwords
-                 'password' : '********',
-                 'role' : self.role }
+        return {'id': self.id,
+                'name': self.name,
+                'email': self.email,
+                # Don't reveal passwords
+                'password': '********',
+                'role': self.role}
 
 
 class District(Model):
@@ -101,12 +99,6 @@ class District(Model):
     # root path in which school sites are stored - maybe redundant
     base_path = Column(String(255))
 
-    def __init__(self, state_id, name, shortname, base_path):
-        self.state_id = state_id
-        self.name = name
-        self.shortname = shortname
-        self.base_path = base_path
-
     def __repr__(self):
         return "<Disctrict('%s')>" % (self.name)
 
@@ -114,11 +106,11 @@ class District(Model):
         return ['id', 'state_id', 'name', 'shortname', 'base_path']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'state_id': self.state_id,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'base_path' : self.base_path }
+        return {'id': self.id,
+                'state_id': self.state_id,
+                'name': self.name,
+                'shortname': self.shortname,
+                'base_path': self.base_path}
 
 
 class School(Model):
@@ -130,9 +122,9 @@ class School(Model):
     id = Column(Integer, primary_key=True)
     # points to the owning district
     district_id = Column(Integer,
-                            ForeignKey('districts.id',
-                                          use_alter=True,
-                                          name='fk_school_to_district_id'))
+                         ForeignKey('districts.id',
+                                    use_alter=True,
+                                    name='fk_school_to_district_id'))
     # state assigned id
     state_id = Column(Integer)
     # school name
@@ -147,28 +139,21 @@ class School(Model):
     county = Column(String(255))
 
     district = relationship("District",
-                               backref=backref('schools', order_by=id))
-
-    def __init__(self, state_id, name, shortname, domain, license, county=""):
-        self.state_id = state_id
-        self.name = name
-        self.shortname = shortname
-        self.domain = domain
-        self.license = license
-        self.county = county
+                            backref=backref('schools', order_by=id))
 
     def get_properties(self):
-        return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license']
+        return ['id', 'disctrict_id', 'name', 'shortname', 'domain', 'license',
+                'county']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'district_id' : self.district_id,
-                 'state_id': self.state_id,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'domain' : self.domain,
-                 'license' : self.license,
-                 'county' : self.county }
+        return {'id': self.id,
+                'district_id': self.district_id,
+                'state_id': self.state_id,
+                'name': self.name,
+                'shortname': self.shortname,
+                'domain': self.domain,
+                'license': self.license,
+                'county': self.county}
 
 
 class Site(Model):
@@ -180,12 +165,12 @@ class Site(Model):
     id = Column(Integer, primary_key=True)
     # points to the owning school
     school_id = Column(Integer, ForeignKey('schools.id',
-                                                    use_alter=True,
-                                                    name="fk_sites_school_id"))
+                                           use_alter=True,
+                                           name="fk_sites_school_id"))
     # name of the site - (from siteinfo)
     name = Column(String(255))
     # Dev site?
-    dev = Column(Boolean)
+    dev = Column(Boolean, default=False)
     # (from siteinfo)
     sitetype = Column(Enum('moodle', 'drupal', name='site_types'))
     # moodle or drupal's base_url - (from siteinfo)
@@ -200,47 +185,32 @@ class Site(Model):
 
     site_details = relationship("SiteDetail", backref=backref('sites'))
     courses = relationship("Course",
-                              secondary='sites_courses',
-                              backref='sites')
+                           secondary='sites_courses',
+                           backref='sites')
 
     def generate_new_key(self):
         self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
-    def __init__(self, name, school_id, sitetype, baseurl,
-                 basepath, jenkins_cron_job, location, dev=False):
-        self.name = name
-        self.school_id = school_id
-        self.dev = dev
-        self.sitetype = sitetype
-        self.baseurl = baseurl
-        self.basepath = basepath
-        self.jenkins_cron_job = jenkins_cron_job
-        self.location = location
-
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % (self.name,
-                                                     self.school_id,
-                                                     self.dev,
-                                                     self.sitetype,
-                                                     self.baseurl,
-                                                     self.basepath,
-                                                     self.jenkins_cron_job)
+        return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % \
+               (self.name, self.school_id, self.dev, self.sitetype,
+                self.baseurl, self.basepath, self.jenkins_cron_job)
 
     def get_properties(self):
         return ['id', 'school_id', 'name', 'sitetype',
                 'baseurl', 'basepath', 'jenkins_cron_job', 'location']
 
     def serialize(self):
-        return { 'id': self.id,
-                 'school_id': self.school_id,
-                 'name': self.name,
-                 'dev': self.dev,
-                 'sitetype': self.sitetype,
-                 'baseurl': self.baseurl,
-                 'basepath': self.basepath,
-                 'jenkins_cron_job': self.jenkins_cron_job,
-                 'location': self.location,
-                 'api_key': self.api_key}
+        return {'id': self.id,
+                'school_id': self.school_id,
+                'name': self.name,
+                'dev': self.dev,
+                'sitetype': self.sitetype,
+                'baseurl': self.baseurl,
+                'basepath': self.basepath,
+                'jenkins_cron_job': self.jenkins_cron_job,
+                'location': self.location,
+                'api_key': self.api_key}
 
 
 class SiteDetail(Model):
@@ -254,9 +224,8 @@ class SiteDetail(Model):
     id = Column(Integer, primary_key=True)
     # points to the owning site
     site_id = Column(Integer, ForeignKey('sites.id',
-                                                  use_alter=True,
-                                                  name=
-                                                  'fk_site_details_site_id'))
+                                         use_alter=True,
+                                         name='fk_site_details_site_id'))
     courses = Column(Text())
     siteversion = Column(String(255))
     siterelease = Column(String(255))
@@ -268,19 +237,6 @@ class SiteDetail(Model):
     totalcourses = Column(Integer)
     timemodified = Column(DateTime)
 
-    def __init__(self, siteversion, siterelease, adminemail,
-                 totalusers, adminusers, teachers, activeusers,
-                 totalcourses, timemodified):
-        self.siteversion = siteversion
-        self.siterelease = siterelease
-        self.adminemail = adminemail
-        self.totalusers = totalusers
-        self.adminusers = adminusers
-        self.teachers = teachers
-        self.activeusers = activeusers
-        self.totalcourses = totalcourses
-        self.timemodified = timemodified
-
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % \
                (self.siteversion, self.siterelease, self.adminemail,
@@ -288,18 +244,18 @@ class SiteDetail(Model):
                 self.activeusers, self.totalcourses, self.timemodified)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'site_id' : self.site_id,
-                 'courses' : self.courses,
-                 'siteversion' : self.siteversion,
-                 'siterelease' : self.siterelease,
-                 'adminemail' : self.adminemail,
-                 'totalusers' : self.totalusers,
-                 'adminusers' : self.adminusers,
-                 'teachers' : self.teachers,
-                 'activeusers' : self.activeusers,
-                 'totalcourses' : self.totalcourses,
-                 'timemodified' : self.timemodified }
+        return {'id': self.id,
+                'site_id': self.site_id,
+                'courses': self.courses,
+                'siteversion': self.siteversion,
+                'siterelease': self.siterelease,
+                'adminemail': self.adminemail,
+                'totalusers': self.totalusers,
+                'adminusers': self.adminusers,
+                'teachers': self.teachers,
+                'activeusers': self.activeusers,
+                'totalcourses': self.totalcourses,
+                'timemodified': self.timemodified}
 
 
 class Course(Model):
@@ -319,17 +275,7 @@ class Course(Model):
     source = Column(String(255))
 
     course_details = relationship("CourseDetail",
-                                     backref=backref('course',
-                                                        order_by=id))
-
-    def __init__(self, serial, name, shortname,
-                 license=None, category=None, source=None):
-        self.serial = serial
-        self.name = name
-        self.shortname = shortname
-        self.license = license
-        self.category = category
-        self.source = source
+                                  backref=backref('course', order_by=id))
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s')>" % \
@@ -340,22 +286,22 @@ class Course(Model):
         return ['id', 'serial', 'name', 'shortname', 'license', 'category']
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'serial' : self.serial,
-                 'name' : self.name,
-                 'shortname' : self.shortname,
-                 'license' : self.license,
-                 'category' : self.category,
-                 'source' : self.source }
+        return {'id': self.id,
+                'serial': self.serial,
+                'name': self.name,
+                'shortname': self.shortname,
+                'license': self.license,
+                'category': self.category,
+                'source': self.source}
 
 
 class CourseDetail(Model):
     __tablename__ = 'course_details'
     id = Column(Integer, primary_key=True)
     course_id = Column(Integer,
-                          ForeignKey('courses.id',
-                                        use_alter=True,
-                                        name='fk_course_details_site_id'))
+                       ForeignKey('courses.id',
+                                  use_alter=True,
+                                  name='fk_course_details_site_id'))
     # just the name, with extension, no path
     filename = Column(String(255))
     # course version number (could be a string, ask client on format)
@@ -366,16 +312,6 @@ class CourseDetail(Model):
     moodle_version = Column(String(255))
     moodle_course_id = Column(Integer)
 
-    def __init__(self, course_id, filename, version, updated,
-                 active, moodle_version, moodle_course_id):
-        self.course_id = course_id
-        self.filename = filename
-        self.version = version
-        self.updated = updated
-        self.active = active
-        self.moodle_version = moodle_version
-        self.moodle_course_id = moodle_course_id
-
     def __repr__(self):
         return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
                (self.course_id, self.filename, self.version, self.updated,
@@ -383,10 +319,11 @@ class CourseDetail(Model):
                 self.moodle_course_version)
 
     def serialize(self):
-        return { 'id' : self.id,
-                 'course_id' : self.course_id,
-                 'filename' : self.filename,
-                 'version' : self.version,
-                 'updated' : self.updated,
-                 'active' : self.active,
-                 'moodle_version' : self.moodle_version }
+        return {'id': self.id,
+                'course_id': self.course_id,
+                'filename': self.filename,
+                'version': self.version,
+                'updated': self.updated,
+                'active': self.active,
+                'moodle_version': self.moodle_version,
+                'moodle_course_id': self.moodle_course_id}
