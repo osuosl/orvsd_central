@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, jsonify, request
+from flask import Blueprint, abort, g, jsonify, request
 
 from orvsd_central.database import db_session
 from orvsd_central.models import (Course, CourseDetail, District, School, Site,
