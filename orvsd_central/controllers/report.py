@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template
 from flask.ext.login import current_user, login_required
-from sqlalchemy import distinct
 
 from orvsd_central.models import Course, District, School, Site
 from orvsd_central.util import build_accordion
