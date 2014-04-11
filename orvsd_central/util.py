@@ -17,7 +17,7 @@ from oursql import connect, DictCursor
 from orvsd_central import app, constants, celery, login_manager
 from orvsd_central.database import db_session
 from orvsd_central.models import (District, School, Site, SiteDetail,
-                              Course, CourseDetail, User)
+                                  Course, CourseDetail, User)
 
 
 def build_accordion(districts, active_accordion_id, inactive_accordion_id,
@@ -179,9 +179,9 @@ def district_details(schools):
                                                 .desc()) \
                                       .first()
             if details:
-                admin_count += details.adminusers if details.adminusers else 0
-                teacher_count += details.teachers if details.teachers else 0
-                user_count += details.totalusers if details.totalusers else 0
+                admin_count += details.adminusers or 0
+                teacher_count += details.teachers or 0
+                user_count += details.totalusers or 0
 
     return {'admins': admin_count,
             'teachers': teacher_count,
