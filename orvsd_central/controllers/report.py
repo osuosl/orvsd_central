@@ -15,20 +15,14 @@ def index():
     Returns a rendered template for the index/report page.
     """
     all_districts = District.query.order_by("name").all()
-    dist_count = len(all_districts)
-    school_count = School.query.count()
-    site_count = Site.query.count()
-    course_count = Course.query.count()
 
-    accord_id = "dist_accord"
+    active_accord_id = "dist_accord_active"
+    inactive_accord_id = "dist_accord_inactive"
     dist_id = "distid=%s"
 
-    data = build_accordion(all_districts, accord_id, "district", dist_id)
+    data = build_accordion(all_districts, active_accord_id,
+                           inactive_accord_id, "district", dist_id)
 
     return render_template("report.html",
                            datadump=data,
-                           dist_count=dist_count,
-                           school_count=school_count,
-                           site_count=site_count,
-                           course_count=course_count,
                            user=current_user)

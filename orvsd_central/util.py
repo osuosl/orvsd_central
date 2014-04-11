@@ -9,8 +9,9 @@ from datetime import datetime, date, time, timedelta
 from functools import wraps
 
 import requests
-from flask import flash, redirect, session
+from flask import flash, jsonify, redirect, session
 from flask.ext.login import current_user
+from sqlalchemy import not_
 from oursql import connect, DictCursor
 
 from orvsd_central import app, constants, celery, login_manager
@@ -19,25 +20,64 @@ from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
 
 
-def build_accordion(objects, accordion_id, type, extra=None):
+def build_accordion(districts, active_accordion_id, inactive_accordion_id,
+                    type, extra=None):
     """
     Builds the accordion from pre-defined templates.
     """
     inner_t = app.jinja_env.get_template('accordion_inner.html')
     outer_t = app.jinja_env.get_template('accordion.html')
 
-    inner = ""
+    active_inner = ""
+    inactive_inner = ""
 
-    for obj in objects:
-        inner_id = re.sub(r'[^a-zA-Z0-9]', '', obj.shortname)
-        inner += inner_t.render(accordion_id=accordion_id,
-                                inner_id=inner_id,
-                                type=type,
-                                link=obj.name,
-                                extra=None if not extra else extra % obj.id)
+    # Get a list of all sites from SiteDetails
+    active_sites = [int(x[0]) for x in
+                    db_session.query(SiteDetail.site_id).distinct().all()]
 
-    return outer_t.render(accordion_id=accordion_id,
-                          dump=inner)
+    inactive_sites = [int(x[0]) for x in
+                        db_session.query(Site.id).filter(
+                                        not_(Site.id.in_(active_sites))
+                                    ).all()]
+
+    # Parse in/active_sites for all in/active school ids
+    active_school_ids = dict((int(x[0]), True) for x in db_session.query(Site.school_id).filter(
+                    Site.id.in_(active_sites)).distinct().all())
+
+    inactive_school_ids = dict((int(x[0]), True) for x in db_session.query(Site.school_id).filter(
+                    Site.id.in_(inactive_sites)).distinct().all())
+
+    for district in districts:
+        if district.schools:
+            # Make sure the schools have relevant sites
+            active_found, inactive_found = False, False
+            for school in district.schools:
+                inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
+                if active_school_ids.get(school.id) and not active_found:
+                    inner_id += '_active'
+                    active_found = True
+                    active_inner += inner_t.render(accordion_id=active_accordion_id,
+                                                   inner_id=inner_id,
+                                                   type=type,
+                                                   link=district.name,
+                                                   extra=None if not extra else
+                                                       extra % district.id)
+                elif inactive_school_ids.get(school.id) and not inactive_found:
+                    inner_id += '_inactive'
+                    inactive_found = True
+                    inactive_inner += inner_t.render(accordion_id=inactive_accordion_id,
+                                                   inner_id=inner_id,
+                                                   type=type,
+                                                   link=district.name,
+                                                   extra=None if not extra else
+                                                       extra % district.id)
+                if active_found and inactive_found:
+                    break
+
+    return outer_t.render(active_accordion_id=active_accordion_id,
+                          inactive_accordion_id=inactive_accordion_id,
+                          active=active_inner,
+                          inactive=inactive_inner)
 
 
 def create_course_from_moodle_backup(base_path, source, file_path):
@@ -139,9 +179,9 @@ def district_details(schools):
                                                 .desc()) \
                                       .first()
             if details:
-                admin_count += details.adminusers
-                teacher_count += details.teachers
-                user_count += details.totalusers
+                admin_count += details.adminusers or 0
+                teacher_count += details.teachers or 0
+                user_count += details.totalusers or 0
 
     return {'admins': admin_count,
             'teachers': teacher_count,
@@ -208,96 +248,115 @@ def gather_siteinfo():
                     if d['location'][:3] == 'php':
                         location = 'platform'
                     else:
-                        location = d['location']
-                else:
-                    location = 'unknown'
+                        location = 'unknown'
 
-                # get the school
-                school = School.query.filter_by(domain=school_url).first()
-                # if no school exists, create a new one with
-                # name = sitename, district_id = 0 (special 'Unknown'
-                # district)
-                if school is None:
-                    school = School(name=d['sitename'],
-                                    shortname=d['sitename'],
-                                    domain=school_url,
-                                    license='',
-                                    state_id=None,
-                                    county="")
-                    school.district_id = 0
-                    db_session.add(school)
+                    # get the school
+                    school = School.query.filter_by(domain=school_url).first()
+                    # if no school exists, create a new one with
+                    # name = sitename, district_id = 0 (special 'Unknown'
+                    # district)
+                    if school is None:
+                        school = School(name=d['sitename'],
+                                        shortname=d['sitename'],
+                                        domain=school_url,
+                                        license='',
+                                        state_id=None)
+                        dist_id = 0
+                        if school_url:
+                            # Lets try the full school_url first.
+                            similar_schools = db_session.query(School).filter(
+                                School.domain.like("%" + school_url + "%")
+                            ).all()
+                            if not similar_schools:
+                                # Fine, let's cut off the first subdomain.
+                                broad_url = school_url[school_url.find('.'):]
+                                similar_schools = db_session.query(School) \
+                                    .filter(School.domain.like(
+                                        "%" + broad_url + "%"
+                                    )).all()
+                            if similar_schools:
+                                dist_id = similar_schools[0].district_id
+                                for school in similar_schools:
+                                    if school.district_id != dist_id:
+                                        # If all results don't match, they
+                                        # aren't accurate enough.
+                                        dist_id = 0
+                                        break
+
+                        school.district_id = dist_id
+                        db_session.add(school)
+                        db_session.commit()
+
+                    # find the site
+                    site = Site.query.filter_by(baseurl=school_url).first()
+                    # if no site exists, make a new one, school_id = school.id
+                    if site is None:
+                        site = Site(name=d['sitename'],
+                                    sitetype=d['sitetype'],
+                                    baseurl='',
+                                    basepath='',
+                                    jenkins_cron_job=None,
+                                    location='',
+                                    school_id=None)
+
+                    site.school_id = school.id
+
+                    site.baseurl = school_url
+                    site.basepath = d['basepath']
+                    site.location = location
+                    db_session.add(site)
                     db_session.commit()
 
-                # find the site
-                site = Site.query.filter_by(baseurl=school_url).first()
-                # if no site exists, make a new one, school_id = school.id
-                if site is None:
-                    site = Site(name=d['sitename'],
-                                sitetype=d['sitetype'],
-                                baseurl='',
-                                basepath='',
-                                jenkins_cron_job=None,
-                                location='',
-                                school_id=None)
+                    # create new site_details table
+                    # site_id = site.id, timemodified = now()
+                    now = datetime.now()
+                    site_details = SiteDetail(siteversion=d['siteversion'],
+                                              siterelease=d['siterelease'],
+                                              adminemail=d['adminemail'],
+                                              totalusers=d['totalusers'],
+                                              adminusers=d['adminusers'],
+                                              teachers=d['teachers'],
+                                              activeusers=d['activeusers'],
+                                              totalcourses=d['totalcourses'],
+                                              timemodified=now)
+                    site_details.site_id = site.id
 
-                site.school_id = school.id
+                    # if there are courses on this site, try to
+                    # associate them with our catalog
+                    if d['courses']:
+                        # quick and ugly check to make sure we have
+                        # a json string
+                        if d['courses'][:2] != '[{':
+                            continue
 
-                site.baseurl = school_url
-                site.basepath = d['basepath']
-                site.location = location
-                db_session.add(site)
-                db_session.commit()
+                        """
+                        @TODO: create the correct association
+                               model for this to work
 
-                # create new site_details table
-                # site_id = site.id, timemodified = now()
-                now = datetime.now()
-                site_details = SiteDetail(siteversion=d['siteversion'],
-                                          siterelease=d['siterelease'],
-                                          adminemail=d['adminemail'],
-                                          totalusers=d['totalusers'],
-                                          adminusers=d['adminusers'],
-                                          teachers=d['teachers'],
-                                          activeusers=d['activeusers'],
-                                          totalcourses=d['totalcourses'],
-                                          timemodified=now)
-                site_details.site_id = site.id
+                        courses = json.loads(d['courses'])
+                        associated_courses = []
 
-                # if there are courses on this site, try to
-                # associate them with our catalog
-                if d['courses']:
-                    # quick and ugly check to make sure we have
-                    # a json string
-                    if d['courses'][:2] != '[{':
-                        continue
+                        for i, course in enumerate(courses):
+                            if course['serial'] != '0':
+                                course_serial = course['serial'][:4]
+                                orvsd_course = Course.query
+                                                     .filter_by(serial=
+                                                                course_serial)
+                                                     .first()
+                                if orvsd_course:
+                                    # store this association
+                                    # delete this course from the json string
+                                    pass
 
-                    """
-                    @TODO: create the correct association
-                           model for this to work
+                        # put all the unknown courses back in the
+                        # site_details record
+                        site_details.courses = json.dumps(courses)
+                        """
 
-                    courses = json.loads(d['courses'])
-                    associated_courses = []
+                        site_details.courses = d['courses']
 
-                    for i, course in enumerate(courses):
-                        if course['serial'] != '0':
-                            course_serial = course['serial'][:4]
-                            orvsd_course = Course.query
-                                                 .filter_by(serial=
-                                                            course_serial)
-                                                 .first()
-                            if orvsd_course:
-                                # store this association
-                                # delete this course from the json string
-                                pass
-
-                    # put all the unknown courses back in the
-                    # site_details record
-                    site_details.courses = json.dumps(courses)
-                    """
-
-                    site_details.courses = d['courses']
-
-                db_session.add(site_details)
-                db_session.commit()
+                    db_session.add(site_details)
+                    db_session.commit()
 
 
 def get_course_folders(base_path):
@@ -365,6 +424,61 @@ def get_path_and_source(base_path, file_path):
     """
     path = file_path.strip(base_path).partition('/')
     return path[0]+'/', path[2]
+
+
+def get_schools(dist_id, active):
+    """
+    Gets the active or inactive schools for a given ditrict.
+    """
+
+    # Given the distid, we get all the schools
+    if dist_id:
+        schools = School.query.filter_by(district_id=dist_id) \
+                              .order_by("name").all()
+    else:
+        schools = School.query.order_by("name").all()
+
+    # the dict to be jsonify'd
+    school_list = {}
+
+    for school in schools:
+        sitedata = []
+        admincount = 0
+        teachercount = 0
+        usercount = 0
+
+        sites = Site.query.filter(Site.school_id == school.id).all()
+        for site in sites:
+            admin = None
+            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
+                                 .order_by(SiteDetail.timemodified.desc())\
+                                 .first()
+            if sd and active:
+                admin = sd.adminemail
+                admincount = admincount + sd.adminusers
+                teachercount = teachercount + sd.teachers
+                usercount = usercount + sd.totalusers
+                sitedata.append({'name': site.name,
+                                 'baseurl': site.baseurl,
+                                 'sitetype': site.sitetype,
+                                 'admin': admin})
+
+            elif not sd and not active:
+                sitedata.append({'name': site.name,
+                                 'baseurl': site.baseurl,
+                                 'sitetype': site.sitetype,
+                                 'admin': admin})
+
+        usercount = usercount - admincount - teachercount
+        school_list[school.shortname] = {'name': school.name,
+                                         'id': school.id,
+                                         'admincount': admincount,
+                                         'teachercount': teachercount,
+                                         'usercount': usercount,
+                                         'sitedata': sitedata}
+
+    # Returned the jsonify'd data of counts and schools for jvascript to parse
+    return jsonify(schools=school_list, counts=district_details(schools))
 
 
 @celery.task(name='tasks.install_course')

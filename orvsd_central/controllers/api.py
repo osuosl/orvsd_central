@@ -1,9 +1,12 @@
 from flask import Blueprint, abort, jsonify, request
 
 from orvsd_central.database import db_session
-from orvsd_central.models import Course, CourseDetail, School, Site, SiteDetail
+from orvsd_central.models import (District, Course, CourseDetail, School, Site,
+                                  SiteDetail)
 from orvsd_central.util import (district_details, get_obj_by_category,
-                                string_to_type)
+                                get_schools, string_to_type)
+
+from collections import defaultdict
 
 
 mod = Blueprint('api', __name__)
@@ -145,56 +148,24 @@ def get_object(category, id):
     abort(404)
 
 
-@mod.route('/report/get_schools', methods=['POST'])
-def get_schools():
+@mod.route('/report/get_active_schools', methods=['POST'])
+def get_active_schools():
     """
-    Returns a JSONified list of all schools or for a given district.
-    Each 'school' contains the number of admins, teachers, and totalusers
-    for the given school too.
+    Returns all active schools for a district.
     """
     # From the POST, we need the district id, or distid
     dist_id = request.form.get('distid')
+    return get_schools(dist_id, True)
 
-    # Given the distid, we get all the schools
-    if dist_id:
-        schools = School.query.filter_by(district_id=dist_id) \
-                              .order_by("name").all()
-    else:
-        schools = School.query.order_by("name").all()
 
-    # the dict to be jsonify'd
-    school_list = {}
-
-    for school in schools:
-        sitedata = []
-        sites = Site.query.filter(Site.school_id == school.id).all()
-        admincount = 0
-        teachercount = 0
-        usercount = 0
-        for site in sites:
-            admin = None
-            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
-                                 .order_by(SiteDetail.timemodified.desc())\
-                                 .first()
-            if sd:
-                admin = sd.adminemail
-                admincount = admincount + sd.adminusers
-                teachercount = teachercount + sd.teachers
-                usercount = usercount + sd.totalusers
-            sitedata.append({'name': site.name,
-                             'baseurl': site.baseurl,
-                             'sitetype': site.sitetype,
-                             'admin': admin})
-        usercount = usercount - admincount - teachercount
-        school_list[school.shortname] = {'name': school.name,
-                                         'id': school.id,
-                                         'admincount': admincount,
-                                         'teachercount': teachercount,
-                                         'usercount': usercount,
-                                         'sitedata': sitedata}
-
-    # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return jsonify(schools=school_list, counts=district_details(schools))
+@mod.route('/report/get_inactive_schools', methods=['POST'])
+def get_inactive_schools():
+    """
+    Returns all inactive schools for a district.
+    """
+    # From the POST, we need the district id, or distid
+    dist_id = request.form.get('distid')
+    return get_schools(dist_id, False)
 
 
 @mod.route("/1/sites/<baseurl>")
@@ -228,6 +199,34 @@ def get_task_status(celery_id):
                                        " WHERE id=:celery_id")\
                        .params(celery_id=celery_id).first()
     return jsonify(status=status)
+
+
+@mod.route("/1/report/stats")
+def report_stats():
+    stats = defaultdict(int)
+
+    stats['districts'] = District.query.count()
+    stats['schools'] = School.query.count()
+    stats['sites'] = Site.query.count()
+    stats['courses'] = Course.query.count()
+
+    # Get sites we have details for.
+    sds = db_session.query(SiteDetail.site_id).distinct()
+    # Convert the single element tuple with a long, to a simple integer.
+    for sd in map(lambda x: int(x[0]), sds):
+        # Get each's most recent result.
+        info = SiteDetail.query.filter_by(site_id=sd) \
+                                      .order_by(SiteDetail
+                                                .timemodified
+                                                .desc()) \
+                                      .first()
+
+        stats['adminusers'] += info.adminusers or 0
+        stats['teachers'] += info.teachers or 0
+        stats['totalusers'] += info.totalusers or 0
+        stats['activeusers'] += info.activeusers or 0
+
+    return jsonify(stats)
 
 
 @mod.route('/get_site_by/<int:site_id>', methods=['GET'])
