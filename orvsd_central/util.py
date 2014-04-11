@@ -18,6 +18,7 @@ import requests
 from sqlalchemy import not_
 
 from orvsd_central import constants
+from orvsd_central.database import create_db_session
 from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
 
@@ -63,6 +64,10 @@ def shutdown_session(exception=False):
     if g.get('db_session'):
         g.db_session.remove()
 
+@current_app.before_request
+def setup_db_session():
+    if not g.get('db_session'):
+        g.db_session = create_db_session()
 
 @current_app.errorhandler(404)
 def page_not_found(e):
