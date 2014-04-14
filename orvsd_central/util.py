@@ -455,9 +455,9 @@ def get_schools(dist_id, active):
                                  .first()
             if sd and active:
                 admin = sd.adminemail
-                admincount = admincount + sd.adminusers
-                teachercount = teachercount + sd.teachers
-                usercount = usercount + sd.totalusers
+                admincount += sd.adminusers or 0
+                teachercount += sd.teachers or 0
+                usercount += sd.totalusers or 0
                 sitedata.append({'name': site.name,
                                  'baseurl': site.baseurl,
                                  'sitetype': site.sitetype,
