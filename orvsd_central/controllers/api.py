@@ -1,6 +1,5 @@
 from flask import Blueprint, abort, g, jsonify, request
 
-from orvsd_central.database import db_session
 from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (district_details, get_obj_by_category,
@@ -211,7 +210,7 @@ def report_stats():
     stats['courses'] = Course.query.count()
 
     # Get sites we have details for.
-    sds = db_session.query(SiteDetail.site_id).distinct()
+    sds = g.db_session.query(SiteDetail.site_id).distinct()
     # Convert the single element tuple with a long, to a simple integer.
     for sd in map(lambda x: int(x[0]), sds):
         # Get each's most recent result.

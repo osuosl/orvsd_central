@@ -87,18 +87,18 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
 
     # Get a list of all sites from SiteDetails
     active_sites = [int(x[0]) for x in
-                    db_session.query(SiteDetail.site_id).distinct().all()]
+                    g.db_session.query(SiteDetail.site_id).distinct().all()]
 
     inactive_sites = [int(x[0]) for x in
-                        db_session.query(Site.id).filter(
+                        g.db_session.query(Site.id).filter(
                                         not_(Site.id.in_(active_sites))
                                     ).all()]
 
     # Parse in/active_sites for all in/active school ids
-    active_school_ids = dict((int(x[0]), True) for x in db_session.query(Site.school_id).filter(
+    active_school_ids = dict((int(x[0]), True) for x in g.db_session.query(Site.school_id).filter(
                     Site.id.in_(active_sites)).distinct().all())
 
-    inactive_school_ids = dict((int(x[0]), True) for x in db_session.query(Site.school_id).filter(
+    inactive_school_ids = dict((int(x[0]), True) for x in g.db_session.query(Site.school_id).filter(
                     Site.id.in_(inactive_sites)).distinct().all())
 
     for district in districts:
@@ -318,13 +318,13 @@ def gather_siteinfo():
                         dist_id = 0
                         if school_url:
                             # Lets try the full school_url first.
-                            similar_schools = db_session.query(School).filter(
+                            similar_schools = g.db_session.query(School).filter(
                                 School.domain.like("%" + school_url + "%")
                             ).all()
                             if not similar_schools:
                                 # Fine, let's cut off the first subdomain.
                                 broad_url = school_url[school_url.find('.'):]
-                                similar_schools = db_session.query(School) \
+                                similar_schools = g.db_session.query(School) \
                                     .filter(School.domain.like(
                                         "%" + broad_url + "%"
                                     )).all()
@@ -338,8 +338,8 @@ def gather_siteinfo():
                                         break
 
                         school.district_id = dist_id
-                        db_session.add(school)
-                        db_session.commit()
+                        g.db_session.add(school)
+                        g.db_session.commit()
 
                     # find the site
                     site = Site.query.filter_by(baseurl=school_url).first()
@@ -358,8 +358,8 @@ def gather_siteinfo():
                     site.baseurl = school_url
                     site.basepath = d['basepath']
                     site.location = location
-                    db_session.add(site)
-                    db_session.commit()
+                    g.db_session.add(site)
+                    g.db_session.commit()
 
                     # create new site_details table
                     # site_id = site.id, timemodified = now()
@@ -409,8 +409,8 @@ def gather_siteinfo():
 
                         site_details.courses = d['courses']
 
-                    db_session.add(site_details)
-                    db_session.commit()
+                    g.db_session.add(site_details)
+                    g.db_session.commit()
 
 
 def get_course_folders(base_path):
