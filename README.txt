@@ -7,6 +7,15 @@ HOW TO do Migrations:
     This will initialize the migration repo.
     Then to perform migrations, run db_migrate.py.  This will update the db based on information in models.py.
 
+Initializing/Setting up the application:
+    Create and source your virtualenv:
+        virtualenv env
+        source env/bin/activate
+
+    Install dependencies:
+        sudo yum install libxslt-devel, libxml2-devel
+        pip install -r requirements.txt
+
 Running the server:
 
     Start by running:
