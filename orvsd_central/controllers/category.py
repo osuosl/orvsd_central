@@ -1,7 +1,7 @@
 import json
 import os
 
-from flask import Blueprint, current_app, flash, render_template, request
+from flask import Blueprint, abort, current_app, flash, render_template, request
 from flask.ext.login import current_user, login_required
 from sqlalchemy import and_
 
