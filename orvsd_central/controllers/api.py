@@ -1,7 +1,6 @@
-from flask import Blueprint, abort, jsonify, request
+from flask import Blueprint, abort, g, jsonify, request
 
-from orvsd_central.database import db_session
-from orvsd_central.models import (District, Course, CourseDetail, School, Site,
+from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (district_details, get_obj_by_category,
                                 get_schools, string_to_type)
@@ -35,8 +34,8 @@ def add_object(category):
                                request.form.get(column.name))})
 
         new_obj = obj(**inputs)
-        db_session.add(new_obj)
-        db_session.commit()
+        g.db_session.add(new_obj)
+        g.db_session.commit()
         return jsonify({'id': new_obj.id,
                         'message': "Object added successfully!"})
 
@@ -52,7 +51,7 @@ def get_all_ids():
     """
     # TODO: "result" is another column, but SQLAlchemy
     # complains of some encoding error.
-    statuses = db_session.query("id", "task_id", "status",
+    statuses = g.db_session.query("id", "task_id", "status",
                                 "date_done", "traceback")\
                          .from_statement("SELECT * FROM celery_taskmeta")\
                          .all()
@@ -92,12 +91,12 @@ def get_course_list():
     if dir == "None":
         courses = CourseDetail.query.all()
     else:
-        courses = db_session.query(CourseDetail).join(Course) \
+        courses = g.db_session.query(CourseDetail).join(Course) \
                     .filter(Course.source == dir).all()
 
     # This means the folder selected was not the source folder or None.
     if not courses:
-        courses = db_session.query(CourseDetail).filter(CourseDetail.filename
+        courses = g.db_session.query(CourseDetail).filter(CourseDetail.filename
                                                         .like("%"+dir+"%"))\
                                                 .all()
 
@@ -194,7 +193,7 @@ def get_task_status(celery_id):
     """
     Returns a JSONified status of a celery job identified by 'celery_id'.
     """
-    status = db_session.query("status")\
+    status = g.db_session.query("status")\
                        .from_statement("SELECT status FROM celery_taskmeta"
                                        " WHERE id=:celery_id")\
                        .params(celery_id=celery_id).first()
@@ -211,7 +210,7 @@ def report_stats():
     stats['courses'] = Course.query.count()
 
     # Get sites we have details for.
-    sds = db_session.query(SiteDetail.site_id).distinct()
+    sds = g.db_session.query(SiteDetail.site_id).distinct()
     # Convert the single element tuple with a long, to a simple integer.
     for sd in map(lambda x: int(x[0]), sds):
         # Get each's most recent result.
