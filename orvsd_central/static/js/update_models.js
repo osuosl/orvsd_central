@@ -22,6 +22,8 @@ $(document).on("ready", function() {
         url = "/" + category;
         $.get(url + "/keys", function(resp) {
             var rows = "";
+            // Generate a new form with keys corresponding to a Model's
+            // attributes.
             for (var key in resp) {
                 rows += generate_row(key, "");
             }
@@ -33,9 +35,11 @@ $(document).on("ready", function() {
     $("input[type=submit]").on("click", function() {
         data = new Object();
         data[$(this).val()] = $(this).val();
+        // Generate our JSON from the form to be sent back to the server.
         for (var key_name in pairs) {
             data[key_name] = $("#"+key_name).val();
         }
+        // Data 'id' will be blank if we are adding a new object.
         if (data["id"] == "") {
             $.post(url + "/object/add", data).done(function(resp) {
                 $("#message").html(resp["message"]);
@@ -43,7 +47,16 @@ $(document).on("ready", function() {
             });
         }
         else {
-            $.post(url + "/" + $(this).attr("name"), data).done(function(resp) {
+            // Posts to /update or /delete, depending on the button that
+            // was clicked.
+            method = $(this).attr("name");
+            $.post(url + "/" + method, data).done(function(resp) {
+                // If we are deleting an object, we should clear all
+                // references to that data.
+                if (method === "delete") {
+                    $("#form").empty();
+                    $("#object_list option:selected").remove();
+                }
                 $("#message").html(resp);
             });
         }
