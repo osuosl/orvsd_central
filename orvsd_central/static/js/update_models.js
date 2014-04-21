@@ -1,23 +1,16 @@
 $(document).on("ready", function() {
-    var pairs;
     // [1] will skip the first /, which returns an empty string and
     // give the category we are looking for.
     var category = window.location.pathname.split("/")[1]
+
+    // Stores the current keys and vals for the object we are looking at.
+    var pairs = display_obj($("#object_list option:selected"), category);
     var url;
+
     $("#object_list").on("change", function() {
-        url = "/" + category + "/" + $(this).val();
-        $.get(url, function(resp) {
-            var rows = "";
-            for (var key in resp) {
-                rows += generate_row(key, resp[key]);
-            }
-            $("#form").empty();
-            $("#form").html(rows);
-            $("#message").empty();
-            pairs = resp;
+        pairs = display_obj($(this), category);
     });
 
-    });
     $("#add").on("click", function() {
         url = "/" + category;
         $.get(url + "/keys", function(resp) {
@@ -32,6 +25,7 @@ $(document).on("ready", function() {
             pairs = resp;
         });
     });
+
     $("input[type=submit]").on("click", function() {
         data = new Object();
         data[$(this).val()] = $(this).val();
@@ -62,6 +56,20 @@ $(document).on("ready", function() {
         }
     });
 });
+
+function display_obj(obj, category) {
+    var url = "/" + category + "/" + obj.val();
+    $.get(url, function(resp) {
+        var rows = "";
+        for (var key in resp) {
+            rows += generate_row(key, resp[key]);
+        }
+        $("#form").empty();
+        $("#form").html(rows);
+        $("#message").empty();
+        return resp;
+    });
+}
 
 // Used to generate the html for an input field for an attribute.
 function generate_row(key, value) {
