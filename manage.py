@@ -4,7 +4,7 @@ from flask.ext.script import Manager
 from orvsd_central import attach_blueprints, create_app
 from orvsd_central.database import create_db_session, init_db
 
-def setup_app(config):
+def setup_app(config=None):
     app = create_app(config) if config else create_app()
     with app.app_context():
         g.db_session = create_db_session()
@@ -22,3 +22,5 @@ def initdb():
 
 if __name__ == '__main__':
     manager.run()
+else:
+    app = setup_app()
