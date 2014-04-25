@@ -1,5 +1,5 @@
 import os
-_basedir = os.path.abspath(os.path.dirname(__file__))
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = False
 
@@ -11,7 +11,7 @@ DATABASE_CONNECT_OPTIONS = {}
 CSRF_ENABLED = True
 CSRF_SESSION_KEY = "your csrf session key"
 
-SQLALCHEMY_MIGRATE_REPO = os.path.join(_basedir, 'migrations')
+SQLALCHEMY_MIGRATE_REPO = os.path.join(PROJECT_PATH, 'migrations')
 
 # Moodle course install web service definitions
 INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
