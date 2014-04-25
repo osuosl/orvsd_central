@@ -15,6 +15,13 @@ manager = Manager(setup_app)
 manager.add_option('-c', '--config', dest='config')
 
 @manager.command
+def gather():
+    with current_app.app_context():
+        from orvsd_central.util import gather_siteinfo
+        g.db_session = create_db_session()
+        gather_siteinfo()
+
+@manager.command
 def initdb():
     with current_app.app_context():
         g.db_session = create_db_session()
