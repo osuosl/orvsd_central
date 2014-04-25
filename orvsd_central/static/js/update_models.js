@@ -1,7 +1,8 @@
 $(document).on("ready", function() {
     // [1] will skip the first /, which returns an empty string and
     // give the category we are looking for.
-    var category = window.location.pathname.split("/")[1]
+    var category = window.location.pathname.split("/")[1];
+    var base_url = "/" + category;
     var pairs;
 
     pairs = display_obj($("#object_list option:selected"), category);
@@ -13,8 +14,7 @@ $(document).on("ready", function() {
     });
 
     $("#add").on("click", function() {
-        var url = "/" + category;
-        $.get(url + "/keys", function(resp) {
+        $.get(base_url + "/keys", function(resp) {
             var rows = "";
             // Generate a new form with keys corresponding to a Model's
             // attributes.
@@ -36,7 +36,8 @@ $(document).on("ready", function() {
         }
         // Data 'id' will be blank if we are adding a new object.
         if (data["id"] == "") {
-            $.post(url + "/object/add", data).done(function(resp) {
+            console.log("posting to add");
+            $.post(base_url + "/object/add", data).done(function(resp) {
                 $("#message").html(resp["message"]);
                 $("#id").val(resp["id"]);
             });
@@ -45,7 +46,7 @@ $(document).on("ready", function() {
             // Posts to /update or /delete, depending on the button that
             // was clicked.
             var method = $(this).attr("name");
-            var url = "/" + category + "/" + data['id'] + "/" + method;
+            var url = base_url + "/" + data['id'] + "/" + method;
             $.post(url, data).done(function(resp) {
                 if (method === "delete") {
                     // Remove all references to old object
@@ -69,7 +70,7 @@ $(document).on("ready", function() {
     });
 
     function display_obj(obj, category) {
-        var url = "/" + category + "/" + obj.val();
+        var url = base_url + "/" + obj.val();
         $.get(url, function(resp) {
             var rows = "";
             for (var key in resp) {
