@@ -156,7 +156,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
         Nothing
     """
     # Needed to delete extracted xml once operation is done
-    project_folder = "/home/vagrant/orvsd_central/"
+    project_folder = current_app.config["PROJECT_PATH"]
 
     # Unzip the file to get the manifest (All course backups are zip files)
     zip = zipfile.ZipFile(base_path+source+file_path)
