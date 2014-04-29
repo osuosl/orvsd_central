@@ -36,7 +36,6 @@ $(document).on("ready", function() {
         }
         // Data 'id' will be blank if we are adding a new object.
         if (data["id"] == "") {
-            console.log("posting to add");
             $.post(base_url + "/object/add", data).done(function(resp) {
                 $("#message").html(resp["message"]);
                 $("#id").val(resp["id"]);
