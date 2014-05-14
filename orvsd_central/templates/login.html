@@ -4,6 +4,10 @@
     <title>Login</title>
 {% endblock %}
 
+{% block head %}
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/zocial.css') }}"/>
+{% endblock %}
+
 {% block content %}
 <form method="POST">
     <fieldset>
