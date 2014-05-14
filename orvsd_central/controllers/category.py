@@ -200,7 +200,7 @@ def install_course():
                                user=current_user)
 
 
-@mod.route("/courses/update", methods=['GET', 'POST'])
+@mod.route("/courses/list/update", methods=['GET', 'POST'])
 @requires_role('helpdesk')
 @login_required
 def update_courselist():
