@@ -3,7 +3,8 @@ from flask import Blueprint, abort, g, jsonify, request
 from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (district_details, get_obj_by_category,
-                                get_schools, string_to_type)
+                                get_obj_identifier, get_schools,
+                                string_to_type)
 
 from collections import defaultdict
 
@@ -25,6 +26,7 @@ def add_object(category):
     """
     obj = get_obj_by_category(category)
     if obj:
+        identifier = get_obj_identifier(category);
         inputs = {}
         # Here we update our dict with new values
         # A one liner is too messy :(
@@ -37,6 +39,8 @@ def add_object(category):
         g.db_session.add(new_obj)
         g.db_session.commit()
         return jsonify({'id': new_obj.id,
+                        'identifier': identifier,
+                        identifier: inputs[identifier],
                         'message': "Object added successfully!"})
 
     abort(404)
