@@ -14,32 +14,60 @@ $(document).on("ready", function() {
     });
 
     $("#add").on("click", function() {
-        $.get(base_url + "/keys", function(resp) {
-            var rows = "";
-            // Generate a new form with keys corresponding to a Model's
-            // attributes.
-            for (var key in resp) {
-                rows += generate_row(key, "");
-            }
-            $("#form").empty();
-            $("#form").html(rows);
-            pairs = resp;
-        });
-    });
-
-    $("input[type=submit]").on("click", function() {
-        data = new Object();
-        data[$(this).val()] = $(this).val();
-        // Generate our JSON from the form to be sent back to the server.
-        for (var key_name in pairs) {
-            data[key_name] = $("#"+key_name).val();
+        if ($("#add").val() === "Add") {
+            $.get(base_url + "/keys", function(resp) {
+                var rows = "";
+                // Generate a new form with keys corresponding to a Model's
+                // attributes.
+                for (var key in resp) {
+                    rows += generate_row(key, "");
+                }
+                $("#form").empty();
+                $("#form").html(rows);
+                pairs = resp;
+            });
+            $("#add").val("Submit");
+            var option = document.createElement("option");
+            $("#object_list").prepend(option);
+            $(option).attr('selected', 'selected');
         }
-        // Data 'id' will be blank if we are adding a new object.
-        if (data["id"] == "") {
+        else {
+            var data = get_form_data($(this));
             $.post(base_url + "/object/add", data).done(function(resp) {
                 $("#message").html(resp["message"]);
                 $("#id").val(resp["id"]);
+
+                // 'identifier' determines which key we use to identify an
+                // element.
+                var name = resp[resp["identifier"]];
+                insert_and_sort_list(name, resp["id"]);
+
+                reset_add_if_submit();
             });
+        }
+    });
+
+    $("input[type=submit]").on("click", function() {
+        var data = get_form_data($(this));
+
+        // Data 'id' will be blank if we are adding a new object.
+        // A user may either use the 'Submit' or 'Update' functionality for
+        // adding a new item.
+        if (data["id"] == "" && $(this).val() !== "Delete") {
+            $.post(base_url + "/object/add", data).done(function(resp) {
+                $("#message").html(resp["message"]);
+                $("#id").val(resp["id"]);
+
+                // 'identifier' determines which key we use to identify an
+                // element.
+                var name = resp[resp["identifier"]]
+                insert_and_sort_list(name, resp["id"]);
+            });
+            reset_add_if_submit();
+        }
+        else if (data["id"] == "" && $(this).val() === "Delete") {
+                var message = "You may not delete elements that do not exist!";
+                $("#message").html(message);
         }
         else {
             // Posts to /update or /delete, depending on the button that
@@ -65,6 +93,7 @@ $(document).on("ready", function() {
                 }
                 $("#message").html(resp);
             });
+            reset_add_if_submit();
         }
     });
 
@@ -82,6 +111,32 @@ $(document).on("ready", function() {
         });
         // Return keys and vals for the object we recieved.
         return pairs;
+    }
+    function get_form_data(obj) {
+        data = new Object();
+        data[obj.val()] = obj.val();
+        // Generate our JSON from the form to be sent back to the server.
+        for (var key_name in pairs) {
+            data[key_name] = $("#"+key_name).val();
+        }
+        return data;
+    }
+    function insert_and_sort_list(name, value) {
+        option = $("#object_list option:selected");
+        option.val(value);
+        option.text(name);
+
+        // Sorts the option list. Not the most efficient, but our data
+        // set is small, so it shouldn't cause performance issues.
+        $("#object_list").html($('#object_list option').sort(function(x, y) {
+             return $(x).text() < $(y).text() ? -1 : 1;
+        }));
+    }
+    function reset_add_if_submit() {
+        // Reset the button text to 'Add' if we decide to do something else.
+        if ($("#add").val() === "Submit") {
+            $("#add").val("Add");
+        }
     }
 });
 
