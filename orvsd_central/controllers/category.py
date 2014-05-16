@@ -46,6 +46,32 @@ def update(category):
     abort(404)
 
 
+@mod.route("/<category>/<id>/update", methods=["POST"])
+def update_object(category, id):
+    """
+    Given an 'category' and 'id' updates the given object with data included
+    in the form.
+    """
+    obj = get_obj_by_category(category)
+    identifier = get_obj_identifier(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            inputs = {}
+            # Here we update our dict with new
+            [inputs.update({key: string_to_type(request.form.get(key))})
+             for key in modified_obj.serialize().keys()]
+
+            g.db_session.query(obj).filter_by(id=request.form.get("id"))\
+                                   .update(inputs)
+            g.db_session.commit()
+            return jsonify({'identifier': identifier,
+                            identifier: inputs[identifier],
+                            'message': "Object updated successfully!"})
+
+    abort(404)
+
+
 """
 Course
 """
@@ -81,12 +107,12 @@ def install_course():
 
         # For all sites query the SiteDetail to see if it's a moodle 2.2 site
         for site in sites:
-            details = g.db_session.query(SiteDetail) \
-                                .filter(and_(SiteDetail.site_id == site.id,
-                                             SiteDetail.siterelease
-                                                       .like('2.2%'))) \
-                                .order_by(SiteDetail.timemodified.desc()
-                                          ).first()
+            details = g.db_session.query(SiteDetail).filter(
+                and_(
+                    SiteDetail.site_id == site.id,
+                    SiteDetail.siterelease.like('2.2%')
+                )
+            ).order_by(SiteDetail.timemodified.desc()).first()
 
             if details is not None:
                 moodle_22_sites.append(site)
@@ -117,8 +143,10 @@ def install_course():
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
         form.filter.choices = [(folder, folder)
                                for folder
-                               in get_course_folders(current_app.
-                                   config['INSTALL_COURSE_FILE_PATH'])]
+                               in get_course_folders(
+                               current_app.
+                               config['INSTALL_COURSE_FILE_PATH']
+                               )]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
@@ -134,9 +162,9 @@ def install_course():
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
                      for site_id in site_ids]
 
-        courses = g.db_session.query(CourseDetail).filter(
-                            CourseDetail.course_id.in_(selected_courses)
-                        ).all()
+        courses = g.db_session.query(CourseDetail)\
+                              .filter(CourseDetail
+                                      .course_id.in_(selected_courses)).all()
 
         for site_url in site_urls:
             # The site to install the courses
@@ -237,8 +265,9 @@ def view_schools(id):
     """
     Returns and renders a template with a list of sites for a given school.
     """
-    min_users = 1  # This should be an editable field on the template
-                   # that modifies which courses are shown via js.
+    # This should be an editable field on the template
+    # that modifies which courses are shown via js.
+    min_users = 1
 
     school = School.query.filter_by(id=id).first()
     # School license usually defaults to ''.

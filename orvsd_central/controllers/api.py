@@ -2,9 +2,8 @@ from flask import Blueprint, abort, g, jsonify, request
 
 from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
-from orvsd_central.util import (district_details, get_obj_by_category,
-                                get_obj_identifier, get_schools,
-                                string_to_type)
+from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
+                                get_schools, string_to_type)
 
 from collections import defaultdict
 
@@ -26,7 +25,7 @@ def add_object(category):
     """
     obj = get_obj_by_category(category)
     if obj:
-        identifier = get_obj_identifier(category);
+        identifier = get_obj_identifier(category)
         inputs = {}
         # Here we update our dict with new values
         # A one liner is too messy :(
@@ -72,9 +71,9 @@ def get_all_ids():
     # TODO: "result" is another column, but SQLAlchemy
     # complains of some encoding error.
     statuses = g.db_session.query("id", "task_id", "status",
-                                "date_done", "traceback")\
-                         .from_statement("SELECT * FROM celery_taskmeta")\
-                         .all()
+                                  "date_done", "traceback")\
+                .from_statement("SELECT * FROM celery_taskmeta")\
+                .all()
 
     return jsonify(status=statuses)
 
@@ -111,7 +110,7 @@ def get_courses_by_site(site_id):
     Returns a JSONified list of course details from the most recent
     site_details object for a given site_id.
     """
-    #SiteDetails hold the course information we are looking for
+    # SiteDetails hold the course information we are looking for
     site_details = SiteDetail.query.filter_by(site_id=site_id) \
                                    .order_by(SiteDetail
                                              .timemodified
@@ -138,13 +137,13 @@ def get_course_list():
         courses = CourseDetail.query.all()
     else:
         courses = g.db_session.query(CourseDetail).join(Course) \
-                    .filter(Course.source == dir).all()
+                   .filter(Course.source == dir).all()
 
     # This means the folder selected was not the source folder or None.
     if not courses:
-        courses = g.db_session.query(CourseDetail).filter(CourseDetail.filename
-                                                        .like("%"+dir+"%"))\
-                                                .all()
+        courses = g.db_session.query(CourseDetail).filter(
+            CourseDetail.filename.like("%"+dir+"%")
+        ).all()
 
     courses = sorted(courses, key=lambda x: x.course.name)
 
@@ -239,10 +238,11 @@ def get_task_status(celery_id):
     """
     Returns a JSONified status of a celery job identified by 'celery_id'.
     """
-    status = g.db_session.query("status")\
-                       .from_statement("SELECT status FROM celery_taskmeta"
-                                       " WHERE id=:celery_id")\
-                       .params(celery_id=celery_id).first()
+    status = g.db_session.query("status").from_statement(
+        "SELECT status FROM celery_taskmeta"
+        " WHERE id=:celery_id"
+    ).params(celery_id=celery_id).first()
+
     return jsonify(status=status)
 
 
@@ -260,11 +260,9 @@ def report_stats():
     # Convert the single element tuple with a long, to a simple integer.
     for sd in map(lambda x: int(x[0]), sds):
         # Get each's most recent result.
-        info = SiteDetail.query.filter_by(site_id=sd) \
-                                      .order_by(SiteDetail
-                                                .timemodified
-                                                .desc()) \
-                                      .first()
+        info = SiteDetail.query.filter_by(site_id=sd).order_by(
+            SiteDetail.timemodified.desc()
+        ).first()
 
         stats['adminusers'] += info.adminusers or 0
         stats['teachers'] += info.teachers or 0

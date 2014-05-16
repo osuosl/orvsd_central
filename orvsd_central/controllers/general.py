@@ -31,7 +31,7 @@ def register():
     """
     Returns a registration template for creating new users.
     """
-    #user=current_user
+    # user=current_user
     form = AddUser()
     message = ""
 
@@ -43,11 +43,13 @@ def register():
             message = "Invalid email address!\n"
         else:
             # Add user to db
-            g.db_session.add(User(name=form.user.data,
-                                email=form.email.data,
-                                password=form.password.data,
-                                role=constants.USER_PERMS
-                                              .get(form.role.data, 1)))
+            g.db_session.add(User(
+                name=form.user.data,
+                email=form.email.data,
+                password=form.password.data,
+                role=constants.USER_PERMS.get(form.role.data, 1)
+            ))
+
             g.db_session.commit()
             message = form.user.data + " has been added successfully!\n"
 
@@ -102,8 +104,8 @@ def google_login():
         obj = req.json()
         email = obj['email']
         user = User.query.filter_by(email=email).first()
-        #pop access token so it isn't sitting around in our
-        #session any longer than nescessary
+        # pop access token so it isn't sitting around in our
+        # session any longer than nescessary
         session.pop('access_token', None)
         if user is not None:
             login_user(user)
