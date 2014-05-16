@@ -4,6 +4,7 @@ from flask.ext.script import Manager
 from orvsd_central import attach_blueprints, create_app
 from orvsd_central.database import create_db_session, init_db
 
+
 def setup_app(config=None):
     """
     Creates an instance of our application.
@@ -22,6 +23,7 @@ def setup_app(config=None):
 manager = Manager(setup_app)
 manager.add_option('-c', '--config', dest='config')
 
+
 @manager.command
 def gather():
     """
@@ -31,6 +33,7 @@ def gather():
         from orvsd_central.util import gather_siteinfo
         g.db_session = create_db_session()
         gather_siteinfo()
+
 
 @manager.command
 def initdb():
