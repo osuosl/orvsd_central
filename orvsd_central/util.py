@@ -2,11 +2,10 @@
 Utility class containing useful methods not tied to specific models or views
 """
 from bs4 import BeautifulSoup as Soup
-import json
 import os
 import re
 import zipfile
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, time
 from functools import wraps
 
 from celery import Celery
@@ -62,6 +61,7 @@ def init_celery():
 
 celery = init_celery()
 
+
 @current_app.teardown_appcontext
 def shutdown_session(exception=False):
     """
@@ -69,6 +69,7 @@ def shutdown_session(exception=False):
     """
     if g.get('db_session'):
         g.db_session.remove()
+
 
 @current_app.before_request
 def setup_db_session():
@@ -79,13 +80,14 @@ def setup_db_session():
     if not g.get('db_session'):
         g.db_session = create_db_session()
 
+
 @current_app.errorhandler(404)
 def page_not_found(e):
     """
     Standard page not found handler.
     """
     return render_template('404.html', user=current_user), 404#
-
+    
 
 def build_accordion(districts, active_accordion_id, inactive_accordion_id,
                     type, extra=None):
@@ -107,16 +109,19 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
                     g.db_session.query(SiteDetail.site_id).distinct().all()]
 
     inactive_sites = [int(x[0]) for x in
-                        g.db_session.query(Site.id).filter(
-                                        not_(Site.id.in_(active_sites))
-                                    ).all()]
+                      g.db_session.query(Site.id).
+                      filter(not_(Site.id.in_(active_sites))).all()]
 
     # Parse in/active_sites for all in/active school ids
-    active_school_ids = dict((int(x[0]), True) for x in g.db_session.query(Site.school_id).filter(
-                    Site.id.in_(active_sites)).distinct().all())
+    active_school_ids = dict((int(x[0]), True) for x in
+                             g.db_session.query(Site.school_id).filter(
+                                 Site.id.in_(active_sites)).distinct().all()
+                             )
 
-    inactive_school_ids = dict((int(x[0]), True) for x in g.db_session.query(Site.school_id).filter(
-                    Site.id.in_(inactive_sites)).distinct().all())
+    inactive_school_ids = dict((int(x[0]), True) for x in
+                               g.db_session.query(Site.school_id).filter(
+                                   Site.id.in_(inactive_sites)).distinct()
+                               .all())
 
     for district in districts:
         if district.schools:
@@ -127,28 +132,35 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
                 if active_school_ids.get(school.id) and not active_found:
                     inner_id += '_active'
                     active_found = True
-                    active_inner += inner_t.render(accordion_id=active_accordion_id,
-                                                   inner_id=inner_id,
-                                                   type=type,
-                                                   link=district.name,
-                                                   extra=None if not extra else
-                                                       extra % district.id)
+                    active_inner += inner_t.render(
+                        accordion_id=active_accordion_id,
+                        inner_id=inner_id,
+                        type=type,
+                        link=district.name,
+                        extra=None if not extra else
+                        extra % district.id
+                    )
                 elif inactive_school_ids.get(school.id) and not inactive_found:
                     inner_id += '_inactive'
                     inactive_found = True
-                    inactive_inner += inner_t.render(accordion_id=inactive_accordion_id,
-                                                   inner_id=inner_id,
-                                                   type=type,
-                                                   link=district.name,
-                                                   extra=None if not extra else
-                                                       extra % district.id)
+                    inactive_inner += inner_t.render(
+                        accordion_id=inactive_accordion_id,
+                        inner_id=inner_id,
+                        type=type,
+                        link=district.name,
+                        extra=None if not extra else
+                        extra % district.id
+                    )
+
                 if active_found and inactive_found:
                     break
 
-    return outer_t.render(active_accordion_id=active_accordion_id,
-                          inactive_accordion_id=inactive_accordion_id,
-                          active=active_inner,
-                          inactive=inactive_inner)
+    return outer_t.render(
+        active_accordion_id=active_accordion_id,
+        inactive_accordion_id=inactive_accordion_id,
+        active=active_inner,
+        inactive=inactive_inner
+    )
 
 
 def create_course_from_moodle_backup(base_path, source, file_path):
@@ -338,9 +350,10 @@ def gather_siteinfo():
                         dist_id = 0
                         if school_url:
                             # Lets try the full school_url first.
-                            similar_schools = g.db_session.query(School).filter(
-                                School.domain.like("%" + school_url + "%")
-                            ).all()
+                            similar_schools = g.db_session.query(School).\
+                                filter(
+                                    School.domain.like("%" + school_url + "%")
+                                ).all()
                             if not similar_schools:
                                 # Fine, let's cut off the first subdomain.
                                 broad_url = school_url[school_url.find('.'):]

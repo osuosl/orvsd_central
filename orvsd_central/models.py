@@ -44,7 +44,7 @@ class User(Model):
     # 2 = Helpdesk
     # 3 = Admin
     role = Column(SmallInteger, default=1)
-    #Possibly another column for current status
+    # Possibly another column for current status
 
     def __init__(self, name, email, password, role):
         self.name = name
