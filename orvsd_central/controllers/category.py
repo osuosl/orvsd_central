@@ -180,8 +180,8 @@ def install_course():
             site = ("http://%s/webservice/rest/server.php?" +
                     "wstoken=%s&wsfunction=%s") % (
                 site_url,
-                current_current_app.config['INSTALL_COURSE_WS_TOKEN'],
-                current_current_app.config['INSTALL_COURSE_WS_FUNCTION'])
+                current_app.config['INSTALL_COURSE_WS_TOKEN'],
+                current_app.config['INSTALL_COURSE_WS_FUNCTION'])
             site = str(site.encode('utf-8'))
 
             # Loop through the courses, generate the command to be run, run it,
