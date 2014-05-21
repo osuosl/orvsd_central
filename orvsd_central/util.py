@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup as Soup
 import json
 import os
 import re
+import zipfile
 from datetime import datetime, date, time, timedelta
 from functools import wraps
 
@@ -161,7 +162,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     # Unzip the file to get the manifest (All course backups are zip files)
     zip = zipfile.ZipFile(base_path+source+file_path)
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
-    xml = Soup(xmlfile.read(), "xml")
+    xml = Soup(xmlfile.read(), "lxml")
     info = xml.moodle_backup.information
 
     old_course = Course.query.filter_by(
@@ -204,7 +205,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     g.db_session.commit()
 
     #Get rid of moodle_backup.xml
-    os.remove(project_folder+"moodle_backup.xml")
+    os.remove(os.path.join(project_folder, "moodle_backup.xml"))
 
 
 def district_details(schools):
