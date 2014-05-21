@@ -162,7 +162,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     # Unzip the file to get the manifest (All course backups are zip files)
     zip = zipfile.ZipFile(base_path+source+file_path)
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
-    xml = Soup(xmlfile.read(), "xml")
+    xml = Soup(xmlfile.read(), "lxml")
     info = xml.moodle_backup.information
 
     old_course = Course.query.filter_by(
