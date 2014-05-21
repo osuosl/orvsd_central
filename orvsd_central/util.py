@@ -205,7 +205,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     g.db_session.commit()
 
     #Get rid of moodle_backup.xml
-    os.remove(project_folder+"moodle_backup.xml")
+    os.remove(os.path.join(project_folder, "moodle_backup.xml"))
 
 
 def district_details(schools):
