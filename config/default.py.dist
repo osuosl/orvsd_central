@@ -1,6 +1,9 @@
 import os
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
+# Get rid of the /config at the end.
+PROJECT_PATH = '/'.join(PROJECT_PATH.split('/')[:-1]) + '/'
+
 DEBUG = False
 
 SECRET_KEY = "your secret key, keep this secret!"
