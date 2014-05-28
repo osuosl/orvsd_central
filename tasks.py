@@ -1,5 +1,7 @@
 from celery import Celery
-from orvsd_central import app
+from flask import current_app
+
+from manage import setup_app
 
 def init_celery(app):
     celery = Celery("tasks", broker=app.config['CELERY_BROKER_URL'])
@@ -13,7 +15,9 @@ def init_celery(app):
     celery.Task = ContextTask
     return celery
 
-celery = init_celery(app)
+celery_app = setup_app()
+with celery_app.app_context():
+    celery = init_celery(current_app)
 
 if __name__ == "__main__":
     celery.start()
