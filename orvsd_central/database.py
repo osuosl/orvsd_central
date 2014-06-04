@@ -40,7 +40,7 @@ def init_db():
         if not matching:
             print "Passwords do not match. Please try again."
 
-    # Role 3 is admin
+    # Get admin role.
     admin_role = USER_PERMS.get('admin')
     admin = models.User(name=username,
                         email=email,
