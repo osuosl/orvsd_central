@@ -5,15 +5,18 @@ $(document).on("ready", function() {
     var base_url = "/" + category;
     var pairs;
 
+    // Set the current form element keys, and generate the form
+    // off the first selected object.
     pairs = display_obj($("#object_list option:selected"), category);
 
-    // Stores the current keys and vals for the object we are looking at.
-
+    // Change which object we display when the selected option changes.
     $("#object_list").on("change", function() {
         pairs = display_obj($(this), category);
     });
 
+    // Add new object.
     $("#add").on("click", function() {
+        // Generate empty form for object.
         if ($("#add").val() === "Add") {
             $.get(base_url + "/keys", function(resp) {
                 var rows = "";
@@ -31,6 +34,7 @@ $(document).on("ready", function() {
             $("#object_list").prepend(option);
             $(option).attr('selected', 'selected');
         }
+        // Add new object to database.
         else {
             var data = get_form_data($(this));
             $.post(base_url + "/object/add", data).done(function(resp) {
@@ -65,6 +69,7 @@ $(document).on("ready", function() {
             });
             reset_add_if_submit();
         }
+        // Delete an object.
         else if (data["id"] == "" && $(this).val() === "Delete") {
                 var message = "You may not delete elements that do not exist!";
                 $("#message").html(message);
@@ -97,6 +102,7 @@ $(document).on("ready", function() {
         }
     });
 
+    // Display an object for a given category, and return that object's keys.
     function display_obj(obj, category) {
         var url = base_url + "/" + obj.val();
         $.get(url, function(resp) {
@@ -112,6 +118,8 @@ $(document).on("ready", function() {
         // Return keys and vals for the object we recieved.
         return pairs;
     }
+
+    // Get the data from the current form elements.
     function get_form_data(obj) {
         data = new Object();
         data[obj.val()] = obj.val();
@@ -121,6 +129,9 @@ $(document).on("ready", function() {
         }
         return data;
     }
+
+    // Used for adding new objects. Adds the new object and re-sorts the list
+    // so it's in the correct spot.
     function insert_and_sort_list(name, value) {
         option = $("#object_list option:selected");
         option.val(value);
@@ -132,8 +143,8 @@ $(document).on("ready", function() {
              return $(x).text() < $(y).text() ? -1 : 1;
         }));
     }
+    // Reset the button text to 'Add' if it's currently 'Submit'.
     function reset_add_if_submit() {
-        // Reset the button text to 'Add' if we decide to do something else.
         if ($("#add").val() === "Submit") {
             $("#add").val("Add");
         }
@@ -155,6 +166,7 @@ function generate_row(key, value) {
     return html;
 }
 
+// Capitalize a string.
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }

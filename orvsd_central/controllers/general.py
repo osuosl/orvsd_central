@@ -16,6 +16,9 @@ mod = Blueprint('general', __name__)
 
 @mod.route('/')
 def root():
+    """
+    Returns the report page if a user is logged in, otherwise the login page.
+    """
     if not current_user.is_anonymous():
         return redirect(url_for('report.index'))
     return redirect(url_for('general.login'))
@@ -25,6 +28,9 @@ def root():
 @requires_role('admin')
 @login_required
 def register():
+    """
+    Returns a registration template for creating new users.
+    """
     #user=current_user
     form = AddUser()
     message = ""
@@ -51,6 +57,11 @@ def register():
 
 @mod.route("/login", methods=['GET', 'POST'])
 def login():
+    """
+    Handles login.
+    * login_user is a function from Flask-Login for handling authentication,
+      sessions, and more for logins.
+    """
     form = LoginForm(csrf_enabled=False)
     if form.validate_on_submit():
         # login and validate the user...
@@ -67,6 +78,9 @@ def login():
 
 @mod.route("/google_login")
 def google_login():
+    """
+    Handles login through google oauth instead of through our system.
+    """
     access_token = session.get('access_token')
     if access_token is None:
         callback = url_for('general.authorized', _external=True)
@@ -102,6 +116,9 @@ def google_login():
 @mod.route("/logout")
 @login_required
 def logout():
+    """
+    Logs out a user.
+    """
     logout_user()
     return redirect(url_for("general.login"))
 
@@ -109,6 +126,9 @@ def logout():
 @mod.route(current_app.config['REDIRECT_URI'])
 @google.authorized_handler
 def authorized(resp):
+    """
+    Checks an access token set by google for authorization to log in.
+    """
     access_token = resp['access_token']
     session['access_token'] = access_token
     return redirect(url_for('general.google_login'))
@@ -116,10 +136,16 @@ def authorized(resp):
 
 @google.tokengetter
 def get_access_token():
+    """
+    Gets the session's access token.
+    """
     return session.get('access_token')
 
 
 @login_manager.unauthorized_handler
 def unauthorized():
+    """
+    Handler for unauthorized users. Returns the user to a login page.
+    """
     flash('You are not authorized to view this page, please login.')
     return redirect(url_for('general.login'))
