@@ -30,6 +30,7 @@ dump_schools = function(a, d) {
 };
 
 $(function() {
+    // Fill in the statistics at the top of the page.
     $(window).on("load", function() {
         $.get("/1/report/stats", function(resp) {
             for (var key in resp) {
@@ -38,8 +39,10 @@ $(function() {
         });
     });
 
+    // Show the schools in a given district.
     $(".districtcollapse").on("show", function() {
         var elem = $(this);
+        // Hacky way to check whether we're in the active or inactive districts
         if (elem.parent().parent().attr('id') == 'dist_accord_active') {
             $.ajax({
                 type: "POST",
