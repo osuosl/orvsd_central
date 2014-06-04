@@ -82,7 +82,7 @@ def update_object(category, id):
             g.db_session.commit()
             return jsonify({'identifier': identifier,
                             identifier: inputs[identifier],
-                            'message': "Object added successfully!"})
+                            'message': "Object updated successfully!"})
 
     abort(404)
 
