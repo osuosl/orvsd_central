@@ -1,8 +1,8 @@
 import json
 import os
 
-from flask import (Blueprint, abort, current_app, flash, g, render_template,
-                   request)
+from flask import (Blueprint, abort, current_app, flash, g, jsonify,
+                   render_template, request)
 from flask.ext.login import current_user, login_required
 from sqlalchemy import and_
 
@@ -68,6 +68,7 @@ def update_object(category, id):
     in the form.
     """
     obj = get_obj_by_category(category)
+    identifier = get_obj_identifier(category)
     if obj:
         modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
         if modified_obj:
@@ -79,8 +80,9 @@ def update_object(category, id):
             g.db_session.query(obj).filter_by(id=request.form.get("id"))\
                                  .update(inputs)
             g.db_session.commit()
-
-            return "Object updated sucessfully!"
+            return jsonify({'identifier': identifier,
+                            identifier: inputs[identifier],
+                            'message': "Object added successfully!"})
 
     abort(404)
 
