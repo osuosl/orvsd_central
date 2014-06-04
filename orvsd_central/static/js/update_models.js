@@ -95,8 +95,14 @@ $(document).on("ready", function() {
                         next = $("#object_list option:selected");
                     }
                     pairs = display_obj(next, category);
+                    $("#message").html(resp);
                 }
-                $("#message").html(resp);
+                else {
+                    var name = resp[resp["identifier"]];
+                    console.log(resp);
+                    $("#object_list option:selected").text(name);
+                    $("#message").html(resp["message"]);
+                }
             });
             reset_add_if_submit();
         }
