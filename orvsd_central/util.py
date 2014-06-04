@@ -23,6 +23,7 @@ from orvsd_central.database import create_db_session
 from orvsd_central.models import (District, School, Site, SiteDetail,
                                   Course, CourseDetail, User)
 
+# Set up a google oath object for user authentication.
 google = OAuth().remote_app(
     'google',
     base_url='https://www.google.com/accounts/',
@@ -38,6 +39,7 @@ google = OAuth().remote_app(
     consumer_key=current_app.config['GOOGLE_CLIENT_ID'],
     consumer_secret=current_app.config['GOOGLE_CLIENT_SECRET'])
 
+# Initialize the login manager for Flask-Login.
 login_manager = LoginManager()
 login_manager.setup_app(current_app)
 
@@ -62,16 +64,26 @@ celery = init_celery()
 
 @current_app.teardown_appcontext
 def shutdown_session(exception=False):
+    """
+    Destroys the current db_session if it exists.
+    """
     if g.get('db_session'):
         g.db_session.remove()
 
 @current_app.before_request
 def setup_db_session():
+    """
+    Creates a db_session if it doesn't exist.
+    * This is done before a request is processed.
+    """
     if not g.get('db_session'):
         g.db_session = create_db_session()
 
 @current_app.errorhandler(404)
 def page_not_found(e):
+    """
+    Standard page not found handler.
+    """
     return render_template('404.html', user=current_user), 404#
 
 
@@ -79,6 +91,10 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
                     type, extra=None):
     """
     Builds the accordion from pre-defined templates.
+    * Note: There is some complex logic in here to differentiate schools
+            with and without students/teachers/admins. These usually refer
+            back to the database entries that we have on districts/schools, but
+            are not continuously tracking.
     """
     inner_t = current_app.jinja_env.get_template('accordion_inner.html')
     outer_t = current_app.jinja_env.get_template('accordion.html')
@@ -246,7 +262,7 @@ def district_details(schools):
 def gather_siteinfo():
     """
     Gathers moodle/drupal site information to be put into our db.
-    This is the source for all of our SiteDetail objects.
+    * This is where all of our SiteDetail objects are generated.
     """
     user = current_app.config['SITEINFO_DATABASE_USER']
     password = current_app.config['SITEINFO_DATABASE_PASS']
@@ -566,6 +582,10 @@ def install_course_to_site(course, site):
 
 @login_manager.user_loader
 def load_user(userid):
+    """
+    Loads a user via a user_id.
+    * This is needed for Flask-Login.
+    """
     return User.query.filter_by(id=userid).first()
 
 
