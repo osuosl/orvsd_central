@@ -1,4 +1,5 @@
 $(function() {
+    // Update the list of sites to install courses to on a change.
     $('#site').change(function() {
         $("#selected-names").empty();
         $('#site option:selected').each(function() {
@@ -7,7 +8,7 @@ $(function() {
             });
         });
     });
-
+    // Update the list of courses to install on a change.
     $('#course').change(function() {
         var html = "";
         $('#course option:selected').each(function() {
@@ -15,7 +16,8 @@ $(function() {
         });
         $("#selected-courses").html(html);
     });
-     $("#filter").on("change", function() {
+    // Update the course list when the chosen filter changes.
+    $("#filter").on("change", function() {
         var filter = $(this).val()
         $.post("/courses/filter", $(this)).done(function(data) {
             $("#course").empty();
@@ -25,6 +27,9 @@ $(function() {
 });
 
 function generate_course_list(resp) {
+    /*
+    Generates a filtered list of courses from a giveb json response.
+    */
     var json = JSON.parse(JSON.stringify(resp));
     var html = "";
     $(json.courses).each(function(i, val) {
