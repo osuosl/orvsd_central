@@ -8,6 +8,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from orvsd_central.database import Model
 
+# A representation of the connection between the courses each site has
+# installed, and information about those course details.
 sites_courses = Table('sites_courses',
                       Model.metadata,
                       Column('site_id',
@@ -31,7 +33,7 @@ sites_courses = Table('sites_courses',
 
 class User(Model):
     """
-    User model for ORVSD_CENTRAL
+    A Model representation of your average User.
     """
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
@@ -87,7 +89,8 @@ class User(Model):
 
 class District(Model):
     """
-    Districts have many schools
+    A Model representation of a District.
+    * Districts have many schools.
     """
     __tablename__ = 'districts'
 
@@ -117,7 +120,8 @@ class District(Model):
 
 class School(Model):
     """
-    Schools belong to one district, have many sites and  many courses
+    A Model representation of a School.
+    * Schools belong to one district, may have many sites and courses.
     """
     __tablename__ = 'schools'
 
@@ -160,7 +164,8 @@ class School(Model):
 
 class Site(Model):
     """
-    A Site belongs to one school, and may have many SiteDetails.
+    A Model respresentation of a Site.
+    * Sites belong to one school, and may have many SiteDetails.
     """
     __tablename__ = 'sites'
 
@@ -262,7 +267,8 @@ class SiteDetail(Model):
 
 class Course(Model):
     """
-    Courses belong to many schools
+    A Model representation of a Course.
+    * Courses belong to many schools
     """
     __tablename__ = 'courses'
 
@@ -298,6 +304,9 @@ class Course(Model):
 
 
 class CourseDetail(Model):
+    """
+    A Model representation of a Course's details.
+    """
     __tablename__ = 'course_details'
     id = Column(Integer, primary_key=True)
     course_id = Column(Integer,
