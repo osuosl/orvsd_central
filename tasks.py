@@ -4,7 +4,7 @@ from flask import current_app
 from manage import setup_app
 
 def init_celery(app):
-    celery = Celery("tasks", broker=app.config['CELERY_BROKER_URL'])
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
     celery.conf.update(app.config)
     TaskBase = celery.Task
     class ContextTask(TaskBase):
@@ -16,8 +16,7 @@ def init_celery(app):
     return celery
 
 celery_app = setup_app()
-with celery_app.app_context():
-    celery = init_celery(current_app)
+celery = init_celery(celery_app)
 
 if __name__ == "__main__":
     celery.start()
