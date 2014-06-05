@@ -176,9 +176,9 @@ def install_course():
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
                      for site_id in site_ids]
 
-        courses = g.db_session.query(Course).filter(
-                                        Course.id.in_(selected_courses)
-                                    ).all()
+        courses = g.db_session.query(CourseDetail).filter(
+                            CourseDetail.course_id.in_(selected_courses)
+                        ).all()
 
         for site_url in site_urls:
             # The site to install the courses
@@ -195,7 +195,7 @@ def install_course():
             # Currently this will break as our db is not setup correctly yet
             for course in courses:
                 # Courses are detached from session if inactive for too long.
-                course.name
+                course.course.name
 
                 install_course_to_site.delay(course, site)
 
