@@ -95,7 +95,6 @@ $(document).on("ready", function() {
                         next = $("#object_list option:selected");
                     }
                     pairs = display_obj(next, category);
-                    $("#message").html(resp);
                 }
                 else {
                     var name = resp[resp["identifier"]];
@@ -103,6 +102,7 @@ $(document).on("ready", function() {
                     $("#object_list option:selected").text(name);
                     $("#message").html(resp["message"]);
                 }
+                $("#message").html(resp["message"]);
             });
             reset_add_if_submit();
         }

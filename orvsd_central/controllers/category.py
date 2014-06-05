@@ -33,7 +33,7 @@ def delete_object(category, id):
         if modified_obj:
             g.db_session.delete(modified_obj)
             g.db_session.commit()
-            return "Object deleted successful!"
+            return jsonify({'message': "Object deleted successfully!"})
 
     abort(404)
 
