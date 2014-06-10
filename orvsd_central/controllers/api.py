@@ -46,6 +46,22 @@ def add_object(category):
     abort(404)
 
 
+@mod.route("/<category>/<id>/delete", methods=["POST"])
+def delete_object(category, id):
+    """
+    Given an 'category' and 'id' deletes the given object from the db.
+    """
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            g.db_session.delete(modified_obj)
+            g.db_session.commit()
+            return jsonify({'message': "Object deleted successfully!"})
+
+    abort(404)
+
+
 # Get all task IDs
 # TODO: Needs testing
 @mod.route('/celery/id/all')
