@@ -2,7 +2,7 @@ $(document).on("ready", function() {
     // [1] will skip the first /, which returns an empty string and
     // give the category we are looking for.
     var category = window.location.pathname.split("/")[1];
-    var base_url = "/" + category;
+    var base_url = "/1/" + category;
     var pairs;
 
     // Set the current form element keys, and generate the form
