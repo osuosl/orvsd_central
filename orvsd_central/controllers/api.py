@@ -124,7 +124,7 @@ def get_keys(category):
         return jsonify(cols)
 
 
-@mod.route("/sites/<baseurl>/moodle")
+@mod.route("/site/<baseurl>/moodle")
 def get_moodle_sites(baseurl):
     """
     Returns a JSONified list of moodle site ids and names for sites that are
@@ -136,7 +136,7 @@ def get_moodle_sites(baseurl):
     return jsonify(content=data)
 
 
-@mod.route("/<category>/<id>", methods=["GET"])
+@mod.route("/<category>/<int:id>", methods=["GET"])
 def get_object(category, id):
     """
     Returns a JSONified dict of attributes on an object defined by it's 'id'
@@ -171,7 +171,7 @@ def get_inactive_schools():
     return get_schools(dist_id, False)
 
 
-@mod.route("/sites/<baseurl>")
+@mod.route("/site/<string:baseurl>")
 def get_site_by_url(baseurl):
     """
     Returns a combined JSONified of both Site and SiteDetail information
