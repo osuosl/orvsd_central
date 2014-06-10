@@ -224,7 +224,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     os.remove(os.path.join(project_folder, "moodle_backup.xml"))
 
 
-def district_details(schools):
+def district_details(schools, active):
     """
     district_details adds up the number of teachers, users, and admins of all
     the district's school's sites.
@@ -232,6 +232,7 @@ def district_details(schools):
     Args:
         schools (list): list of schools to total the users, teachers, and
          admins.
+        active: Are we calculating for an active or inactive district?
 
     Returns:
         dict. The total admins, teachers, and users of the schools
@@ -241,18 +242,20 @@ def district_details(schools):
     teacher_count = 0
     user_count = 0
 
-    for school in schools:
-        sites = Site.query.filter_by(school_id=school.id).all()
-        for site in sites:
-            details = SiteDetail.query.filter_by(site_id=site.id) \
-                                      .order_by(SiteDetail
-                                                .timemodified
-                                                .desc()) \
-                                      .first()
-            if details:
-                admin_count += details.adminusers or 0
-                teacher_count += details.teachers or 0
-                user_count += details.totalusers or 0
+    # Only look at counts if the schools are in the 'active' category.
+    if active:
+        for school in schools:
+            sites = Site.query.filter_by(school_id=school.id).all()
+            for site in sites:
+                details = SiteDetail.query.filter_by(site_id=site.id) \
+                                          .order_by(SiteDetail
+                                                    .timemodified
+                                                    .desc()) \
+                                          .first()
+                if details:
+                    admin_count += details.adminusers or 0
+                    teacher_count += details.teachers or 0
+                    user_count += details.totalusers or 0
 
     return {'admins': admin_count,
             'teachers': teacher_count,
@@ -549,7 +552,8 @@ def get_schools(dist_id, active):
                                          'sitedata': sitedata}
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return jsonify(schools=school_list, counts=district_details(schools))
+    return jsonify(schools=school_list,
+                   counts=district_details(schools, active))
 
 
 @celery.task(name='tasks.install_course')
