@@ -46,7 +46,7 @@ $(function() {
         if (elem.parent().parent().attr('id') == 'dist_accord_active') {
             $.ajax({
                 type: "POST",
-                url: "/report/get_active_schools",
+                url: "/1/report/get_active_schools",
                 data: {'distid': $(this).attr('distid')},
                 success: function(data) {
                     dump_schools(elem, data);
@@ -56,7 +56,7 @@ $(function() {
         else if (elem.parent().parent().attr('id') == 'dist_accord_inactive') {
             $.ajax({
                 type: "POST",
-                url: "/report/get_inactive_schools",
+                url: "/1/report/get_inactive_schools",
                 data: {'distid': $(this).attr('distid')},
                 success: function(data) {
                     dump_schools(elem, data);
@@ -65,4 +65,3 @@ $(function() {
         }
     });
 });
-

@@ -3,7 +3,7 @@ $(function() {
     $('#site').change(function() {
         $("#selected-names").empty();
         $('#site option:selected').each(function() {
-            $.get('/get_site_by/' + $(this).val(), function(data) {
+            $.get('/1/get_site_by/' + $(this).val(), function(data) {
                 $("#selected-names").append("Name: <i>" + data.name + "</i></br>");
             });
         });
@@ -38,4 +38,3 @@ function generate_course_list(resp) {
                     .text(val.name));
         });
 }
-

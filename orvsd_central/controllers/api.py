@@ -9,7 +9,7 @@ from orvsd_central.util import (district_details, get_obj_by_category,
 from collections import defaultdict
 
 
-mod = Blueprint('api', __name__)
+mod = Blueprint('api', __name__, url_prefix="/1")
 
 
 @mod.route("/<category>/object/add", methods=["POST"])
@@ -46,6 +46,22 @@ def add_object(category):
     abort(404)
 
 
+@mod.route("/<category>/<id>/delete", methods=["POST"])
+def delete_object(category, id):
+    """
+    Given an 'category' and 'id' deletes the given object from the db.
+    """
+    obj = get_obj_by_category(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            g.db_session.delete(modified_obj)
+            g.db_session.commit()
+            return jsonify({'message': "Object deleted successfully!"})
+
+    abort(404)
+
+
 # Get all task IDs
 # TODO: Needs testing
 @mod.route('/celery/id/all')
@@ -63,7 +79,33 @@ def get_all_ids():
     return jsonify(status=statuses)
 
 
-@mod.route("/1/site/<site_id>/courses")
+@mod.route("/<category>/<id>/update", methods=["POST"])
+def update_object(category, id):
+    """
+    Given an 'category' and 'id' updates the given object with data included
+    in the form.
+    """
+    obj = get_obj_by_category(category)
+    identifier = get_obj_identifier(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            inputs = {}
+            # Here we update our dict with new
+            [inputs.update({key: string_to_type(request.form.get(key))})
+             for key in modified_obj.serialize().keys()]
+
+            g.db_session.query(obj).filter_by(id=request.form.get("id"))\
+                                 .update(inputs)
+            g.db_session.commit()
+            return jsonify({'identifier': identifier,
+                            identifier: inputs[identifier],
+                            'message': "Object updated successfully!"})
+
+    abort(404)
+
+
+@mod.route("/site/<site_id>/courses")
 def get_courses_by_site(site_id):
     """
     Returns a JSONified list of course details from the most recent
@@ -124,7 +166,7 @@ def get_keys(category):
         return jsonify(cols)
 
 
-@mod.route("/1/sites/<baseurl>/moodle")
+@mod.route("/site/<baseurl>/moodle")
 def get_moodle_sites(baseurl):
     """
     Returns a JSONified list of moodle site ids and names for sites that are
@@ -136,7 +178,7 @@ def get_moodle_sites(baseurl):
     return jsonify(content=data)
 
 
-@mod.route("/<category>/<id>", methods=["GET"])
+@mod.route("/<category>/<int:id>", methods=["GET"])
 def get_object(category, id):
     """
     Returns a JSONified dict of attributes on an object defined by it's 'id'
@@ -171,7 +213,7 @@ def get_inactive_schools():
     return get_schools(dist_id, False)
 
 
-@mod.route("/1/sites/<baseurl>")
+@mod.route("/site/<string:baseurl>")
 def get_site_by_url(baseurl):
     """
     Returns a combined JSONified of both Site and SiteDetail information
@@ -204,7 +246,7 @@ def get_task_status(celery_id):
     return jsonify(status=status)
 
 
-@mod.route("/1/report/stats")
+@mod.route("/report/stats")
 def report_stats():
     stats = defaultdict(int)
 
