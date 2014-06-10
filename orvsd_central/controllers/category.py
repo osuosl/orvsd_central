@@ -7,12 +7,13 @@ from flask.ext.login import current_user, login_required
 from sqlalchemy import and_
 
 from orvsd_central.forms import InstallCourse
-from orvsd_central.models import (CourseDetail, District, School, Site,
+from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (create_course_from_moodle_backup,
                                 get_course_folders, get_path_and_source,
                                 get_obj_by_category, get_obj_identifier,
-                                string_to_type, requires_role)
+                                install_course_to_site, string_to_type,
+                                requires_role)
 
 mod = Blueprint('category', __name__)
 
@@ -175,13 +176,17 @@ def install_course():
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
                      for site_id in site_ids]
 
+        courses = g.db_session.query(CourseDetail).filter(
+                            CourseDetail.course_id.in_(selected_courses)
+                        ).all()
+
         for site_url in site_urls:
             # The site to install the courses
             site = ("http://%s/webservice/rest/server.php?" +
                     "wstoken=%s&wsfunction=%s") % (
                 site_url,
-                current_current_app.config['INSTALL_COURSE_WS_TOKEN'],
-                current_current_app.config['INSTALL_COURSE_WS_FUNCTION'])
+                current_app.config['INSTALL_COURSE_WS_TOKEN'],
+                current_app.config['INSTALL_COURSE_WS_FUNCTION'])
             site = str(site.encode('utf-8'))
 
             # Loop through the courses, generate the command to be run, run it,
