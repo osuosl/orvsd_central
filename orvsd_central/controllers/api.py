@@ -9,7 +9,7 @@ from orvsd_central.util import (district_details, get_obj_by_category,
 from collections import defaultdict
 
 
-mod = Blueprint('api', __name__)
+mod = Blueprint('api', __name__, url_prefix="/1")
 
 
 @mod.route("/<category>/object/add", methods=["POST"])
@@ -63,7 +63,7 @@ def get_all_ids():
     return jsonify(status=statuses)
 
 
-@mod.route("/1/site/<site_id>/courses")
+@mod.route("/site/<site_id>/courses")
 def get_courses_by_site(site_id):
     """
     Returns a JSONified list of course details from the most recent
@@ -124,7 +124,7 @@ def get_keys(category):
         return jsonify(cols)
 
 
-@mod.route("/1/sites/<baseurl>/moodle")
+@mod.route("/sites/<baseurl>/moodle")
 def get_moodle_sites(baseurl):
     """
     Returns a JSONified list of moodle site ids and names for sites that are
@@ -171,7 +171,7 @@ def get_inactive_schools():
     return get_schools(dist_id, False)
 
 
-@mod.route("/1/sites/<baseurl>")
+@mod.route("/sites/<baseurl>")
 def get_site_by_url(baseurl):
     """
     Returns a combined JSONified of both Site and SiteDetail information
@@ -204,7 +204,7 @@ def get_task_status(celery_id):
     return jsonify(status=status)
 
 
-@mod.route("/1/report/stats")
+@mod.route("/report/stats")
 def report_stats():
     stats = defaultdict(int)
 
