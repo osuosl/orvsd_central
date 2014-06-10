@@ -79,6 +79,32 @@ def get_all_ids():
     return jsonify(status=statuses)
 
 
+@mod.route("/<category>/<id>/update", methods=["POST"])
+def update_object(category, id):
+    """
+    Given an 'category' and 'id' updates the given object with data included
+    in the form.
+    """
+    obj = get_obj_by_category(category)
+    identifier = get_obj_identifier(category)
+    if obj:
+        modified_obj = obj.query.filter_by(id=request.form.get("id")).first()
+        if modified_obj:
+            inputs = {}
+            # Here we update our dict with new
+            [inputs.update({key: string_to_type(request.form.get(key))})
+             for key in modified_obj.serialize().keys()]
+
+            g.db_session.query(obj).filter_by(id=request.form.get("id"))\
+                                 .update(inputs)
+            g.db_session.commit()
+            return jsonify({'identifier': identifier,
+                            identifier: inputs[identifier],
+                            'message': "Object updated successfully!"})
+
+    abort(404)
+
+
 @mod.route("/site/<site_id>/courses")
 def get_courses_by_site(site_id):
     """
