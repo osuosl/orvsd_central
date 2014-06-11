@@ -19,7 +19,7 @@ $(function() {
     // Update the course list when the chosen filter changes.
     $("#filter").on("change", function() {
         var filter = $(this).val()
-        $.post("/courses/filter", $(this)).done(function(data) {
+        $.post("/1/courses/filter", $(this)).done(function(data) {
             $("#course").empty();
             generate_course_list(data);
         });
