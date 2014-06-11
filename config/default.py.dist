@@ -21,6 +21,7 @@ INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
 
 # database info for data gathering
 
+SITEINFO_DATABASE_URI = "sqlite:///:memory:"
 SITEINFO_DATABASE_HOST = "localhost"
 SITEINFO_DATABASE_USER = ""
 SITEINFO_DATABASE_PASS = ""
