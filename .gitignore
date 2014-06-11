@@ -56,10 +56,8 @@ Session.vim
 *~
 
 ### TheOC ###
-config.py
-!config/__init__.py
-config/*.py
-db/
+!orvsd_central/config/__init__.py
+orvsd_central/config/*.py
 *.db
 reload
 alembic.ini
