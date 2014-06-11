@@ -14,9 +14,9 @@ from flask import (current_app, flash, g, jsonify, redirect, render_template,
                    session)
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
-from oursql import DictCursor, connect
 import requests
 from sqlalchemy import not_
+import sqlsoup
 
 from orvsd_central import constants
 from orvsd_central.database import create_db_session
@@ -267,14 +267,16 @@ def gather_siteinfo():
     Gathers moodle/drupal site information to be put into our db.
     * This is where all of our SiteDetail objects are generated.
     """
-    user = current_app.config['SITEINFO_DATABASE_USER']
-    password = current_app.config['SITEINFO_DATABASE_PASS']
-    address = current_app.config['SITEINFO_DATABASE_HOST']
+    #user = current_app.config['SITEINFO_DATABASE_USER']
+    #password = current_app.config['SITEINFO_DATABASE_PASS']
+    #address = current_app.config['SITEINFO_DATABASE_HOST']
+    sinfo_uri = current_app.config['SITEINFO_DATABASE_UIR']
     DEBUG = True
 
     # Connect to gather the db list
-    con = connect(host=address, user=user, passwd=password)
-    curs = con.cursor()
+    con = sqlsoup.SQLSoup(sinfo_uri)
+    #con = connect(host=address, user=user, passwd=password)
+    #curs = con.cursor()
 
     # find all the databases with a siteinfo table
     find = ("SELECT table_schema, table_name "
@@ -282,9 +284,10 @@ def gather_siteinfo():
             "WHERE table_name =  'siteinfo' "
             "OR table_name = 'mdl_siteinfo';")
 
-    curs.execute(find)
-    check = curs.fetchall()
-    con.close()
+    #curs.execute(find)
+    check = con.execute(find).fetchall()
+    #check = curs.fetchall()
+    #con.close()
 
     # store the db names and table name in an array to sift through
     db_sites = []
@@ -294,18 +297,19 @@ def gather_siteinfo():
 
         # for each relevent database, pull the siteinfo data
         for database in db_sites:
-            cherry = connect(user=user,
-                             passwd=password,
-                             host=address,
-                             db=database[0])
+            con.schema = database[0]
+            #cherry = connect(user=user,
+            #                 passwd=password,
+            #                 host=address,
+            #                 db=database[0])
 
             # use DictCursor here to get column names as well
-            pie = cherry.cursor(DictCursor)
+            # pie = cherry.cursor(DictCursor)
 
             # Grab the site info data
             pie.execute("select * from `%s`;" % database[1])
             data = pie.fetchall()
-            cherry.close()
+            # cherry.close()
 
             # For all the data, shove it into the central db
             for d in data:
