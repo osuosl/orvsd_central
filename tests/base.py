@@ -3,9 +3,9 @@ import unittest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-import orvsd_central
-from orvsd_central import models
-from orvsd_central.database import Model
+import orvsd_central.orvsd_central
+from orvsd_central.orvsd_central import models
+from orvsd_central.orvsd_central.database import Model
 
 
 class TestBase(unittest.TestCase):
