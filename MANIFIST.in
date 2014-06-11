@@ -1,0 +1,4 @@
+include *.txt
+recursive-include orvsd_central *.py *.txt
+recursive-include orvsd_central *.css *.js *.png *.html *.mako
+prune docs/build
