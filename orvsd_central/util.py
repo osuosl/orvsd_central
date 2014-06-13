@@ -124,6 +124,8 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
             active_found, inactive_found = False, False
             for school in district.schools:
                 inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
+                # The active_found and inactive_found keep duplicate districts
+                # from appearing for each respective list.
                 if active_school_ids.get(school.id) and not active_found:
                     inner_id += '_active'
                     active_found = True
