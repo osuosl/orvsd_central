@@ -27,13 +27,13 @@ def downgrade(engine_name):
 
 
 def upgrade_engine1():
-    op.alter_table(table_name='sites_courses',
+    op.alter_column(table_name='sites_courses',
                    column_name='celery_task_id',
                    type_=String(255),
                    existing_type=String)
 
 def downgrade_engine1():
-     op.alter_table(table_name='sites_courses',
+     op.alter_column(table_name='sites_courses',
                    column_name='celery_task_id',
                    type_=String,
                    existing_type=String(255))
