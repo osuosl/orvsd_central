@@ -23,7 +23,7 @@ sites_courses = Table('sites_courses',
                                         use_alter=True,
                                         name='fk_sites_courses_course_id')),
                       Column('celery_task_id',
-                             String,
+                             String(255),
                              ForeignKey('celery_taskmeta.task_id',
                                         use_alter=True,
                                         name=
