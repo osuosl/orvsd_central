@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, g, jsonify, request
+from flask import Blueprint, abort, g, jsonify, request, current_app
 
 from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
@@ -93,7 +93,8 @@ def update_object(category, id):
             inputs = {}
             # Here we update our dict with new
             [inputs.update({key: string_to_type(request.form.get(key))})
-             for key in modified_obj.serialize().keys()]
+             for key in modified_obj.serialize().keys()
+             if key not in current_app.config['UPDATE_BLACKLIST']]
 
             g.db_session.query(obj).filter_by(id=request.form.get("id"))\
                                  .update(inputs)

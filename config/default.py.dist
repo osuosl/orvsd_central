@@ -19,8 +19,10 @@ INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
 INSTALL_COURSE_WS_TOKEN = ""
 INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
 
-# database info for data gathering
+# Fields to ignore when using the update function for /<category>/update
+UPDATE_BLACKLIST = ['password']
 
+# database info for data gathering
 SITEINFO_DATABASE_HOST = "localhost"
 SITEINFO_DATABASE_USER = ""
 SITEINFO_DATABASE_PASS = ""
