@@ -83,7 +83,8 @@ def google_login():
     """
     access_token = session.get('access_token')
     if access_token is None:
-        callback = url_for('general.authorized', _external=True)
+        callback = url_for('general.authorized', _external=True,
+                           _scheme='https')
         return google.authorize(callback=callback)
     else:
         access_token = access_token
