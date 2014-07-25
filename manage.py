@@ -74,7 +74,7 @@ def import_data(data):
                     name = key,
                     shortname = pattern.sub('', key)
                 )
-                g.db_session.add(d)
+                g.db_session.add(district)
                 g.db_session.commit()
 
             # For the schools in the district, see if it exists,
@@ -86,7 +86,7 @@ def import_data(data):
 
                 if not school:
                     s = School(
-                        district_id = d.id,
+                        district_id = district.id,
                         state_id = school_row[0],
                         name = school_row[1],
                         shortname = pattern.sub('', school_row[1]),
