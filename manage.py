@@ -69,7 +69,6 @@ def import_data(data):
             ).first()
 
             if not district:
-                print "Creating %s" % key
                 district = District(
                     state_id = dist_state_ids[key],
                     name = key,
@@ -86,7 +85,6 @@ def import_data(data):
                 ).first()
 
                 if not school:
-                    print "Creating %s" % str(school_row)
                     s = School(
                         district_id = d.id,
                         state_id = school_row[0],
