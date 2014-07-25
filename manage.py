@@ -54,30 +54,49 @@ def import_data(data):
             district_schools[row[1]].append(row[2:-1])
 
     with current_app.app_context():
+        # Create a db session
         g.db_session = create_db_session()
-
         from orvsd_central.models import District, School
 
+        # Only words, no simbols
         pattern = re.compile('[\W_]+')
+
+        # For all the districts
         for key in district_schools.keys():
-            d = District(
-                state_id = dist_state_ids[key],
-                name = key,
-                shortname = pattern.sub('', key)
-            )
-            g.db_session.add(d)
-            g.db_session.commit()
+            # Search for the district or create it if it doesn't exist
+            district = g.db_session.query(District).filter(
+                District.name == key
+            ).first()
 
-            for school in district_schools[key]:
-                s = School(
-                    district_id = d.id,
-                    state_id = school[0],
-                    name = school[1],
-                    shortname = pattern.sub('', school[1]),
-                    county = school[2]
+            if not district:
+                print "Creating %s" % key
+                district = District(
+                    state_id = dist_state_ids[key],
+                    name = key,
+                    shortname = pattern.sub('', key)
                 )
-                g.db_session.add(s)
+                g.db_session.add(d)
+                g.db_session.commit()
 
+            # For the schools in the district, see if it exists,
+            # else create it
+            for school_row in district_schools[key]:
+                school = g.db_session.query(School).filter(
+                    School.name == school_row[1]
+                ).first()
+
+                if not school:
+                    print "Creating %s" % str(school_row)
+                    s = School(
+                        district_id = d.id,
+                        state_id = school_row[0],
+                        name = school_row[1],
+                        shortname = pattern.sub('', school_row[1]),
+                        county = school_row[2]
+                    )
+                    g.db_session.add(s)
+
+            # Commit the schools to the db
             g.db_session.commit()
 
     print "Data imported"
