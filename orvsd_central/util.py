@@ -510,6 +510,9 @@ def get_schools(dist_id, active):
 
     An active school is defined by said school not only having a site, but also
     a SiteDetail with at least one admin, teacher, or user
+
+    dist_id -- ID of a district to narrow the school search down with
+    active  -- Status of schools to find
     """
 
     # Given the distid, we get all the schools
@@ -534,29 +537,37 @@ def get_schools(dist_id, active):
             sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
                                  .order_by(SiteDetail.timemodified.desc())\
                                  .first()
-            if sd and active:
+            if sd:
                 admin = sd.adminemail
                 admincount += sd.adminusers or 0
                 teachercount += sd.teachers or 0
                 usercount += sd.totalusers or 0
-                sitedata.append({'name': site.name,
-                                 'baseurl': site.baseurl,
-                                 'sitetype': site.sitetype,
-                                 'admin': admin})
 
-            elif not sd and not active:
-                sitedata.append({'name': site.name,
-                                 'baseurl': site.baseurl,
-                                 'sitetype': site.sitetype,
-                                 'admin': admin})
+            sitedata.append({'name': site.name,
+                             'baseurl': site.baseurl,
+                             'sitetype': site.sitetype,
+                             'admin': admin})
+
+        # Get around potential moodle plugin issues
+        totalcount = admincount + teachercount + usercount
 
         usercount = usercount - admincount - teachercount
-        school_list[school.shortname] = {'name': school.name,
-                                         'id': school.id,
-                                         'admincount': admincount,
-                                         'teachercount': teachercount,
-                                         'usercount': usercount,
-                                         'sitedata': sitedata}
+        # For active schools, the totalcount better be greater than 0
+        if active and totalcount > 0:
+            school_list[school.shortname] = {'name': school.name,
+                                             'id': school.id,
+                                             'admincount': admincount,
+                                             'teachercount': teachercount,
+                                             'usercount': usercount,
+                                             'sitedata': sitedata}
+        # For inactive, the totalcount better be 0
+        elif not active and totalcount == 0:
+            school_list[school.shortname] = {'name': school.name,
+                                             'id': school.id,
+                                             'admincount': admincount,
+                                             'teachercount': teachercount,
+                                             'usercount': usercount,
+                                             'sitedata': sitedata}
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
     return jsonify(schools=school_list,
