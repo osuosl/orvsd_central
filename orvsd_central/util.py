@@ -507,6 +507,9 @@ def get_path_and_source(base_path, file_path):
 def get_schools(dist_id, active):
     """
     Gets the active or inactive schools for a given ditrict.
+
+    An active school is defined by said school not only having a site, but also
+    a SiteDetail with at least one admin, teacher, or user
     """
 
     # Given the distid, we get all the schools
