@@ -15,6 +15,7 @@ Getting Started
    :maxdepth: 2
 
    installation_instructions
+   commands
 
 Developer Documentation
 -----------------------
