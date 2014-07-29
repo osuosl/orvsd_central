@@ -1,4 +1,4 @@
-:mod:`orvsd_central` Package
+:mod:`orvsd_central` Package API
 ----------------------------
 
 .. automodule:: orvsd_central.__init__
@@ -37,12 +37,3 @@
         :members:
         :undoc-members:
         :show-inheritance:
-
-.. :mod:`views` Module
-.. -------------------
-
-.. .. automodule:: orvsd_central.views
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
-
