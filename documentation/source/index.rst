@@ -9,6 +9,7 @@ Welcome to ORVSD Central's documentation!
 .. toctree::
    :maxdepth: 2
 
+   commands
    orvsd_central
 
 Generating Documentation
