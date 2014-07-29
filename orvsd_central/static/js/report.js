@@ -11,9 +11,9 @@ dump_schools = function(a, d) {
     // Add to the lists
     $.each(d.schools, function(k, v) {
         var line = "";
-        if (v.sitedata != "") {
         var link = "<hr><li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a>";
-        line = link + " - <b>A:</b> " + v.admincount +
+        if (v.sitedata != "") {
+            line = link + " - <b>A:</b> " + v.admincount +
                           ", <b>T</b>: " + v.teachercount +
                           ", <b>U</b>: " + v.usercount + " </li>";
             $.each(v.sitedata, function(j, l) {
@@ -24,6 +24,8 @@ dump_schools = function(a, d) {
                     line += "<dd>" + m.charAt(0).toUpperCase() + m.slice(1) + ": " + n;
                 });
             });
+        } else {
+            line += link + "<hr>No sites found for this school"
         }
         out.append(line);
     });

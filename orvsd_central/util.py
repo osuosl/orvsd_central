@@ -102,48 +102,52 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
     active_inner = ""
     inactive_inner = ""
 
-    # Get a list of all sites from SiteDetails
-    active_sites = [int(x[0]) for x in
-                    g.db_session.query(SiteDetail.site_id).distinct().all()]
+    # Find all active schools (a school with a site that has a SiteDetail)
+    active_schools = set(
+        g.db_session.query(School).join(Site).join(SiteDetail).distinct().all()
+    )
 
-    inactive_sites = [int(x[0]) for x in
-                        g.db_session.query(Site.id).filter(
-                                        not_(Site.id.in_(active_sites))
-                                    ).all()]
+    # All other schools are inactive
+    inactive_schools = set(g.db_session.query(School).all()) - active_schools
 
-    # Parse in/active_sites for all in/active school ids
-    active_school_ids = dict((int(x[0]), True) for x in g.db_session.query(Site.school_id).filter(
-                    Site.id.in_(active_sites)).distinct().all())
+    # Get the district ids of active and inactive schools
+    active_district_ids = set(
+        int(school.district_id) for school in active_schools
+    )
+    inactive_district_ids = set(
+        int(school.district_id) for school in inactive_schools
+    )
 
-    inactive_school_ids = dict((int(x[0]), True) for x in g.db_session.query(Site.school_id).filter(
-                    Site.id.in_(inactive_sites)).distinct().all())
+    # List of districts in the
+    active_districts = set(
+        district for district in districts
+            if district.id in active_district_ids
+    )
+    inactive_districts = set(
+        district for district in districts
+            if district.id in inactive_district_ids
+    )
 
-    for district in districts:
-        if district.schools:
-            # Make sure the schools have relevant sites
-            active_found, inactive_found = False, False
-            for school in district.schools:
-                inner_id = re.sub(r'[^a-zA-Z0-9]', '', district.shortname)
-                if active_school_ids.get(school.id) and not active_found:
-                    inner_id += '_active'
-                    active_found = True
-                    active_inner += inner_t.render(accordion_id=active_accordion_id,
-                                                   inner_id=inner_id,
-                                                   type=type,
-                                                   link=district.name,
-                                                   extra=None if not extra else
-                                                       extra % district.id)
-                elif inactive_school_ids.get(school.id) and not inactive_found:
-                    inner_id += '_inactive'
-                    inactive_found = True
-                    inactive_inner += inner_t.render(accordion_id=inactive_accordion_id,
-                                                   inner_id=inner_id,
-                                                   type=type,
-                                                   link=district.name,
-                                                   extra=None if not extra else
-                                                       extra % district.id)
-                if active_found and inactive_found:
-                    break
+    for district in sorted(active_districts, key=lambda x: x.shortname):
+        inner_id = "%s_active" % district.shortname
+        active_inner += inner_t.render(
+            accordion_id=active_accordion_id,
+            inner_id=inner_id,
+            type=type,
+            link=district.name,
+            extra=None if not extra else extra % district.id
+        )
+
+    for district in sorted(inactive_districts, key=lambda x: x.shortname):
+        inner_id = "%s_inactive" % district.shortname
+        inactive_inner += inner_t.render(
+            accordion_id=active_accordion_id,
+            inner_id=inner_id,
+            type=type,
+            link=district.name,
+            extra=None if not extra else extra % district.id
+        )
+
 
     return outer_t.render(active_accordion_id=active_accordion_id,
                           inactive_accordion_id=inactive_accordion_id,
@@ -503,6 +507,12 @@ def get_path_and_source(base_path, file_path):
 def get_schools(dist_id, active):
     """
     Gets the active or inactive schools for a given ditrict.
+
+    An active school is defined by said school not only having a site, but also
+    a SiteDetail with at least one admin, teacher, or user
+
+    dist_id -- ID of a district to narrow the school search down with
+    active  -- Status of schools to find
     """
 
     # Given the distid, we get all the schools
@@ -527,29 +537,37 @@ def get_schools(dist_id, active):
             sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
                                  .order_by(SiteDetail.timemodified.desc())\
                                  .first()
-            if sd and active:
+            if sd:
                 admin = sd.adminemail
                 admincount += sd.adminusers or 0
                 teachercount += sd.teachers or 0
                 usercount += sd.totalusers or 0
-                sitedata.append({'name': site.name,
-                                 'baseurl': site.baseurl,
-                                 'sitetype': site.sitetype,
-                                 'admin': admin})
 
-            elif not sd and not active:
-                sitedata.append({'name': site.name,
-                                 'baseurl': site.baseurl,
-                                 'sitetype': site.sitetype,
-                                 'admin': admin})
+            sitedata.append({'name': site.name,
+                             'baseurl': site.baseurl,
+                             'sitetype': site.sitetype,
+                             'admin': admin})
+
+        # Get around potential moodle plugin issues
+        totalcount = admincount + teachercount + usercount
 
         usercount = usercount - admincount - teachercount
-        school_list[school.shortname] = {'name': school.name,
-                                         'id': school.id,
-                                         'admincount': admincount,
-                                         'teachercount': teachercount,
-                                         'usercount': usercount,
-                                         'sitedata': sitedata}
+        # For active schools, the totalcount better be greater than 0
+        if active and totalcount > 0:
+            school_list[school.shortname] = {'name': school.name,
+                                             'id': school.id,
+                                             'admincount': admincount,
+                                             'teachercount': teachercount,
+                                             'usercount': usercount,
+                                             'sitedata': sitedata}
+        # For inactive, the totalcount better be 0
+        elif not active and totalcount == 0:
+            school_list[school.shortname] = {'name': school.name,
+                                             'id': school.id,
+                                             'admincount': admincount,
+                                             'teachercount': teachercount,
+                                             'usercount': usercount,
+                                             'sitedata': sitedata}
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
     return jsonify(schools=school_list,
