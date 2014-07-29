@@ -19,11 +19,11 @@ Getting Started
 
 Running and Maintaining an ORVSD Central Server
 -----------------------------------------------
-
 .. toctree::
    :maxdepth: 2
 
    run_server
+   maintain_server
    commands
 
 Developer Documentation
