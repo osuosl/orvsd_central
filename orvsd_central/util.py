@@ -296,145 +296,166 @@ def gather_siteinfo():
         for pair in check:
             db_sites.append(pair)
 
-        # for each relevent database, pull the siteinfo data
-        for database in db_sites:
-            cherry = connect(user=user,
-                             passwd=password,
-                             host=address,
-                             db=database[0])
+    unknown_district = District.query.filter_by(
+        name='z No district found'
+    ).first()
 
-            # use DictCursor here to get column names as well
-            pie = cherry.cursor(DictCursor)
+    # for each relevent database, pull the siteinfo data
+    for database in db_sites:
+        cherry = connect(
+            user=user,
+            passwd=password,
+            host=address,
+            db=database[0]
+        )
 
-            # Grab the site info data
-            pie.execute("select * from `%s`;" % database[1])
-            data = pie.fetchall()
-            cherry.close()
+        # use DictCursor here to get column names as well
+        pie = cherry.cursor(DictCursor)
 
-            # For all the data, shove it into the central db
-            for d in data:
-                # what version of moodle is this from?
-                version = d['siterelease'][:3]
+        # Grab the site info data
+        pie.execute("select * from `%s`;" % database[1])
+        data = pie.fetchall()
+        cherry.close()
 
-                # what is our school domain? take the protocol
-                # off the baseurl
-                school_re = 'http[s]{0,1}:\/\/'
-                school_url = re.sub(school_re, '', d['baseurl'])
+        # For all the data, shove it into the central db
+        for d in data:
+            # what version of moodle is this from?
+            version = d['siterelease'][:3]
 
-                # try to figure out what machine this site lives on
-                if 'location' in d:
-                    if d['location'][:3] == 'php':
-                        location = 'platform'
-                    else:
-                        location = 'unknown'
+            # what is our school domain? take the protocol
+            # off the baseurl
+            school_re = 'http[s]{0,1}:\/\/'
+            school_url = re.sub(school_re, '', d['baseurl'])
 
-                    # get the school
-                    school = School.query.filter_by(domain=school_url).first()
-                    # if no school exists, create a new one with
-                    # name = sitename, district_id = 0 (special 'Unknown'
-                    # district)
-                    if school is None:
-                        school = School(name=d['sitename'],
-                                        shortname=d['sitename'],
-                                        domain=school_url,
-                                        license='',
-                                        state_id=None)
-                        dist_id = 0
-                        if school_url:
-                            # Lets try the full school_url first.
-                            similar_schools = g.db_session.query(School).filter(
-                                School.domain.like("%" + school_url + "%")
-                            ).all()
-                            if not similar_schools:
-                                # Fine, let's cut off the first subdomain.
-                                broad_url = school_url[school_url.find('.'):]
-                                similar_schools = g.db_session.query(School) \
-                                    .filter(School.domain.like(
-                                        "%" + broad_url + "%"
-                                    )).all()
-                            if similar_schools:
-                                dist_id = similar_schools[0].district_id
-                                for school in similar_schools:
-                                    if school.district_id != dist_id:
-                                        # If all results don't match, they
-                                        # aren't accurate enough.
-                                        dist_id = 0
-                                        break
+            # try to figure out what machine this site lives on
+            if 'location' in d:
+                if d['location'][:3] == 'php':
+                    location = 'platform'
+                else:
+                    location = 'unknown'
 
-                        school.district_id = dist_id
-                        g.db_session.add(school)
-                        g.db_session.commit()
+                # get the school
+                school = School.query.filter_by(domain=school_url).first()
 
-                    # find the site
-                    site = Site.query.filter_by(baseurl=school_url).first()
-                    # if no site exists, make a new one, school_id = school.id
-                    if site is None:
-                        site = Site(name=d['sitename'],
-                                    sitetype=d['sitetype'],
-                                    baseurl='',
-                                    basepath='',
-                                    jenkins_cron_job=None,
-                                    location='',
-                                    school_id=None)
+                # If no match is found by domain, try looking up by name
+                if not school:
+                    school = School.query.filter_by(name=d['sitename']).first()
 
-                    site.school_id = school.id
+                # if no school exists, create a new one with
+                # name = sitename, district_id = 0 (special 'Unknown'
+                # district)
+                if school is None:
+                    school = School(
+                        name=d['sitename'],
+                        shortname=d['sitename'],
+                        domain=school_url,
+                        license='',
+                        state_id=None
+                    )
 
-                    site.baseurl = school_url
-                    site.basepath = d['basepath']
-                    site.location = location
-                    g.db_session.add(site)
+                    dist_id = unknown_district.id
+                    if school_url:
+                        # Lets try the full school_url first.
+                        similar_schools = g.db_session.query(School).filter(
+                            School.domain.like("%" + school_url + "%")
+                        ).all()
+
+                        if not similar_schools:
+                            # Fine, let's cut off the first subdomain.
+                            broad_url = school_url[school_url.find('.'):]
+                            similar_schools = g.db_session.query(School) \
+                                .filter(School.domain.like(
+                                    "%" + broad_url + "%"
+                                )).all()
+
+                        if similar_schools:
+                            dist_id = similar_schools[0].district_id
+                            for school in similar_schools:
+                                if school.district_id != dist_id:
+                                    # If all results don't match, they
+                                    # aren't accurate enough.
+                                    dist_id = unknown_district.id
+                                    break
+
+                    school.district_id = dist_id
+                    g.db_session.add(school)
                     g.db_session.commit()
 
-                    # create new site_details table
-                    # site_id = site.id, timemodified = now()
-                    now = datetime.now()
-                    site_details = SiteDetail(siteversion=d['siteversion'],
-                                              siterelease=d['siterelease'],
-                                              adminemail=d['adminemail'],
-                                              totalusers=d['totalusers'],
-                                              adminusers=d['adminusers'],
-                                              teachers=d['teachers'],
-                                              activeusers=d['activeusers'],
-                                              totalcourses=d['totalcourses'],
-                                              timemodified=now)
-                    site_details.site_id = site.id
+                # find the site
+                site = Site.query.filter_by(baseurl=school_url).first()
 
-                    # if there are courses on this site, try to
-                    # associate them with our catalog
-                    if d['courses']:
-                        # quick and ugly check to make sure we have
-                        # a json string
-                        if d['courses'][:2] != '[{':
-                            continue
+                # if no site exists, make a new one, school_id = school.id
+                if site is None:
+                    site = Site(
+                        name=d['sitename'],
+                        sitetype=d['sitetype'],
+                        baseurl='',
+                        basepath='',
+                        jenkins_cron_job=None,
+                        location='',
+                        school_id=None
+                )
 
-                        """
-                        @TODO: create the correct association
-                               model for this to work
+                site.school_id = school.id
 
-                        courses = json.loads(d['courses'])
-                        associated_courses = []
+                site.baseurl = school_url
+                site.basepath = d['basepath']
+                site.location = location
+                g.db_session.add(site)
+                g.db_session.commit()
 
-                        for i, course in enumerate(courses):
-                            if course['serial'] != '0':
-                                course_serial = course['serial'][:4]
-                                orvsd_course = Course.query
-                                                     .filter_by(serial=
-                                                                course_serial)
-                                                     .first()
-                                if orvsd_course:
-                                    # store this association
-                                    # delete this course from the json string
-                                    pass
+                # create new site_details table
+                # site_id = site.id, timemodified = now()
+                now = datetime.now()
+                site_details = SiteDetail(
+                    siteversion=d['siteversion'],
+                    siterelease=d['siterelease'],
+                    adminemail=d['adminemail'],
+                    totalusers=d['totalusers'],
+                    adminusers=d['adminusers'],
+                    teachers=d['teachers'],
+                    activeusers=d['activeusers'],
+                    totalcourses=d['totalcourses'],
+                    timemodified=now
+                )
+                site_details.site_id = site.id
 
-                        # put all the unknown courses back in the
-                        # site_details record
-                        site_details.courses = json.dumps(courses)
-                        """
+                # if there are courses on this site, try to
+                # associate them with our catalog
+                if d['courses']:
+                    # quick and ugly check to make sure we have
+                    # a json string
+                    if d['courses'][:2] != '[{':
+                        continue
 
-                        site_details.courses = d['courses']
+                    """
+                    @TODO: create the correct association
+                           model for this to work
 
-                    g.db_session.add(site_details)
-                    g.db_session.commit()
+                    courses = json.loads(d['courses'])
+                    associated_courses = []
+
+                    for i, course in enumerate(courses):
+                        if course['serial'] != '0':
+                            course_serial = course['serial'][:4]
+                            orvsd_course = Course.query
+                                                 .filter_by(serial=
+                                                            course_serial)
+                                                 .first()
+                            if orvsd_course:
+                                # store this association
+                                # delete this course from the json string
+                                pass
+
+                    # put all the unknown courses back in the
+                    # site_details record
+                    site_details.courses = json.dumps(courses)
+                    """
+
+                    site_details.courses = d['courses']
+
+                g.db_session.add(site_details)
+                g.db_session.commit()
 
 
 def get_course_folders(base_path):
