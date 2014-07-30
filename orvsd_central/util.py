@@ -298,10 +298,12 @@ def gather_siteinfo():
 
     # for each relevent database, pull the siteinfo data
     for database in db_sites:
-        cherry = connect(user=user,
-                         passwd=password,
-                         host=address,
-                         db=database[0])
+        cherry = connect(
+            user=user,
+            passwd=password,
+            host=address,
+            db=database[0]
+        )
 
         # use DictCursor here to get column names as well
         pie = cherry.cursor(DictCursor)
@@ -330,21 +332,26 @@ def gather_siteinfo():
 
                 # get the school
                 school = School.query.filter_by(domain=school_url).first()
+
                 # if no school exists, create a new one with
                 # name = sitename, district_id = 0 (special 'Unknown'
                 # district)
                 if school is None:
-                    school = School(name=d['sitename'],
-                                    shortname=d['sitename'],
-                                    domain=school_url,
-                                    license='',
-                                    state_id=None)
+                    school = School(
+                        name=d['sitename'],
+                        shortname=d['sitename'],
+                        domain=school_url,
+                        license='',
+                        state_id=None
+                    )
+
                     dist_id = 0
                     if school_url:
                         # Lets try the full school_url first.
                         similar_schools = g.db_session.query(School).filter(
                             School.domain.like("%" + school_url + "%")
                         ).all()
+
                         if not similar_schools:
                             # Fine, let's cut off the first subdomain.
                             broad_url = school_url[school_url.find('.'):]
@@ -352,6 +359,7 @@ def gather_siteinfo():
                                 .filter(School.domain.like(
                                     "%" + broad_url + "%"
                                 )).all()
+
                         if similar_schools:
                             dist_id = similar_schools[0].district_id
                             for school in similar_schools:
@@ -367,15 +375,18 @@ def gather_siteinfo():
 
                 # find the site
                 site = Site.query.filter_by(baseurl=school_url).first()
+
                 # if no site exists, make a new one, school_id = school.id
                 if site is None:
-                    site = Site(name=d['sitename'],
-                                sitetype=d['sitetype'],
-                                baseurl='',
-                                basepath='',
-                                jenkins_cron_job=None,
-                                location='',
-                                school_id=None)
+                    site = Site(
+                        name=d['sitename'],
+                        sitetype=d['sitetype'],
+                        baseurl='',
+                        basepath='',
+                        jenkins_cron_job=None,
+                        location='',
+                        school_id=None
+                )
 
                 site.school_id = school.id
 
@@ -388,15 +399,17 @@ def gather_siteinfo():
                 # create new site_details table
                 # site_id = site.id, timemodified = now()
                 now = datetime.now()
-                site_details = SiteDetail(siteversion=d['siteversion'],
-                                          siterelease=d['siterelease'],
-                                          adminemail=d['adminemail'],
-                                          totalusers=d['totalusers'],
-                                          adminusers=d['adminusers'],
-                                          teachers=d['teachers'],
-                                          activeusers=d['activeusers'],
-                                          totalcourses=d['totalcourses'],
-                                          timemodified=now)
+                site_details = SiteDetail(
+                    siteversion=d['siteversion'],
+                    siterelease=d['siterelease'],
+                    adminemail=d['adminemail'],
+                    totalusers=d['totalusers'],
+                    adminusers=d['adminusers'],
+                    teachers=d['teachers'],
+                    activeusers=d['activeusers'],
+                    totalcourses=d['totalcourses'],
+                    timemodified=now
+                )
                 site_details.site_id = site.id
 
                 # if there are courses on this site, try to
