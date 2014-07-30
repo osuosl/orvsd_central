@@ -333,6 +333,10 @@ def gather_siteinfo():
                 # get the school
                 school = School.query.filter_by(domain=school_url).first()
 
+                # If no match is found by domain, try looking up by name
+                if not school:
+                    school = School.query.filter_by(name=d['sitename']).first()
+
                 # if no school exists, create a new one with
                 # name = sitename, district_id = 0 (special 'Unknown'
                 # district)
