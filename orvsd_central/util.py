@@ -296,6 +296,10 @@ def gather_siteinfo():
         for pair in check:
             db_sites.append(pair)
 
+    unknown_district = District.query.filter_by(
+        name='z No district found'
+    ).first()
+
     # for each relevent database, pull the siteinfo data
     for database in db_sites:
         cherry = connect(
@@ -349,7 +353,7 @@ def gather_siteinfo():
                         state_id=None
                     )
 
-                    dist_id = 0
+                    dist_id = unknown_district.id
                     if school_url:
                         # Lets try the full school_url first.
                         similar_schools = g.db_session.query(School).filter(
@@ -370,7 +374,7 @@ def gather_siteinfo():
                                 if school.district_id != dist_id:
                                     # If all results don't match, they
                                     # aren't accurate enough.
-                                    dist_id = 0
+                                    dist_id = unknown_district.id
                                     break
 
                     school.district_id = dist_id
