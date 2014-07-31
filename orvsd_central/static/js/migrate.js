@@ -1,20 +1,34 @@
 $(document).on("ready", function() {
     // Move the selected school to the selected district.
     $("#update").on("click", function() {
-        var url = "/schools" ;
-        $("#schools option:selected").each(function) {
-            $.get(url + "/" + $(this).val(), function(resp) {
-                // Update the school with the new district id.
-                resp['district_id'] = $("#districts option:selected").val();
-                $.post(url + "/" + $(this).val() + "/update", resp).done(function(msg) {
-                    // If message is blank there was a 404.
-                    if (msg != "") {
-                        $("#message").html("Migrated " + $(this).text() + " to " +
-                            $("#districts option:selected").text() + "!");
-                    }
-                });
+        var url = "/1/schools/";
+
+        migrate_success = "";
+        migrate_fail = "";
+
+        $("#schools option:selected").each(function() {
+            var school = $(this);
+
+            $.ajax({
+                // Using a GET to verify the existance of the school
+                type: "GET",
+                url: url + school.val(),
+                dataType: "json",
+                success: function(data, textStatus, jqXHR) {
+                    // Update the district id for the school
+                    data['district_id'] = $("#districts option:selected").val();
+
+                    // POST the fixed data
+                    $.ajax({
+                        type: "POST",
+                        url: url + school.val() + "/update",
+                        data: data,
+                        success: function(data, textStatus, jqXHR) {
+                            school.remove();
+                        },
+                    });
+                },
             });
         });
-
     });
 });
