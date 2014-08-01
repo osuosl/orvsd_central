@@ -64,3 +64,6 @@ db/
 reload
 alembic.ini
 documintation/build
+
+# A copy of production data #
+ORDISTRITschoolwithIDs_sheet1.csv
