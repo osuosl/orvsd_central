@@ -1,19 +1,18 @@
 import json
 import os
 
-from flask import (Blueprint, abort, current_app, flash, g, jsonify,
-                   render_template, request)
+from flask import (Blueprint, abort, current_app, flash, g, render_template,
+                   request)
 from flask.ext.login import current_user, login_required
 from sqlalchemy import and_
 
 from orvsd_central.forms import InstallCourse
-from orvsd_central.models import (Course, CourseDetail, District, School, Site,
+from orvsd_central.models import (CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (create_course_from_moodle_backup,
                                 get_course_folders, get_path_and_source,
                                 get_obj_by_category, get_obj_identifier,
-                                install_course_to_site, string_to_type,
-                                requires_role)
+                                install_course_to_site, requires_role)
 
 mod = Blueprint('category', __name__)
 
@@ -74,19 +73,17 @@ def install_course():
         # Query all moodle sites
         sites = g.db_session.query(Site).filter(
             Site.sitetype == 'moodle')
-        site_details = g.db_session.query(SiteDetail).filter(
-            SiteDetail.siterelease.like('2.2%'))
 
         moodle_22_sites = []
 
         # For all sites query the SiteDetail to see if it's a moodle 2.2 site
         for site in sites:
-            details = g.db_session.query(SiteDetail) \
-                                .filter(and_(SiteDetail.site_id == site.id,
-                                             SiteDetail.siterelease
-                                                       .like('2.2%'))) \
-                                .order_by(SiteDetail.timemodified.desc()
-                                          ).first()
+            details = g.db_session.query(SiteDetail).filter(
+                and_(
+                    SiteDetail.site_id == site.id,
+                    SiteDetail.siterelease.like('2.2%')
+                )
+            ).order_by(SiteDetail.timemodified.desc()).first()
 
             if details is not None:
                 moodle_22_sites.append(site)
@@ -115,10 +112,11 @@ def install_course():
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
         form.site.choices = sorted(sites_info, key=lambda x: x[1])
-        form.filter.choices = [(folder, folder)
-                               for folder
-                               in get_course_folders(current_app.
-                                   config['INSTALL_COURSE_FILE_PATH'])]
+        form.filter.choices = [
+            (folder, folder) for folder in get_course_folders(
+                current_app.config['INSTALL_COURSE_FILE_PATH']
+            )
+        ]
 
         return render_template('install_course.html',
                                form=form, user=current_user)
@@ -135,8 +133,8 @@ def install_course():
                      for site_id in site_ids]
 
         courses = g.db_session.query(CourseDetail).filter(
-                            CourseDetail.course_id.in_(selected_courses)
-                        ).all()
+            CourseDetail.course_id.in_(selected_courses)
+        ).all()
 
         for site_url in site_urls:
             # The site to install the courses
@@ -245,8 +243,10 @@ def view_schools(id):
     """
     Returns and renders a template with a list of sites for a given school.
     """
-    min_users = 1  # This should be an editable field on the template
-                   # that modifies which courses are shown via js.
+
+    # This should be an editable field on the template that modifies which
+    # courses are shown via js.
+    min_users = 1
 
     school = School.query.filter_by(id=id).first()
     # School license usually defaults to ''.
