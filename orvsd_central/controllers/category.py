@@ -222,12 +222,20 @@ def migrate_schools():
     Returns a rendered template for moving schools from the unknown school
     district to other districts.
     """
-    districts = District.query.all()
-    # Unknown district is id = 0
-    schools = School.query.filter_by(district_id=0).all()
 
-    return render_template("migrate.html", districts=districts,
-                           schools=schools, user=current_user)
+    # Unknown district to get schools from
+    unknown = District.query.filter_by(name='z No district found').first()
+    schools = School.query.filter_by(district_id=unknown.id).all()
+
+    # List of Districts to move the unknuwns
+    all_districts = District.query.all()
+    all_districts.sort(key=lambda d: d.name)
+
+    return render_template(
+        "migrate.html",
+        districts=all_districts,
+        schools=schools, user=current_user
+    )
 
 
 @mod.route("/schools/<id>/view")
