@@ -25,8 +25,7 @@ $(document).on("ready", function() {
                 for (var key in resp) {
                     rows += generate_row(key, "");
                 }
-                $("#form").empty();
-                $("#form").html(rows);
+                $("#form").find("input[type=text]").val("");
                 pairs = resp;
             });
             $("#add").val("Submit");
@@ -82,7 +81,7 @@ $(document).on("ready", function() {
             $.post(url, data).done(function(resp) {
                 if (method === "delete") {
                     // Remove all references to old object
-                    $("#form").empty();$
+                    $("#form").find("input[type=text]").val("");
 
                     // Record the next object before we delete the current.
                     var next = $('#object_list option:selected').next()
