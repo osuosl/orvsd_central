@@ -3,14 +3,36 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to ORVSD Central's documentation!
-=========================================
+ORVSD Central
+=============
+
+ORVSD Central is a Moodle site management and usage reporting tool
+
+Getting Started
+---------------
 
 .. toctree::
    :maxdepth: 2
 
+   installation_instructions
+   configuration_options
+
+Running and Maintaining an ORVSD Central Server
+-----------------------------------------------
+.. toctree::
+   :maxdepth: 2
+
+   run_server
+   maintain_server
    commands
-   orvsd_central
+
+Developer Documentation
+-----------------------
+
+.. toctree::
+   :maxdepth 2
+
+   orvsd_central_api
 
 Generating Documentation
 ------------------------
