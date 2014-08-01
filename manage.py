@@ -117,9 +117,8 @@ def initdb():
         g.db_session = create_db_session()
         init_db()
 
-@manager.option('-n', '--nosetest',
-    help="In quotes, the options to pass to nosetest"
-)
+
+@manager.option('-n', '--nosetest', help="Specific tests for nose to run")
 def run_tests(nosetest):
     """
     Run Tests using nose
