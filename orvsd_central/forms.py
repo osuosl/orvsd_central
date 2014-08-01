@@ -1,5 +1,5 @@
-from flask.ext.wtf import (Form, TextField, PasswordField, BooleanField,
-                           SelectField, SelectMultipleField, Required, Email)
+from flask.ext.wtf import (Form, TextField, PasswordField, SelectField,
+                           SelectMultipleField, Required, Email)
 
 
 class LoginForm(Form):
