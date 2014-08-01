@@ -51,6 +51,9 @@ $(function() {
     });
 
     $("input[type=submit]").on("click", function() {
+        // First, let's clear the message for the next action
+        $("#message").val("");
+
         var data = get_form_data($(this));
 
         // Data 'id' will be blank if we are adding a new object.
