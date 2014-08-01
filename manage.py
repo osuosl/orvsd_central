@@ -8,6 +8,7 @@ from flask.ext.script import Manager
 from orvsd_central import attach_blueprints, create_app
 from orvsd_central.database import create_db_session, init_db
 
+
 def setup_app(config=None):
     """
     Creates an instance of our application.
@@ -26,6 +27,7 @@ def setup_app(config=None):
 manager = Manager(setup_app)
 manager.add_option('-c', '--config', dest='config')
 
+
 @manager.command
 def gather():
     """
@@ -35,6 +37,7 @@ def gather():
         from orvsd_central.util import gather_siteinfo
         g.db_session = create_db_session()
         gather_siteinfo()
+
 
 @manager.option('-d', "--data", help="CSV to import of Districts and Schools")
 def import_data(data):
@@ -70,9 +73,9 @@ def import_data(data):
 
             if not district:
                 district = District(
-                    state_id = dist_state_ids[key],
-                    name = key,
-                    shortname = pattern.sub('', key)
+                    state_id=dist_state_ids[key],
+                    name=key,
+                    shortname=pattern.sub('', key)
                 )
                 g.db_session.add(district)
                 g.db_session.commit()
@@ -86,11 +89,11 @@ def import_data(data):
 
                 if not school:
                     s = School(
-                        district_id = district.id,
-                        state_id = school_row[0],
-                        name = school_row[1],
-                        shortname = pattern.sub('', school_row[1]),
-                        county = school_row[2]
+                        district_id=district.id,
+                        state_id=school_row[0],
+                        name=school_row[1],
+                        shortname=pattern.sub('', school_row[1]),
+                        county=school_row[2]
                     )
                     g.db_session.add(s)
 
@@ -98,6 +101,7 @@ def import_data(data):
             g.db_session.commit()
 
     print "Data imported"
+
 
 @manager.command
 def initdb():

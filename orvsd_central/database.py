@@ -9,6 +9,7 @@ import getpass
 
 Model = declarative_base()
 
+
 def create_db_session():
     # Get the db address from the current app
     _db_address = current_app.config['SQLALCHEMY_DATABASE_URI']
@@ -19,6 +20,7 @@ def create_db_session():
                                              bind=engine))
     Model.query = db_session.query_property()
     return db_session
+
 
 def init_db():
     engine = g.db_session.get_bind()

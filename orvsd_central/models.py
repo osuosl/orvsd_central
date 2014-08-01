@@ -14,20 +14,25 @@ sites_courses = Table('sites_courses',
                       Model.metadata,
                       Column('site_id',
                              Integer,
-                             ForeignKey('sites.id',
-                                        use_alter=True,
-                                        name='fk_sites_courses_site_id')),
+                             ForeignKey(
+                                 'sites.id',
+                                 use_alter=True,
+                                 name='fk_sites_courses_site_id')
+                             ),
                       Column('course_id',
                              Integer,
-                             ForeignKey('courses.id',
-                                        use_alter=True,
-                                        name='fk_sites_courses_course_id')),
+                             ForeignKey(
+                                 'courses.id',
+                                 use_alter=True,
+                                 name='fk_sites_courses_course_id')
+                             ),
                       Column('celery_task_id',
                              String(255),
-                             ForeignKey('celery_taskmeta.task_id',
-                                        use_alter=True,
-                                        name=
-                                        'fk_sites_courses_celery_task_id')),
+                             ForeignKey(
+                                 'celery_taskmeta.task_id',
+                                 use_alter=True,
+                                 name='fk_sites_courses_celery_task_id')
+                             ),
                       Column('students', Integer))
 
 
@@ -44,7 +49,7 @@ class User(Model):
     # 2 = Helpdesk
     # 3 = Admin
     role = Column(SmallInteger, default=1)
-    #Possibly another column for current status
+    # Possibly another column for current status
 
     def __init__(self, name, email, password, role):
         self.name = name

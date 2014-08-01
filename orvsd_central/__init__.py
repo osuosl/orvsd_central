@@ -1,9 +1,11 @@
 from flask import Flask, current_app
 
+
 def create_app(config='config.default'):
     app = Flask(__name__)
     app.config.from_object(config)
     return app
+
 
 def attach_blueprints():
     from orvsd_central.controllers import api

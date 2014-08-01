@@ -2,21 +2,18 @@
 Utility class containing useful methods not tied to specific models or views
 """
 from bs4 import BeautifulSoup as Soup
-import json
 import os
 import re
 import zipfile
-from datetime import datetime, date, time, timedelta
+from datetime import datetime
 from functools import wraps
 
 from celery import Celery
-from flask import (current_app, flash, g, jsonify, redirect, render_template,
-                   session)
+from flask import current_app, flash, g, jsonify, redirect, render_template
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
 from oursql import DictCursor, connect
 import requests
-from sqlalchemy import not_
 
 from orvsd_central import constants
 from orvsd_central.database import create_db_session
@@ -62,6 +59,7 @@ def init_celery():
 
 celery = init_celery()
 
+
 @current_app.teardown_appcontext
 def shutdown_session(exception=False):
     """
@@ -69,6 +67,7 @@ def shutdown_session(exception=False):
     """
     if g.get('db_session'):
         g.db_session.remove()
+
 
 @current_app.before_request
 def setup_db_session():
@@ -79,12 +78,13 @@ def setup_db_session():
     if not g.get('db_session'):
         g.db_session = create_db_session()
 
+
 @current_app.errorhandler(404)
 def page_not_found(e):
     """
     Standard page not found handler.
     """
-    return render_template('404.html', user=current_user), 404#
+    return render_template('404.html', user=current_user), 404
 
 
 def build_accordion(districts, active_accordion_id, inactive_accordion_id,
@@ -121,11 +121,11 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
     # List of districts in the
     active_districts = set(
         district for district in districts
-            if district.id in active_district_ids
+        if district.id in active_district_ids
     )
     inactive_districts = set(
         district for district in districts
-            if district.id in inactive_district_ids
+        if district.id in inactive_district_ids
     )
 
     for district in sorted(active_districts, key=lambda x: x.shortname):
@@ -147,7 +147,6 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
             link=district.name,
             extra=None if not extra else extra % district.id
         )
-
 
     return outer_t.render(active_accordion_id=active_accordion_id,
                           inactive_accordion_id=inactive_accordion_id,
@@ -224,7 +223,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     g.db_session.add(new_course_detail)
     g.db_session.commit()
 
-    #Get rid of moodle_backup.xml
+    # Get rid of moodle_backup.xml
     os.remove(os.path.join(project_folder, "moodle_backup.xml"))
 
 
@@ -274,7 +273,6 @@ def gather_siteinfo():
     user = current_app.config['SITEINFO_DATABASE_USER']
     password = current_app.config['SITEINFO_DATABASE_PASS']
     address = current_app.config['SITEINFO_DATABASE_HOST']
-    DEBUG = True
 
     # Connect to gather the db list
     con = connect(host=address, user=user, passwd=password)
@@ -320,7 +318,7 @@ def gather_siteinfo():
         # For all the data, shove it into the central db
         for d in data:
             # what version of moodle is this from?
-            version = d['siterelease'][:3]
+            # version = d['siterelease'][:3]
 
             # what is our school domain? take the protocol
             # off the baseurl
@@ -394,7 +392,7 @@ def gather_siteinfo():
                         jenkins_cron_job=None,
                         location='',
                         school_id=None
-                )
+                    )
 
                 site.school_id = school.id
 

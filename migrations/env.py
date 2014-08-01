@@ -31,9 +31,11 @@ db_names = config.get_main_option('databases')
 # target_metadata = {
 #       'engine1':mymodel.metadata1,
 #       'engine2':mymodel.metadata2
-#}
+# }
 import sys
 sys.path.append('./')
+
+# flake8 complains about this import, it is however, necessary
 from orvsd_central import models
 target_metadata = {}
 
