@@ -1,4 +1,4 @@
-$(document).on("ready", function() {
+$(function() {
     // [1] will skip the first /, which returns an empty string and
     // give the category we are looking for.
     var category = window.location.pathname.split("/")[1];
@@ -115,9 +115,7 @@ $(document).on("ready", function() {
             for (var key in resp) {
                 rows += generate_row(key, resp[key]);
             }
-            $("#form").empty();
             $("#form").html(rows);
-            $("#message").empty();
             pairs = resp
         });
         // Return keys and vals for the object we recieved.
