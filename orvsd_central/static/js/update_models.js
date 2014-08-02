@@ -1,4 +1,4 @@
-$(document).on("ready", function() {
+$(function() {
     // [1] will skip the first /, which returns an empty string and
     // give the category we are looking for.
     var category = window.location.pathname.split("/")[1];
@@ -25,8 +25,7 @@ $(document).on("ready", function() {
                 for (var key in resp) {
                     rows += generate_row(key, "");
                 }
-                $("#form").empty();
-                $("#form").html(rows);
+                $("#form").find("input[type=text]").val("");
                 pairs = resp;
             });
             $("#add").val("Submit");
@@ -52,6 +51,9 @@ $(document).on("ready", function() {
     });
 
     $("input[type=submit]").on("click", function() {
+        // First, let's clear the message for the next action
+        $("#message").val("");
+
         var data = get_form_data($(this));
 
         // Data 'id' will be blank if we are adding a new object.
@@ -82,7 +84,7 @@ $(document).on("ready", function() {
             $.post(url, data).done(function(resp) {
                 if (method === "delete") {
                     // Remove all references to old object
-                    $("#form").empty();$
+                    $("#form").find("input[type=text]").val("");
 
                     // Record the next object before we delete the current.
                     var next = $('#object_list option:selected').next()
@@ -116,9 +118,7 @@ $(document).on("ready", function() {
             for (var key in resp) {
                 rows += generate_row(key, resp[key]);
             }
-            $("#form").empty();
             $("#form").html(rows);
-            $("#message").empty();
             pairs = resp
         });
         // Return keys and vals for the object we recieved.
