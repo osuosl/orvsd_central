@@ -74,12 +74,6 @@ class User(Model):
     def get_id(self):
         return unicode(self.id)
 
-    def getRole(self):
-        """
-        returns the role for User
-        """
-        return USER.STATUS[self.status]
-
     def __repr__(self):
         return '<User %r>' % (self.name)
 
