@@ -1,9 +1,11 @@
 from collections import defaultdict
 import csv
 import re
+import sys
 
 from flask import current_app, g
 from flask.ext.script import Manager
+import nose
 
 from orvsd_central import attach_blueprints, create_app
 from orvsd_central.database import create_db_session, init_db
@@ -114,6 +116,17 @@ def initdb():
     with current_app.app_context():
         g.db_session = create_db_session()
         init_db()
+
+
+@manager.option('-n', '--nosetest', help="Specific tests for nose to run")
+def run_tests(nosetest):
+    """
+    Run Tests using nose
+    """
+    args = [sys.argv[0]] + nosetest if nosetest else [sys.argv[0]]
+
+    with current_app.app_context():
+        nose.main(argv=args)
 
 if __name__ == '__main__':
     manager.run()
