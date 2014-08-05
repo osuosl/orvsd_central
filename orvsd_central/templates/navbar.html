@@ -6,51 +6,58 @@
             <li>
                 <a href="{{ url_for('report.index') }}">Report</a>
             </li>
-            <li>
-                <a href="{{ url_for('category.install_course') }}">Install Course</a>
-            </li>
-            <li>
-                <a href="{{ url_for('category.update_courselist') }}">Update Availble Courses</a>
-            </li>
+            {% if user.role >= 3 %}
             <li class="dropdown">
-                <a  class="dropdown-toggle"
-                    data-toggle="dropdown"
-                    href="#">Add/Modify/Delete
-                    <b class="caret"></b>
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">Districts
+                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="/districts/update">Districts</a></li>
-                    <li><a href="/schools/update">Schools</a></li>
-                    <li><a href="/sites/update">Sites</a></li>
-                    <li><a href="/sitedetails/update">Site Details</a></li>
-                    <li><a href="/courses/update">Courses</a></li>
-                    <li><a href="/coursedetails/update">Course Details</a></li>
+                    <li><a href="/districts/update">Modify</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">Schools
+                   <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/schools/update">Modify</a></li>
+                    <li><a href="/schools/migrate">Migrate to different district</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">Sites
+                   <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/sites/update">Modify</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">Courses
+                   <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/courses/update">Modify</a></li>
+                    <li><a href="{{ url_for('category.update_courselist') }}">Update Availble Courses</a></li>
+                    <li><a href="{{ url_for('category.install_course') }}">Install Course</a></li>
                 </ul>
             </li>
             <li class="dropdown">
                 <a  class="dropdown-toggle"
                     data-toggle="dropdown"
-                    href="#">Add
+                    href="#">Admin
                     <b class="caret"></b>
                 </a>
                 <ul class="disabled dropdown-menu">
-                    <li class="disabled"><a href="#">Districts</a></li>
-                    <li class="disabled"><a href="#">Schools</a></li>
-                    <li class="disabled"><a href="#">Sites</a></li>
-                    <li class="disabled"><a href="#">Courses</a></li>
-                </ul>
-            </li>
-            <li class="dropdown">
-                <a  class="dropdown-toggle"
-                    data-toggle="dropdown"
-                    href="#">Modify/Remove
-                    <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                    <li class="disabled"><a href="#">Districts</a></li>
-                    <li class="disabled"><a href="#">Schools</a></li>
-                    <li class="disabled"><a href="#">Sites</a></li>
-                    <li class="disabled"><a href="#">Courses</a></li>
+                    <li><a href="/register">Register new User</a></li>
                 </ul>
             </li>
             {% endif %}
