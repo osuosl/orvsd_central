@@ -5,6 +5,7 @@ Pre-requisites:
 ----
 You should have a database server running. for instructions on how to do this
 take a look at *this* walkthrough.
+
 .. *this* should like to an actual walkthrough on how to setup our database
     server either with Vagrant or TestKitchen.
 
