@@ -2,7 +2,7 @@
     <div class="navbar-inner">
         <ul class="nav">
             <li><a class="brand" style="padding-left: 40px">ORVSD Central</a></li>
-            {% if user %}
+            {% if user.is_authenticated %}
             <li>
                 <a href="{{ url_for('report.index') }}">Report</a>
             </li>
@@ -27,7 +27,6 @@
                     <li><a href="/coursedetails/update">Course Details</a></li>
                 </ul>
             </li>
-            {% if admin %}
             <li class="dropdown">
                 <a  class="dropdown-toggle"
                     data-toggle="dropdown"
