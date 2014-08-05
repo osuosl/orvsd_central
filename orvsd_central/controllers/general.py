@@ -78,7 +78,13 @@ def login():
         else:
             flash("Username/Password combo was not recognized.  "
                   "Please try again.")
-    return render_template("login.html", form=form)
+
+    # current_user should be anonymous at this point which does not have a role
+    # thus requiring some value for user.role or jinja2 complains with an
+    # undifinedvalue error
+    current_user.role = -1
+
+    return render_template("login.html", form=form, user=current_user)
 
 
 @mod.route("/google_login")

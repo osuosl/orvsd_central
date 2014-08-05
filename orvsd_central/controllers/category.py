@@ -37,12 +37,14 @@ def update(category):
         category = category[0].upper() + category[1:]
 
         objects = obj.query.order_by(identifier).all()
-        if objects:
-            return render_template("update.html", objects=objects,
-                                   identifier=identifier, category=category,
-                                   user=current_user)
-
-    abort(404)
+        objects = objects if objects else []
+        return render_template(
+            "update.html", objects=objects,
+            identifier=identifier, category=category,
+            user=current_user
+        )
+    else:
+        abort(404)
 
 
 """
