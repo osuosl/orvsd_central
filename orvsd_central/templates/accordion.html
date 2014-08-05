@@ -1,10 +1,16 @@
+{% if user.role >= 3 %}
 <h2 title="Districts and their schools that we have information on.">Active Districts</h2>
+{% else %}
+<h2>Districts</h2>
+{% endif %}
 <div id="{{ active_accordion_id }}">
     {{ active|safe }}
 </div>
 </br>
 
+{% if user.role >= 3 %}
 <h2 title="Districts and their schools that we do not have information on.">Inactive Districts</h2>
 <div id="{{ inactive_accordion_id }}">
     {{ inactive|safe }}
 </div>
+{% endif %}

@@ -20,8 +20,14 @@ def index():
     inactive_accord_id = "dist_accord_inactive"
     dist_id = "distid=%s"
 
-    data = build_accordion(all_districts, active_accord_id,
-                           inactive_accord_id, "district", dist_id)
+    data = build_accordion(
+        districts=all_districts,
+        active_accordion_id=active_accord_id,
+        inactive_accordion_id=inactive_accord_id,
+        type="district",
+        user=current_user,
+        extra=dist_id
+    )
 
     return render_template("report.html",
                            datadump=data,
