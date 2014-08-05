@@ -4,33 +4,30 @@ PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 DEBUG = False
 
-SECRET_KEY = "your secret key, keep this secret!"
-
-SQLALCHEMY_DATABASE_URI = 'mysql://user:password@host/dbname'
-DATABASE_CONNECT_OPTIONS = {}
-
 CSRF_ENABLED = True
 CSRF_SESSION_KEY = "your csrf session key"
 
+# SQLAlchemy Databes location and options
+DATABASE_CONNECT_OPTIONS = {}
+SQLALCHEMY_DATABASE_URI = 'mysql://user:password@host/dbname'
 SQLALCHEMY_MIGRATE_REPO = os.path.join(PROJECT_PATH, 'migrations')
+
+# Celery config info
+CELERY_BROKER_URL = 'sqla+sqlite:///'
+CELERY_RESULT_BACKEND = 'database'
+CELERY_RESULT_DBURI = 'sqlite:///'
+
+# database info for data gathering
+SITEINFO_DATABASE_HOST = "localhost"
+SITEINFO_DATABASE_USER = ""
+SITEINFO_DATABASE_PASS = ""
 
 # Moodle course install web service definitions
 INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
 INSTALL_COURSE_WS_TOKEN = ""
 INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
 
-# database info for data gathering
-
-SITEINFO_DATABASE_HOST = "localhost"
-SITEINFO_DATABASE_USER = ""
-SITEINFO_DATABASE_PASS = ""
-
-# google oauth required info
+# google oauth credentials info
 GOOGLE_CLIENT_ID = 'CLIENT ID HERE'
 GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
-
-# Celery config info
-CELERY_BROKER_URL = 'sqla+sqlite:///'
-CELERY_RESULT_BACKEND = 'database'
-CELERY_RESULT_DBURI = 'sqlite:///'
