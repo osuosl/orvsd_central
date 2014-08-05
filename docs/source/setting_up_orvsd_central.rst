@@ -18,7 +18,8 @@ orvsd_central and run::
     pip install -r requirements.txt
 
 .. if this is fixed this instruction should be removed
-2. Next run the following command twice::
+2. Next switch to the 'only_one_bootstrap' branch and run the following command 
+twice::
     
     python manage.py initdb
 
@@ -29,13 +30,17 @@ username, email, and password you wish.
 
 3. Next::
 
-    python manage.py import_data -d 
+    python manage.py import_data -d /path/to/someData.csv 
 .. This instruction isn't complete until we find a way so the user doesn't need
     download the .csv file.
 
-4. Finally::
+4. Finally run::
     
     python manage.py gather
+
+and::
+
+    python manage.py runserver
 
 And there you have it! You've got an instance of ORVSD Central running.
 Test it out by going to http://127.0.0.1:5000 in your browser
