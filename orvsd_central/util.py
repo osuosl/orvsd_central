@@ -88,7 +88,7 @@ def page_not_found(e):
 
 
 def build_accordion(districts, active_accordion_id, inactive_accordion_id,
-                    type, extra=None):
+                    type, user, extra=None):
     """
     Builds the accordion from pre-defined templates.
     * Note: There is some complex logic in here to differentiate schools
@@ -151,7 +151,8 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
     return outer_t.render(active_accordion_id=active_accordion_id,
                           inactive_accordion_id=inactive_accordion_id,
                           active=active_inner,
-                          inactive=inactive_inner)
+                          inactive=inactive_inner,
+                          user=user)
 
 
 def create_course_from_moodle_backup(base_path, source, file_path):
