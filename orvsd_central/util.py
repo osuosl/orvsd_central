@@ -151,7 +151,9 @@ def build_accordion(districts, active_accordion_id, inactive_accordion_id,
     return outer_t.render(active_accordion_id=active_accordion_id,
                           inactive_accordion_id=inactive_accordion_id,
                           active=active_inner,
+                          active_count=len(active_districts),
                           inactive=inactive_inner,
+                          inactive_count=len(inactive_districts),
                           user=user)
 
 
