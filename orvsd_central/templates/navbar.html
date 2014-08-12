@@ -75,12 +75,12 @@
         </ul>
     </div>
 
-    <div class="pull-right">
+    <div class="pull-right label label-important" style="margin-top:5px;margin-right:-10px;color:white;">
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul class="flashes nav">
             {% for message in messages %}
-                <li><a style="color:black">{{message}}</a></li>
+                <li><samp>{{message}}</samp></li>
             {%endfor%}
             </ul>
         {%endif%}
