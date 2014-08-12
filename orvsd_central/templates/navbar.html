@@ -1,4 +1,4 @@
-<link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/navbar.css') }}" />
+<link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}" />
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <ul class="nav">
@@ -63,17 +63,7 @@
             </li>
             {% endif %}
             {% endif %}
-            <li class="error-msg">
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <ul class="flashes nav">
-                    {% for message in messages %}
-                        <li><a style="color:black">{{message}}</a></li>
-                    {%endfor%}
-                    </ul>
-                {%endif%}
-            {%endwith%}
-            </li>
+
         </ul>
         <ul class="nav pull-right">
         {% if user.is_authenticated() %}
@@ -84,4 +74,17 @@
         {% endif %}
         </ul>
     </div>
+
+    <div class="pull-right">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes nav">
+            {% for message in messages %}
+                <li><a style="color:black">{{message}}</a></li>
+            {%endfor%}
+            </ul>
+        {%endif%}
+    {%endwith%}
+    </div>
+
 </div>
