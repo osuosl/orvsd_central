@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}" />
+<script type="text/javascript" src="{{url_for('static', filename='js/flash.js') }}"></script>
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <ul class="nav">
@@ -62,17 +64,7 @@
             </li>
             {% endif %}
             {% endif %}
-            <li>
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <ul class="flashes nav">
-                    {% for message in messages %}
-                        <li><a style="color:black">{{message}}</a></li>
-                    {%endfor%}
-                    </ul>
-                {%endif%}
-            {%endwith%}
-            </li>
+
         </ul>
         <ul class="nav pull-right">
         {% if user.is_authenticated() %}
@@ -83,4 +75,17 @@
         {% endif %}
         </ul>
     </div>
+
+    <div id="flash" class="pull-right label label-important">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes nav">
+            {% for message in messages %}
+                <li><samp>{{message}}</samp></li>
+            {%endfor%}
+            </ul>
+        {%endif%}
+    {%endwith%}
+    </div>
+
 </div>
