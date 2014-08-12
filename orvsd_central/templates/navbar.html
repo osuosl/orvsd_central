@@ -1,0 +1,91 @@
+<link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}" />
+<script type="text/javascript" src="{{url_for('static', filename='js/flash.js') }}"></script>
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <ul class="nav">
+            <li><a class="brand" style="padding-left: 40px">ORVSD Central</a></li>
+            {% if user.is_authenticated() %}
+            <li>
+                <a href="{{ url_for('report.index') }}">Report</a>
+            </li>
+            {% if user.role >= 3 %}
+            <li class="dropdown">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">Districts
+                   <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/districts/update">Modify</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">Schools
+                   <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/schools/update">Modify</a></li>
+                    <li><a href="/schools/migrate">Migrate to different district</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">Sites
+                   <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/sites/update">Modify</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">Courses
+                   <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="/courses/update">Modify</a></li>
+                    <li><a href="{{ url_for('category.update_courselist') }}">Update Availble Courses</a></li>
+                    <li><a href="{{ url_for('category.install_course') }}">Install Course</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a  class="dropdown-toggle"
+                    data-toggle="dropdown"
+                    href="#">Admin
+                    <b class="caret"></b>
+                </a>
+                <ul class="disabled dropdown-menu">
+                    <li><a href="/register">Register new User</a></li>
+                </ul>
+            </li>
+            {% endif %}
+            {% endif %}
+
+        </ul>
+        <ul class="nav pull-right">
+        {% if user.is_authenticated() %}
+            <li><a>Logged in as: {{user.name}}</a></li>
+            <li><a href="{{ url_for('general.logout') }}">Log Out</a></li>
+        {% else %}
+            <li><a href="{{ url_for('general.login') }}">Log In</a></li>
+        {% endif %}
+        </ul>
+    </div>
+
+    <div id="flash" class="pull-right label label-important">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes nav">
+            {% for message in messages %}
+                <li><samp>{{message}}</samp></li>
+            {%endfor%}
+            </ul>
+        {%endif%}
+    {%endwith%}
+    </div>
+
+</div>

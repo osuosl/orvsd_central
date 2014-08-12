@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Installing Courses</title>
+{% endblock %}
+
+{% block content %}
+<div>
+Output:<br>
+<pre>
+{{ output }}
+</pre>
+</div>
+<a href="{{ url_for('category.install_course') }}">Install More</a>
+{% endblock %}

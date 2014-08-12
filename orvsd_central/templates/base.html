@@ -1,0 +1,36 @@
+<html>
+    <head>
+        {% block title %}
+        <title>ORVSD Central</title>
+        {% endblock %}
+        <link rel="icon"
+              type="image/png"
+              href="{{ url_for('static',filename='img/ORVSDCentral_icon.png') }}">
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap.min.css') }}" />
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}" />
+        <script type="text/javascript" src="{{url_for('static',filename='js/jquery.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
+
+        {% block head %}
+        {% endblock %}
+    </head>
+
+    <body>
+    <div id="wrap">
+        {% include 'navbar.html' %}
+        <div class="container">
+            <div id="content">
+                {%block content%}
+                {%endblock%}
+            </div>
+            <div id="push"></div>
+        </div>
+    </div>
+    <div id="footer">
+        <div class="container">
+            {%block footer%}
+            {%endblock%}
+        </div>
+    </div>
+    </body>
+</html>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>Login</title>
+{% endblock %}
+
+{% block head %}
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/zocial.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<form method="POST">
+    <fieldset>
+        <legend>Login</legend>
+        <label>Username</label>
+        {{ form.name }}
+        <label>Password</label>
+        {{ form.password }}<br />
+        <button type="submit" class="btn">Login</button>
+        <a class='zocial google' href={{url_for('general.google_login')}}>Login with Google</a>
+    </fieldset>
+</form>
+{% endblock %}
