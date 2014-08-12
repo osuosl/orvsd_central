@@ -22,3 +22,9 @@ html, body {
 #wrap > .container {
     padding-top: 60px;
 }
+
+#flash {
+    margin-top: 5px;
+    margin-right: -10px;
+    color: white;
+}

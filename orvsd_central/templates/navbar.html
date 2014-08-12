@@ -1,4 +1,5 @@
 <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}" />
+<script type="text/javascript" src="{{url_for('static', filename='js/flash.js') }}"></script>
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <ul class="nav">
@@ -75,7 +76,7 @@
         </ul>
     </div>
 
-    <div class="pull-right label label-important" style="margin-top:5px;margin-right:-10px;color:white;">
+    <div id="flash" class="pull-right label label-important">
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul class="flashes nav">
