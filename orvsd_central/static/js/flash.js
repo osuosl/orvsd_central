@@ -1,3 +1,3 @@
 setTimeout(function() {
     $("#flash").empty();
-}, 5000);
+}, 15000);
