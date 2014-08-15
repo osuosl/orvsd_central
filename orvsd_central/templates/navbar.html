@@ -16,7 +16,7 @@
                    <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="/districts/update">Modify</a></li>
+                    <li><a href="{{ url_for('category.update', category='districts') }}">Modify</a></li>
                 </ul>
             </li>
             <li class="dropdown">
@@ -26,8 +26,8 @@
                    <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="/schools/update">Modify</a></li>
-                    <li><a href="/schools/migrate">Migrate to different district</a></li>
+                    <li><a href="{{ url_for('category.update', category='schools')}}">Modify</a></li>
+                    <li><a href="{{ url_for('category.migrate_schools') }}">Migrate to different district</a></li>
                 </ul>
             </li>
             <li class="dropdown">
@@ -37,7 +37,7 @@
                    <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="/sites/update">Modify</a></li>
+                    <li><a href="{{ url_for('category.update', category='sites')}}">Modify</a></li>
                 </ul>
             </li>
             <li class="dropdown">
@@ -47,7 +47,7 @@
                    <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="/courses/update">Modify</a></li>
+                    <li><a href="{{ url_for('category.update', category='courses')}}">Modify</a></li>
                     <li><a href="{{ url_for('category.update_courselist') }}">Update Availble Courses</a></li>
                     <li><a href="{{ url_for('category.install_course') }}">Install Course</a></li>
                 </ul>
@@ -59,7 +59,7 @@
                     <b class="caret"></b>
                 </a>
                 <ul class="disabled dropdown-menu">
-                    <li><a href="/register">Register new User</a></li>
+                    <li><a href="{{ url_for('general.register') }}">Register new User</a></li>
                 </ul>
             </li>
             {% endif %}
