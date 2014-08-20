@@ -610,17 +610,17 @@ def install_course_to_site(course_detail_id, install_url):
                       course.source)
 
     data = {'filepath': fp,
-            'file': course_detail.filename,
-            'courseid': course.id,
-            'coursename': course.name,
-            'shortname': course.shortname,
-            'category': '1',
-            'firstname': 'orvsd',
-            'lastname': 'central',
-            'city': 'none',
-            'username': 'admin',
-            'email': 'a@a.aa',
-            'pass': 'adminpass'}
+            'file': course.filename,
+            'courseid': course.course_id,
+            'coursename': course.course.name,
+            'shortname': course.course.shortname,
+            'category': current_app.config[CATEGORY],
+            'firstname': current_app.config[FIRSTNAME],
+            'lastname': current_app.config[LASTNAME],
+            'city': current_app.config[CITY],
+            'username': current_app.config[USERNAME],
+            'email': current_app.config[EMAIL],
+            'pass': current_app.config[PASS]}
 
     resp = requests.post(install_url, data=data)
 

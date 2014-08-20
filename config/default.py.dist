@@ -35,3 +35,12 @@ INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
 GOOGLE_CLIENT_ID = 'CLIENT ID HERE'
 GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
+
+# install_course_to_site config info
+CATEGORY: '1'
+FIRSTNAME: 'orvsd'
+LASTNAME: 'central'
+CITY: 'none'
+USERNAME: 'admin'
+EMAIL: 'a@a.aa'
+PASS: 'adminpass'
