@@ -37,10 +37,10 @@ GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
 
 # install_course_to_site config info
-CATEGORY: '1'
-FIRSTNAME: 'orvsd'
-LASTNAME: 'central'
-CITY: 'none'
-USERNAME: 'admin'
-EMAIL: 'a@a.aa'
-PASS: 'adminpass'
+CATEGORY = '1'
+FIRSTNAME = 'orvsd'
+LASTNAME = 'central'
+CITY = 'none'
+USERNAME = 'admin'
+EMAIL = 'a@a.aa'
+PASS = 'adminpass'
