@@ -614,13 +614,13 @@ def install_course_to_site(course_detail_id, install_url):
             'courseid': course.course_id,
             'coursename': course.course.name,
             'shortname': course.course.shortname,
-            'category': current_app.config[CATEGORY],
-            'firstname': current_app.config[FIRSTNAME],
-            'lastname': current_app.config[LASTNAME],
-            'city': current_app.config[CITY],
-            'username': current_app.config[USERNAME],
-            'email': current_app.config[EMAIL],
-            'pass': current_app.config[PASS]}
+            'category': current_app.config[INSTALL_COURSE_CATEGORY],
+            'firstname': current_app.config[INSTALL_COURSE_FIRSTNAME],
+            'lastname': current_app.config[INSTALL_COURSE_LASTNAME],
+            'city': current_app.config[INSTALL_COURSE_CITY],
+            'username': current_app.config[INSTALL_COURSE_USERNAME],
+            'email': current_app.config[INSTALL_COURSE_EMAIL],
+            'pass': current_app.config[INSTALL_COURSE_PASS]}
 
     resp = requests.post(install_url, data=data)
 
