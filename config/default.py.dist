@@ -37,7 +37,7 @@ GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
 
 # install_course_to_site config info
-INSTALL_COURSE_CATEGORY = '1'
+INSTALL_COURSE_CATEGORY = 'Miscellaneous'
 INSTALL_COURSE_FIRSTNAME = 'orvsd'
 INSTALL_COURSE_LASTNAME = 'central'
 INSTALL_COURSE_CITY = 'none'
