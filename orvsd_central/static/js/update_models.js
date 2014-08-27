@@ -143,6 +143,8 @@ $(function() {
             $("#form").html(rows);
             pairs = resp;
         });
+        // This is so new objects can be created immediately.
+        $("#add").val("Submit");
         return pairs;
     }
 
