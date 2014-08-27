@@ -8,6 +8,10 @@ DEBUG
 
 - Enable debug output
 
+SECRET_KEY:
+
+- Flask session key
+
 CSRF_ENABLED
 
 - Enable or disable CSRF with True/False
