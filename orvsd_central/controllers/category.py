@@ -134,30 +134,27 @@ def install_course():
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
                      for site_id in site_ids]
 
-        courses = g.db_session.query(CourseDetail).filter(
+        course_details = g.db_session.query(CourseDetail).filter(
             CourseDetail.course_id.in_(selected_courses)
         ).all()
 
         for site_url in site_urls:
             # The site to install the courses
-            site = ("http://%s/webservice/rest/server.php?" +
-                    "wstoken=%s&wsfunction=%s") % (
-                site_url,
-                current_app.config['INSTALL_COURSE_WS_TOKEN'],
-                current_app.config['INSTALL_COURSE_WS_FUNCTION'])
-            site = str(site.encode('utf-8'))
+            install_url = ("http://%s/webservice/rest/server.php?" +
+                           "wstoken=%s&wsfunction=%s") % (
+                        site_url,
+                        current_app.config['INSTALL_COURSE_WS_TOKEN'],
+                        current_app.config['INSTALL_COURSE_WS_FUNCTION'])
+            install_url = str(install_url.encode('utf-8'))
 
             # Loop through the courses, generate the command to be run, run it,
             # and append the ouput to output
             #
             # Currently this will break as our db is not setup correctly yet
-            for course in courses:
-                # Courses are detached from session if inactive for too long.
-                course.course.name
+            for course_detail in course_details:
+                install_course_to_site.delay(course_detail.id, install_url)
 
-                install_course_to_site.delay(course, site)
-
-            output += (str(len(courses)) + " course install(s) for " +
+            output += (str(len(course_details)) + " course install(s) for " +
                        site_url + " started.\n")
 
         return render_template('install_course_output.html',
