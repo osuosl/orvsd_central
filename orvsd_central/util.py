@@ -610,10 +610,10 @@ def install_course_to_site(course_detail_id, install_url):
                       course.source)
 
     data = {'filepath': fp,
-            'file': course.filename,
-            'courseid': course.course_id,
-            'coursename': course.course.name,
-            'shortname': course.course.shortname,
+            'file': course_detail.filename,
+            'courseid': course.id,
+            'coursename': course.name,
+            'shortname': course.shortname,
             'category': current_app.config['INSTALL_COURSE_CATEGORY'],
             'firstname': current_app.config['INSTALL_COURSE_FIRSTNAME'],
             'lastname': current_app.config['INSTALL_COURSE_LASTNAME'],
