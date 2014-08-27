@@ -7,7 +7,14 @@ $(function() {
 
     // Set the current form element keys, and generate the form
     // off the first selected object.
-    pairs = display_obj($("#object_list option:selected"), category);
+    var object_list_length = $("#object_list option").length;
+    if (object_list_length > 1) {
+        var $selected = $("#object_list option:selected");
+        pairs = display_obj($selected, category);
+    }
+    else {
+        pairs = display_blank_obj(category);
+    }
 
     // Change which object we display when the selected option changes.
     $("#object_list").on("change", function() {
@@ -44,7 +51,6 @@ $(function() {
                 // element.
                 var name = resp[resp["identifier"]];
                 insert_and_sort_list(name, resp["id"]);
-
                 reset_add_if_submit();
             });
         }
@@ -122,6 +128,21 @@ $(function() {
             pairs = resp
         });
         // Return keys and vals for the object we recieved.
+        return pairs;
+    }
+
+    function display_blank_obj(category) {
+        var url = '/1/' + category + '/keys';
+        $.get(url, function(resp) {
+            var rows = "";
+            // Generate a new form with keys corresponding to a Model's
+            // attributes.
+            for (var key in resp) {
+                rows += generate_row(key, "");
+            }
+            $("#form").html(rows);
+            pairs = resp;
+        });
         return pairs;
     }
 
