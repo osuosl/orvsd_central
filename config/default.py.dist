@@ -37,6 +37,7 @@ GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
 
 # install_course_to_site config info
+# Category is the name according to the moodle site
 INSTALL_COURSE_CATEGORY = 'Miscellaneous'
 INSTALL_COURSE_FIRSTNAME = 'orvsd'
 INSTALL_COURSE_LASTNAME = 'central'
