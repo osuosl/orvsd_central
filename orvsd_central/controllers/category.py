@@ -69,7 +69,7 @@ def install_course():
         # Query all moodle 2.2 courses
         courses = g.db_session.query(CourseDetail).filter(
             CourseDetail.moodle_version
-            .like('2.5%')
+            .like('2%')
             ).all()
 
         # Query all moodle sites
@@ -83,7 +83,7 @@ def install_course():
             details = g.db_session.query(SiteDetail).filter(
                 and_(
                     SiteDetail.site_id == site.id,
-                    SiteDetail.siterelease.like('2.2%')
+                    SiteDetail.siterelease.like('2%')
                 )
             ).order_by(SiteDetail.timemodified.desc()).first()
 
