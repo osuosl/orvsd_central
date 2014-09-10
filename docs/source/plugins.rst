@@ -1,14 +1,21 @@
 Information About Plugins
 =========================
 
+ORVSD Central's Moodle Plugins
+------------------------------
+ORVSD_Central currently has three moodle plugins/webservices which it uses to
+install courses and get site-info. Create_Course is a webservice while 
+Site_Info is a regular plugin currently in development to become a
+webservice.
+
 .. There should be information about each of the plugins individually in this
    part of the documentation.
 
 Git Branching Scheme
 --------------------
-ORVSD_Central's plugins are organized so that the main branches represent
-either the development or production-ready version of the plugin for unique
-versions of moodle.
+ORVSD_Central's Moodle plugins are organized so that the main branches 
+represent either the development or production-ready version of the plugin for 
+unique versions of moodle.
 
 For example, ``moodle_siteinfo``'s branching scheme looks like this::
 
