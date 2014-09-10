@@ -66,7 +66,7 @@ def install_course():
     if request.method == 'GET':
         form = InstallCourse()
 
-        # Query all moodle 2.2 courses
+        # Query all moodle 2.x courses
         courses = g.db_session.query(CourseDetail).filter(
             CourseDetail.moodle_version
             .like('2%')
@@ -76,9 +76,9 @@ def install_course():
         sites = g.db_session.query(Site).filter(
             Site.sitetype == 'moodle')
 
-        moodle_22_sites = []
+        moodle_2_sites = []
 
-        # For all sites query the SiteDetail to see if it's a moodle 2.2 site
+        # For all sites query the SiteDetail to see if it's a moodle 2.x site
         for site in sites:
             details = g.db_session.query(SiteDetail).filter(
                 and_(
@@ -88,7 +88,7 @@ def install_course():
             ).order_by(SiteDetail.timemodified.desc()).first()
 
             if details is not None:
-                moodle_22_sites.append(site)
+                moodle_2_sites.append(site)
 
         # Generate the list of choices for the template
         courses_info = []
@@ -109,7 +109,7 @@ def install_course():
                 listed_courses.append(course.course_id)
 
         # Create the sites list
-        for site in moodle_22_sites:
+        for site in moodle_2_sites:
             sites_info.append((site.id, site.baseurl))
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
