@@ -8,7 +8,7 @@ $(function() {
     // Set the current form element keys, and generate the form
     // off the first selected object.
     var object_list_length = $("#object_list option").length;
-    if (object_list_length > 1) {
+    if (object_list_length > 0) {
         var $selected = $("#object_list option:selected");
         pairs = display_obj($selected, category);
     }
@@ -74,6 +74,7 @@ $(function() {
                 // element.
                 var name = resp[resp["identifier"]]
                 insert_and_sort_list(name, resp["id"]);
+
             });
             reset_add_if_submit();
         }
@@ -102,7 +103,14 @@ $(function() {
                     if (next.val() === undefined) {
                         next = $("#object_list option:selected");
                     }
-                    pairs = display_obj(next, category);
+
+                    object_list_length = $("#object_list option").length;
+                    if (object_list_length > 0) {
+                        pairs = display_obj(next, category);
+                    }
+                    else {
+                        pairs = display_blank_obj(category);
+                    }
                 }
                 else {
                     var name = resp[resp["identifier"]];
@@ -162,7 +170,14 @@ $(function() {
     // Used for adding new objects. Adds the new object and re-sorts the list
     // so it's in the correct spot.
     function insert_and_sort_list(name, value) {
-        option = $("#object_list option:selected");
+        var object_list_length = $("#object_list option").length;
+        if (object_list_length === 0) {
+            option = $('<option>')
+            $("#object_list").append(option);
+        }
+        else {
+            option = $("#object_list option:selected");
+        }
         option.val(value);
         option.text(name);
 
