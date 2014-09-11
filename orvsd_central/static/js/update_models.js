@@ -172,7 +172,7 @@ $(function() {
     function insert_and_sort_list(name, value) {
         var object_list_length = $("#object_list option").length;
         if (object_list_length === 0) {
-            option = $('<option>')
+            option = $('<option>');
             $("#object_list").append(option);
         }
         else {
