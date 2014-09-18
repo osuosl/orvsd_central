@@ -8,6 +8,7 @@ DEBUG = False
 # Flask session key
 SECRET_KEY = "secret key"
 
+
 CSRF_ENABLED = True
 CSRF_SESSION_KEY = "your csrf session key"
 
@@ -30,6 +31,9 @@ SITEINFO_DATABASE_PASS = ""
 INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
 INSTALL_COURSE_WS_TOKEN = ""
 INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
+
+# Use to update the ORVSD_Central Course-List
+MOODLE_COURSE_BASE_PATH = "/data/moodle2-masters/"
 
 # google oauth credentials info
 GOOGLE_CLIENT_ID = 'CLIENT ID HERE'

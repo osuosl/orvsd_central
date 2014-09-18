@@ -167,6 +167,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     The full file path format looks something like this:
         base_path          |   source  |          file_path
     /data/moodle2_masters      /flvs       /flvs_osl_2012/backup_algebra2.xml
+        ^ This path can be modified in your config/default.py file ^
 
     Args:
         base_path (string) - The path to our FLVS/NROC folders.
@@ -514,6 +515,7 @@ def get_path_and_source(base_path, file_path):
     The full file path format looks something like this:
         base_path          |   source  |          file_path
     /data/moodle2_masters      /flvs       /flvs_osl_2012/backup_algebra2.xml
+        ^ This path can be modified in your config/default.py file ^
 
     Args:
         base_path (string) - The path to our FLVS/NROC folders.
