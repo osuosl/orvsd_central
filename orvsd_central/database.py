@@ -22,6 +22,7 @@ def create_db_session():
     return db_session
 
 
+<<<<<<< HEAD
 def create_admin_account(silent):
     """
     Create an admin account. This con be done via raw input from the user or
@@ -29,6 +30,7 @@ def create_admin_account(silent):
 
     config: Bool - use config vars
     """
+    from orvsd_central import models
 
     if not silent:
         # Get admin role.
@@ -36,7 +38,7 @@ def create_admin_account(silent):
         if not admin_role:
             raise ValueError, "admin key needed in constants.USER_PERMS"
 
-        admin_list = User.query.filter_by(role=admin_role).all()
+        admin_list = models.User.query.filter_by(role=admin_role).all()
         if len(admin_list) == 0:
             ans = raw_input("There are currently no admin accounts, would you like to "
                             "create one? (Y/N) ")
@@ -52,7 +54,7 @@ def create_admin_account(silent):
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
         email = os.getenv('CENTRAL_ADMIN_EMAIL', 'example@example.com')
 
-    admin = User(
+    admin = models.User (
         name=username,
         email=email,
         password=password,
