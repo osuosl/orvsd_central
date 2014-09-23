@@ -5,7 +5,7 @@
 
 import re
 
-from orvsd_central.models import User
+from orvsd_central import models
 from orvsd_central.constants import USER_PERMS
 
 from getpass import getpass
@@ -44,7 +44,7 @@ def is_unique_username(username):
     """
     Check that `username` is valid, and unique.
     """
-    return None == User.query.filter_by(name=username).first()
+    return None == models.User.query.filter_by(name=username).first()
 
 def get_valid_username():
     """
@@ -87,7 +87,7 @@ def is_unique_email(email):
     """
     Check that `email` is valid, and unique.
     """
-    return None == User.query.filter_by(email=email).first()
+    return None == models.User.query.filter_by(email=email).first()
 
 def get_valid_email():
     """
