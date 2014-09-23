@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from orvsd_central.constants import USER_PERMS
 from orvsd_central.models import Model, User
+from orvsd_central.constants import USER_PERMS
 
 def create_db_session():
     # Get the db address from the current app
