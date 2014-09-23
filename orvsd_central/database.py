@@ -32,7 +32,10 @@ def create_admin_account(silent):
     config: Bool - use config vars
     """
 
+<<<<<<< HEAD
     if silent:
+        # TODO: Check if there really are no admin accounts?
+
         # Create an admin account.
         ans = raw_input("There are currently no admin accounts, would you like to "
                         "create one? (Y/N) ")
