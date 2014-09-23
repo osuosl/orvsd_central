@@ -71,7 +71,7 @@ def is_valid_email(email):
     """
     Check that `email` is a string, not empty, and looks like an e-mail.
     """
-    if not is_valid_string(email)
+    if not is_valid_string(email):
         return False
 
     if not re.match(
