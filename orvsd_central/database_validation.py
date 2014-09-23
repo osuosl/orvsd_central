@@ -76,7 +76,7 @@ def is_valid_email(email):
 
     if not re.match(
         '^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
-        form.email.data,
+        email,
     ):
         print "Input string does not look like an e-mail address."
         return False
