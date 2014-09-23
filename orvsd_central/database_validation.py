@@ -44,7 +44,11 @@ def is_unique_username(username):
     """
     Check that `username` is valid, and unique.
     """
-    return None == User.query.filter_by(name=username).first()
+    unique = None == User.query.filter_by(name=username).first()
+    if not unique:
+        print "Username is taken."
+        return False
+    return True
 
 def get_valid_username():
     """
@@ -87,7 +91,11 @@ def is_unique_email(email):
     """
     Check that `email` is valid, and unique.
     """
-    return None == User.query.filter_by(email=email).first()
+    unique = None == User.query.filter_by(email=email).first()
+    if not unique:
+        print "Username is taken."
+        return False
+    return True
 
 def get_valid_email():
     """
