@@ -6,6 +6,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from orvsd_central.database_validation import *
 from orvsd_central.models import Model, User
+from orvsd_central.constants import USER_PERMS
 
 def create_db_session():
     # Get the db address from the current app
