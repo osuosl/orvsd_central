@@ -32,14 +32,27 @@ def create_admin_account(silent):
     config: Bool - use config vars
     """
 
-    if not silent:
+    if silent:
         # Create an admin account.
         ans = raw_input("There are currently no admin accounts, would you like to "
                         "create one? (Y/N) ")
         if not ans.lower().startswith("y"):
             return
+
         username = raw_input("Username: ")
+        user_exists = User.query.filter_by(name=username).first()
+        while user_exists:
+            print "Username was already taken. Please try a different name."
+            username = raw_input("Username: ")
+            user_exists = User.query.filter_by(name=username).first()
+
         email = raw_input("Email: ")
+        email_exists = User.query.filter_by(email=email).first()
+        while email_exists:
+            print "Email is in use for another user. Please try a different email."
+            email = raw_input("Email: ")
+            email_exists = User.query.filter_by(email=username).first()
+
         matching = False
         while not matching:
             password = getpass.getpass("Password: ")
