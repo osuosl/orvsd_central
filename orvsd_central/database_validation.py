@@ -79,7 +79,7 @@ def is_valid_email(email):
         return False
 
     if not re.match(
-        '^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
+        '^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6}$',
         email,
     ):
         print("Input string does not look like an e-mail address.")
