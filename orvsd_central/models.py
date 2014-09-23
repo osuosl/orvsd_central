@@ -4,9 +4,11 @@ import time
 from sqlalchemy import (Boolean, Column, DateTime, Enum, Float, ForeignKey,
                         Integer, SmallInteger, String, Text, Table)
 from sqlalchemy.orm import backref, relationship
+from sqlalchemy.ext.declarative import declarative_base
+
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from orvsd_central.database import Model
+Model = declarative_base()
 
 # A representation of the connection between the courses each site has
 # installed, and information about those course details.
