@@ -32,7 +32,6 @@ def create_admin_account(silent):
     config: Bool - use config vars
     """
 
-<<<<<<< HEAD
     if silent:
         # TODO: Check if there really are no admin accounts?
 
@@ -48,21 +47,25 @@ def create_admin_account(silent):
             print "Username was already taken. Please try a different name."
             username = raw_input("Username: ")
             user_exists = User.query.filter_by(name=username).first()
+            while user_exists:
+                print "Username was already taken. Please try a different name."
+                username = raw_input("Username: ")
+                user_exists = User.query.filter_by(name=username).first()
 
-        email = raw_input("Email: ")
-        email_exists = User.query.filter_by(email=email).first()
-        while email_exists:
-            print "Email is in use for another user. Please try a different email."
             email = raw_input("Email: ")
-            email_exists = User.query.filter_by(email=username).first()
+            email_exists = User.query.filter_by(email=email).first()
+            while email_exists:
+                print "Email is in use for another user. Please try a different email."
+                email = raw_input("Email: ")
+                email_exists = User.query.filter_by(email=username).first()
 
-        matching = False
-        while not matching:
-            password = getpass.getpass("Password: ")
-            confirm = getpass.getpass("Confirm Password: ")
-            matching = password == confirm
-            if not matching:
-                print "Passwords do not match. Please try again."
+            matching = False
+            while not matching:
+                password = getpass.getpass("Password: ")
+                confirm = getpass.getpass("Confirm Password: ")
+                matching = password == confirm
+                if not matching:
+                    print "Passwords do not match. Please try again."
     else:
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
@@ -70,27 +73,18 @@ def create_admin_account(silent):
 
     # Get admin role.
     from orvsd_central.models import User
+    admin_role = USER_PERMS.get('admin')
+    admin = User(
+        name=username,
+        email=email,
+        password=password,
+        role=admin_role
+    )
 
-    user_exists = g.db_session.query(User).filter(User.name==username)
-    email_exists = g.db_session.query(User).filter(User.email==email)
+    g.db_session.add(admin)
+    g.db_session.commit()
 
-    if user_exists:
-        print "Username already in use."
-    elif email_exists:
-        print "Email address already in use."
-    else:
-        admin_role = USER_PERMS.get('admin')
-        admin = User(
-            name=username,
-            email=email,
-            password=password,
-            role=admin_role
-        )
-
-        g.db_session.add(admin)
-        g.db_session.commit()
-
-        print "Administrator account created!"
+    print "Administrator account created!"
 
 def init_db():
     engine = g.db_session.get_bind()
