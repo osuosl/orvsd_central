@@ -5,9 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from orvsd_central.constants import USER_PERMS
-
-import getpass
+from orvsd_central.database_validation import *
 
 Model = declarative_base()
 
@@ -32,49 +30,28 @@ def create_admin_account(silent):
     config: Bool - use config vars
     """
 
-    if silent:
-        # TODO: Check if there really are no admin accounts?
-        admin_list = User.query.filter_by(role=USER_PERMS['admin']).all()
+    if not silent:
+        # Get admin role.
+        admin_role = USER_PERMS.get('admin')
+        if not admin_role:
+            raise ValueError, "admin key needed in constants.USER_PERMS"
+
+        admin_list = User.query.filter_by(role=admin_role).all()
         if len(admin_list) == 0:
-            # Create an admin account.
             ans = raw_input("There are currently no admin accounts, would you like to "
                             "create one? (Y/N) ")
             if not ans.lower().startswith("y"):
                 return
 
-        username = raw_input("Username: ")
-        user_exists = User.query.filter_by(name=username).first()
-        while user_exists:
-            print "Username was already taken. Please try a different name."
-            username = raw_input("Username: ")
-            user_exists = User.query.filter_by(name=username).first()
-            while user_exists:
-                print "Username was already taken. Please try a different name."
-                username = raw_input("Username: ")
-                user_exists = User.query.filter_by(name=username).first()
-
-            email = raw_input("Email: ")
-            email_exists = User.query.filter_by(email=email).first()
-            while email_exists:
-                print "Email is in use for another user. Please try a different email."
-                email = raw_input("Email: ")
-                email_exists = User.query.filter_by(email=username).first()
-
-            matching = False
-            while not matching:
-                password = getpass.getpass("Password: ")
-                confirm = getpass.getpass("Confirm Password: ")
-                matching = password == confirm
-                if not matching:
-                    print "Passwords do not match. Please try again."
+        # Proceed to making our first admin user.
+        username = get_valid_username()
+        email = get_valid_email()
+        password = get_matching_passwords()
     else:
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
         email = os.getenv('CENTRAL_ADMIN_EMAIL', 'example@example.com')
 
-    # Get admin role.
-    from orvsd_central.models import User
-    admin_role = USER_PERMS.get('admin')
     admin = User(
         name=username,
         email=email,
@@ -86,6 +63,7 @@ def create_admin_account(silent):
     g.db_session.commit()
 
     print "Administrator account created!"
+
 
 def init_db():
     engine = g.db_session.get_bind()
