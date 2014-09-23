@@ -36,10 +36,11 @@ def create_admin_account(silent):
 
         admin_list = User.query.filter_by(role=admin_role).all()
         if len(admin_list) == 0:
-            ans = raw_input("There are currently no admin accounts, would you like to "
-                            "create one? (Y/N) ")
-            if not ans.lower().startswith("y"):
-                return
+            print("There are currently no admin accounts.")
+
+        ans = raw_input("Would you like to create an admin account? (Y/N) ")
+        if not ans.lower().startswith("y"):
+            return
 
         # Proceed to making our first admin user.
         username = get_valid_username()

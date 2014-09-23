@@ -98,7 +98,7 @@ def get_valid_email():
     """
     valid = False
     while not valid:
-        email = raw_input("Username: ")
+        email = raw_input("E-mail: ")
 
         # lets check valid before using in query
         valid = is_valid_email(email) and \
