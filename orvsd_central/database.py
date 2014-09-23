@@ -32,19 +32,15 @@ def create_admin_account(silent):
     config: Bool - use config vars
     """
 
-<<<<<<< HEAD
     if silent:
         # TODO: Check if there really are no admin accounts?
         admin_list = User.query.filter_by(role=USER_PERMS['admin']).all()
-        print "The admins are: "
-        for admin in admin_list:
-            print admin.name
-
-        # Create an admin account.
-        ans = raw_input("There are currently no admin accounts, would you like to "
-                        "create one? (Y/N) ")
-        if not ans.lower().startswith("y"):
-            return
+        if len(admin_list) == 0:
+            # Create an admin account.
+            ans = raw_input("There are currently no admin accounts, would you like to "
+                            "create one? (Y/N) ")
+            if not ans.lower().startswith("y"):
+                return
 
         username = raw_input("Username: ")
         user_exists = User.query.filter_by(name=username).first()
