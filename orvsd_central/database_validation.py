@@ -101,7 +101,7 @@ def get_valid_email():
     Returns: a valid and unique email.
     """
     valid = unique = False
-    while not valid:
+    while not (valid and unique):
         email = raw_input("E-mail: ")
 
         # lets check valid before using in query
