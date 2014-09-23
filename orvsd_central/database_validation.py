@@ -21,10 +21,10 @@ def is_valid_string(string):
     Check that `string` is a string, and not empty.
     """
     if not isinstance(string, str):
-        print "input should be a string."
+        print("input should be a string.")
         return False
     if not len(string):
-        print "Input string should not be empty."
+        print("Input string should not be empty.")
         return False
 
     return True
@@ -46,7 +46,7 @@ def is_unique_username(username):
     """
     unique = None == User.query.filter_by(name=username).first()
     if not unique:
-        print "Username is taken."
+        print("Username is taken.")
         return False
     return True
 
@@ -57,13 +57,18 @@ def get_valid_username():
 
     Returns: a valid and unique username.
     """
-    valid = False
-    while not valid:
+    valid = unique = False
+    while not (valid and unique):
         username = raw_input("Username: ")
 
         # lets check valid before using in query
-        valid = is_valid_username(username) and \
-                is_unique_username(username)
+        valid = is_valid_username(username)
+        if not valid:
+            print("Username must be valid")
+            continue # skip query
+        unique = is_unique_username(username)
+        if not unique:
+            print("Username is taken.")
 
     return username
 
@@ -82,7 +87,7 @@ def is_valid_email(email):
         '^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
         email,
     ):
-        print "Input string does not look like an e-mail address."
+        print("Input string does not look like an e-mail address.")
         return False
 
     return True
@@ -93,7 +98,7 @@ def is_unique_email(email):
     """
     unique = None == User.query.filter_by(email=email).first()
     if not unique:
-        print "Username is taken."
+        print("Username is taken.")
         return False
     return True
 
@@ -104,13 +109,18 @@ def get_valid_email():
 
     Returns: a valid and unique email.
     """
-    valid = False
+    valid = unique = False
     while not valid:
         email = raw_input("E-mail: ")
 
         # lets check valid before using in query
-        valid = is_valid_email(email) and \
-                is_unique_email(email)
+        valid = is_valid_email(email)
+        if not valid:
+            print("E-mail must be valid")
+            continue # skip query
+        unique = is_unique_email(email)
+        if not unique:
+            print("E-mail is taken.")
 
     return email
 
@@ -136,6 +146,6 @@ def get_matching_passwords():
         confirm = getpass("Confirm: ")
         matching = passwd == confirm
         if not matching:
-            print "Passwords do not match. Please try again."
+            print("Passwords do not match. Please try again.")
 
     return passwd
