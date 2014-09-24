@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import func
 
-from orvsd_central.database_validation import *
+from orvsd_central.db_user_validation import *
 from orvsd_central.models import Model, User
 from orvsd_central.constants import USER_PERMS
 

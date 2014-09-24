@@ -12,6 +12,10 @@ from orvsd_central.forms import AddUser, LoginForm
 from orvsd_central.models import User
 from orvsd_central.util import google, login_manager, requires_role
 
+from orvsd_central.db_user_validation import \
+is_valid_email, is_unique_email, is_valid_username, \
+is_unique_username, is_valid_password
+
 mod = Blueprint('general', __name__)
 
 
@@ -25,6 +29,9 @@ def root():
     return redirect(url_for('general.login'))
 
 
+################ #
+# PLEASE TEST ME #
+# ################
 @mod.route("/register", methods=['GET', 'POST'])
 @requires_role('admin')
 @login_required
@@ -38,11 +45,18 @@ def register():
     message = ""
 
     if request.method == "POST":
-        if form.password.data != form.confirm_pass.data:
+        if not is_valid_username(form.user.data):
+            message = "The name is invalid.\n"
+        elif not is_unique_username(form.user.data):
+            message = "The name is taken.\n"
+        elif not is_valid_email(form.email.data):
+            message = "The E-mail appears to be invalid.\n"
+        elif not is_unique_email(form.email.data):
+            message = "The E-mail is taken.\n"
+        elif not is_valid_password(form.password.data):
+            message = "Please try a better password.\n"
+        elif form.password.data != form.confirm_pass.data:
             message = "The passwords provided did not match!\n"
-        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
-                          form.email.data):
-            message = "Invalid email address!\n"
         else:
             # Add user to db
             g.db_session.add(
