@@ -36,7 +36,15 @@ def create_admin_account(silent):
             raise ValueError, "admin key needed in constants.USER_PERMS"
 
         # get the number of admins
-        admin_list = User.query(func.count('*')).filter_by(role=admin_role).all()
+        admin_list = engine.                     \
+                     query(func.count('*')).     \
+                     select_from(User).          \
+                     filter_by(role=admin_role). \
+                     scalar()
+
+        User.query().filter_by(role=admin_role).all()
+
+
         if admin_list == 0:
             print("There are currently no admin accounts.")
 
