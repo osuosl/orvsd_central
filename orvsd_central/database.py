@@ -42,8 +42,7 @@ def create_admin_account(silent):
                      filter_by(role=admin_role). \
                      scalar()
 
-        User.query().filter_by(role=admin_role).all()
-
+        #User.query().filter_by(role=admin_role).all()
 
         if admin_list == 0:
             print("There are currently no admin accounts.")
