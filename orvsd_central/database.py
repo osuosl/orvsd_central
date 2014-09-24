@@ -3,6 +3,7 @@ import os
 from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy import func
 
 from orvsd_central.database_validation import *
 from orvsd_central.models import Model, User
@@ -35,7 +36,7 @@ def create_admin_account(silent):
             raise ValueError, "admin key needed in constants.USER_PERMS"
 
         # get the number of admins
-        admin_list = User.query.filter_by(role=admin_role).all().count()
+        admin_list = User.query(func.count('*')).filter_by(role=admin_role).all()
         if admin_list == 0:
             print("There are currently no admin accounts.")
 
