@@ -31,8 +31,8 @@ def create_admin_account(silent):
 
     if not silent:
         # get the number of admins
-        admin_list = User.query.filter_by(role=admin_role).all()
-        if len(admin_list) == 0:
+        admin_list = User.query.filter_by(role=admin_role).count()
+        if admin_list == 0:
             print("There are currently no admin accounts.")
 
         ans = raw_input("Would you like to create an admin account? (Y/N) ")
