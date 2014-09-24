@@ -29,20 +29,21 @@ def create_admin_account(silent):
     """
 
     if not silent:
-        # Get admin role.
+        # make sure the role is defined
         admin_role = USER_PERMS.get('admin')
         if not admin_role:
             raise ValueError, "admin key needed in constants.USER_PERMS"
 
-        admin_list = User.query.filter_by(role=admin_role).all()
-        if len(admin_list) == 0:
+        # get the number of admins
+        admin_list = User.query.filter_by(role=admin_role).all().count()
+        if admin_list == 0:
             print("There are currently no admin accounts.")
 
         ans = raw_input("Would you like to create an admin account? (Y/N) ")
         if not ans.lower().startswith("y"):
             return
 
-        # Proceed to making our first admin user.
+        # Proceed to making the admin user.
         username = get_valid_username()
         email = get_valid_email()
         password = get_matching_passwords()
