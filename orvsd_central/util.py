@@ -597,31 +597,34 @@ def get_schools(dist_id, active):
 
 
 @celery.task(name='tasks.install_course')
-def install_course_to_site(course, site):
+def install_course_to_site(course_detail_id, install_url):
     """
     Installs 'course' to 'site'.
     """
     # To get the file path we need the text input, the lowercase of
     # source, and the filename
-    fp = current_app.config['INSTALL_COURSE_FILE_PATH']
-    fp += 'flvs/'
+    course_detail = CourseDetail.query.filter_by(id=course_detail_id).first()
+    course = course_detail.course
+
+    fp = os.path.join(current_app.config['INSTALL_COURSE_FILE_PATH'],
+                      course.source)
 
     data = {'filepath': fp,
-            'file': course.filename,
-            'courseid': course.course_id,
-            'coursename': course.course.name,
-            'shortname': course.course.shortname,
-            'category': '1',
-            'firstname': 'orvsd',
-            'lastname': 'central',
-            'city': 'none',
-            'username': 'admin',
-            'email': 'a@a.aa',
-            'pass': 'adminpass'}
+            'file': course_detail.filename,
+            'courseid': course.id,
+            'coursename': course.name,
+            'shortname': course.shortname,
+            'category': current_app.config['INSTALL_COURSE_CATEGORY'],
+            'firstname': current_app.config['INSTALL_COURSE_FIRSTNAME'],
+            'lastname': current_app.config['INSTALL_COURSE_LASTNAME'],
+            'city': current_app.config['INSTALL_COURSE_CITY'],
+            'username': current_app.config['INSTALL_COURSE_USERNAME'],
+            'email': current_app.config['INSTALL_COURSE_EMAIL'],
+            'pass': current_app.config['INSTALL_COURSE_PASS']}
 
-    resp = requests.post(site, data=data)
+    resp = requests.post(install_url, data=data)
 
-    return "%s\n\n%s\n\n\n" % (course.course.shortname, resp.text)
+    return "%s\n\n%s\n\n\n" % (course.shortname, resp.text)
 
 
 @login_manager.user_loader

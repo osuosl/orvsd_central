@@ -66,29 +66,29 @@ def install_course():
     if request.method == 'GET':
         form = InstallCourse()
 
-        # Query all moodle 2.2 courses
+        # Query all moodle 2.x courses
         courses = g.db_session.query(CourseDetail).filter(
             CourseDetail.moodle_version
-            .like('2.5%')
+            .like('2%')
             ).all()
 
         # Query all moodle sites
         sites = g.db_session.query(Site).filter(
             Site.sitetype == 'moodle')
 
-        moodle_22_sites = []
+        moodle_2_sites = []
 
-        # For all sites query the SiteDetail to see if it's a moodle 2.2 site
+        # For all sites query the SiteDetail to see if it's a moodle 2.x site
         for site in sites:
             details = g.db_session.query(SiteDetail).filter(
                 and_(
                     SiteDetail.site_id == site.id,
-                    SiteDetail.siterelease.like('2.2%')
+                    SiteDetail.siterelease.like('2%')
                 )
             ).order_by(SiteDetail.timemodified.desc()).first()
 
             if details is not None:
-                moodle_22_sites.append(site)
+                moodle_2_sites.append(site)
 
         # Generate the list of choices for the template
         courses_info = []
@@ -109,7 +109,7 @@ def install_course():
                 listed_courses.append(course.course_id)
 
         # Create the sites list
-        for site in moodle_22_sites:
+        for site in moodle_2_sites:
             sites_info.append((site.id, site.baseurl))
 
         form.course.choices = sorted(courses_info, key=lambda x: x[1])
@@ -134,30 +134,27 @@ def install_course():
         site_urls = [Site.query.filter_by(id=site_id).first().baseurl
                      for site_id in site_ids]
 
-        courses = g.db_session.query(CourseDetail).filter(
+        course_details = g.db_session.query(CourseDetail).filter(
             CourseDetail.course_id.in_(selected_courses)
         ).all()
 
         for site_url in site_urls:
             # The site to install the courses
-            site = ("http://%s/webservice/rest/server.php?" +
-                    "wstoken=%s&wsfunction=%s") % (
-                site_url,
-                current_app.config['INSTALL_COURSE_WS_TOKEN'],
-                current_app.config['INSTALL_COURSE_WS_FUNCTION'])
-            site = str(site.encode('utf-8'))
+            install_url = ("http://%s/webservice/rest/server.php?" +
+                           "wstoken=%s&wsfunction=%s") % (
+                        site_url,
+                        current_app.config['INSTALL_COURSE_WS_TOKEN'],
+                        current_app.config['INSTALL_COURSE_WS_FUNCTION'])
+            install_url = str(install_url.encode('utf-8'))
 
             # Loop through the courses, generate the command to be run, run it,
             # and append the ouput to output
             #
             # Currently this will break as our db is not setup correctly yet
-            for course in courses:
-                # Courses are detached from session if inactive for too long.
-                course.course.name
+            for course_detail in course_details:
+                install_course_to_site.delay(course_detail.id, install_url)
 
-                install_course_to_site.delay(course, site)
-
-            output += (str(len(courses)) + " course install(s) for " +
+            output += (str(len(course_details)) + " course install(s) for " +
                        site_url + " started.\n")
 
         return render_template('install_course_output.html',

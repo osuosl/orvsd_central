@@ -32,6 +32,7 @@ Developer Documentation
 .. toctree::
    :maxdepth 2
 
+   plugins
    orvsd_central_api
 
 Generating Documentation
