@@ -3,7 +3,6 @@ import os
 from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy import func
 
 from orvsd_central.validation.user import get_valid_username
 from orvsd_central.validation.email import get_valid_email
