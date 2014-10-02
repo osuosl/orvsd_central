@@ -1,7 +1,3 @@
-# Justin Brown speaks: "jnoah tells me this class is incomplete but
-# in theory it should set up a test database and should be subclassed
-# to run tests that need a test database."
-
 import unittest
 
 from flask import g

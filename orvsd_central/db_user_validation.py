@@ -1,20 +1,11 @@
 # Defines functions for validating user inputs as unique/valid
 
-# Justin Brown speaks "I wrote this to make init_db a bit cleaner. Now
-# it is also used in general.register."
-
 import re
 
 from orvsd_central.models import User
 from orvsd_central.constants import USER_PERMS
 
 from getpass import getpass
-
-__all__ = [
-'get_valid_username',
-'get_valid_email',
-'get_matching_passwords',
-]
 
 def is_valid_string(string):
     """

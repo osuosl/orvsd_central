@@ -5,7 +5,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import func
 
-from orvsd_central.db_user_validation import *
+from orvsd_central.db_user_validation import (get_valid_username,
+                                              get_valid_email,
+                                              get_valid_passwords,
+                                             )
+
 from orvsd_central.models import Model, User
 from orvsd_central.constants import USER_PERMS
 
@@ -28,6 +32,10 @@ def create_admin_account(silent):
 
     config: Bool - use config vars
     """
+    # make sure the role is defined
+    admin_role = USER_PERMS.get('admin')
+    if not admin_role:
+        raise LookupError, "admin key needed in constants.USER_PERMS"
 
     if not silent:
         # get the number of admins

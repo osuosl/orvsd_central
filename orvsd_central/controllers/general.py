@@ -12,9 +12,12 @@ from orvsd_central.forms import AddUser, LoginForm
 from orvsd_central.models import User
 from orvsd_central.util import google, login_manager, requires_role
 
-from orvsd_central.db_user_validation import \
-is_valid_email, is_unique_email, is_valid_username, \
-is_unique_username, is_valid_password
+from orvsd_central.db_user_validation import (is_valid_email,
+                                              is_unique_email,
+                                              is_valid_username,
+                                              is_unique_username,
+                                              is_valid_password,
+                                              )
 
 mod = Blueprint('general', __name__)
 
@@ -29,9 +32,6 @@ def root():
     return redirect(url_for('general.login'))
 
 
-################ #
-# PLEASE TEST ME #
-# ################
 @mod.route("/register", methods=['GET', 'POST'])
 @requires_role('admin')
 @login_required
