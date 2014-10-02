@@ -1,4 +1,5 @@
 import os
+import sys
 
 from flask import current_app, g
 from sqlalchemy import create_engine
@@ -33,7 +34,7 @@ def create_admin_account(silent):
     # make sure the role is defined
     admin_role = USER_PERMS.get('admin')
     if not admin_role:
-        raise LookupError, "admin key needed in constants.USER_PERMS"
+        sys.exit('admin key is needed in constants.USER_PERMS')
 
     if not silent:
         # get the number of admins
