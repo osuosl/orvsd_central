@@ -5,10 +5,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import func
 
-from orvsd_central.db_user_validation import (get_valid_username,
-                                              get_valid_email,
-                                              get_valid_passwords,
-                                             )
+from orvsd_central.validation.user import get_valid_username
+from orvsd_central.validation.email import get_valid_email
+from orvsd_central.validation.password import get_valid_password
 
 from orvsd_central.models import Model, User
 from orvsd_central.constants import USER_PERMS
@@ -50,7 +49,7 @@ def create_admin_account(silent):
         # Proceed to making the admin user.
         username = get_valid_username()
         email = get_valid_email()
-        password = get_matching_passwords()
+        password = get_matching_passwor()
     else:
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')

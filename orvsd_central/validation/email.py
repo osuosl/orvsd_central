@@ -1,4 +1,4 @@
-# Defines functions for validating/getting email as unique/valid
+# Defines functions for validating/getting email which is unique and valid
 
 import re
 
@@ -6,7 +6,7 @@ from orvsd_central.models import User
 
 def is_valid_email(email):
     """
-    Check that `email` is a string, not empty, and looks like an e-mail.
+    Check that `email` is not empty and looks like an e-mail.
     """
     if not email:
         return False

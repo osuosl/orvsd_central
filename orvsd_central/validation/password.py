@@ -1,10 +1,10 @@
-# Defines functions for validating user inputs as unique/valid
+# Defines functions for validating/getting user inputs which are unique + valid
 
 from getpass import getpass
 
 def is_valid_password(passwd):
     """
-    Check that `passwd` is a string, and not empty.
+    Check that `passwd` is not empty.
     """
     return is_valid_string(passwd)
     # Room to add more.

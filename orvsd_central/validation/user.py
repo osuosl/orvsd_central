@@ -1,10 +1,10 @@
-# Defines functions for validating users as unique/valid 
+# Defines functions for validating/getting users which are unique and valid
 
 from orvsd_central.models import User
 
 def is_unique_username(username):
     """
-    Check that `username` is valid, and unique.
+    Check that `username` is valid and unique.
     """
     return None == User.query.filter_by(name=username).first()
 

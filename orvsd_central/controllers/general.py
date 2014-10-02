@@ -12,12 +12,9 @@ from orvsd_central.forms import AddUser, LoginForm
 from orvsd_central.models import User
 from orvsd_central.util import google, login_manager, requires_role
 
-from orvsd_central.db_user_validation import (is_valid_email,
-                                              is_unique_email,
-                                              is_valid_username,
-                                              is_unique_username,
-                                              is_valid_password,
-                                              )
+from orvsd_central.validation.user import is_unique_username
+from orvsd_central.validation.email import is_valid_email
+from orvsd_central.validation.email import is_unique_email
 
 mod = Blueprint('general', __name__)
 
@@ -45,16 +42,16 @@ def register():
     message = ""
 
     if request.method == "POST":
-        if not is_valid_username(form.user.data):
-            message = "The name is invalid.\n"
+        if not form.user.data:
+            message = "Please enter a username.\n"
         elif not is_unique_username(form.user.data):
-            message = "The name is taken.\n"
+            message = "The name is taken. Please try again.\n"
         elif not is_valid_email(form.email.data):
-            message = "The E-mail appears to be invalid.\n"
+            message = "This does not look like an E-mail. Please try again.\n"
         elif not is_unique_email(form.email.data):
-            message = "The E-mail is taken.\n"
-        elif not is_valid_password(form.password.data):
-            message = "Please try a better password.\n"
+            message = "The E-mail is taken. Please try again.\n"
+        elif not form.password.data:
+            message = "Please enter a password.\n"
         elif form.password.data != form.confirm_pass.data:
             message = "The passwords provided did not match!\n"
         else:
