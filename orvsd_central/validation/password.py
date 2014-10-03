@@ -9,7 +9,7 @@ def is_valid_password(passwd):
     return is_valid_string(passwd)
     # Room to add more.
 
-def get_matching_passwords():
+def get_matching_password():
     """
     Returns valid matching passwords from the prompt.
     """
