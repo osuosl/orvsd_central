@@ -46,8 +46,8 @@ def create_admin_account(silent):
             return
 
         # Proceed to making the admin user.
-        # username = get_valid_username()
-        # email = get_valid_email()
+        username = get_valid_username()
+        email = get_valid_email()
         password = get_matching_password()
     else:
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
