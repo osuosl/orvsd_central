@@ -5,12 +5,11 @@ from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from orvsd_central.validation.user import get_valid_username
-from orvsd_central.validation.email import get_valid_email
-from orvsd_central.validation.password import get_matching_password
+from orvsd_central.util import (get_valid_username, get_valid_email,
+                  get_matching_password)
 
-from orvsd_central.models import Model, User
 from orvsd_central.constants import USER_PERMS
+from orvsd_central.models import Model, User
 
 def create_db_session():
     # Get the db address from the current app

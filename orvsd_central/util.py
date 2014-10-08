@@ -643,3 +643,99 @@ def requires_role(role):
             return f(*args, **kwargs)
         return wraps(f)(wrapper)
     return decorator
+
+def is_valid_email(email):
+    """
+    Check that `email` is not empty and looks like an e-mail.
+    """
+    if not email:
+        return False
+
+    if not re.match(
+        '^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
+        email,
+    ):
+        return False
+
+    return True
+
+def is_unique_email(email):
+    """
+    Check that `email` is valid, and unique.
+    """
+    return None == User.query.filter_by(email=email).first()
+
+def get_valid_email():
+    """
+    Prompts for an email that does not already exist
+    in the database.
+
+    Returns: a valid and unique email.
+    """
+    valid, unique = (False, False)
+    while not (valid and unique):
+        email = raw_input("E-mail: ")
+
+        # lets check valid before using in query
+        valid = is_valid_email(email)
+        if not valid:
+            print("E-mail appears to be invalid.")
+            continue # skip query
+        unique = is_unique_email(email)
+        if not unique:
+            print("E-mail is taken.")
+
+    return email
+
+def is_unique_username(username):
+    """
+    Check that `username` is valid and unique.
+    """
+    return None == User.query.filter_by(name=username).first()
+
+def get_valid_username():
+    """
+    Prompts for a valid username that does not already exist
+    in the database.
+
+    Returns: a valid and unique username.
+    """
+    unique = False
+    while not unique:
+        username = raw_input("Username: ")
+
+        # check valid before using in query
+        if not username:
+            print("Please enter a username.")
+            continue # skip query
+
+        unique = is_unique_username(username)
+        if not unique:
+            print("Username is taken.")
+
+    return username
+
+def is_valid_password(passwd):
+    """
+    Check that `passwd` is not empty.
+    """
+    return is_valid_string(passwd)
+    # Room to add more.
+
+def get_matching_password():
+    """
+    Returns valid matching passwords from the prompt.
+    """
+    matching = False
+    while not matching:
+        passwd = getpass("Password: ")
+        if not passwd:
+            print("Please enter a password.")
+            continue
+
+        confirm = getpass("Confirm: ")
+        matching = passwd == confirm
+        if not matching:
+            print("Passwords do not match. Please try again.")
+
+    return passwd
