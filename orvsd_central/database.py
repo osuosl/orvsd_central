@@ -38,8 +38,7 @@ def create_admin_account(silent):
     if not silent:
         # get the number of admins
         admin_count = User.query.filter_by(role=admin_role).count()
-        if admin_count == 0:
-            print("There are currently %d admin accounts." % admin_count)
+        print("There are currently %d admin accounts." % admin_count)
 
         ans = raw_input("Would you like to create an admin account? (Y/N) ")
         if not ans.lower().startswith("y"):
@@ -65,8 +64,12 @@ def create_admin_account(silent):
         role=admin_role
     )
 
-    g.db_session.add(admin)
-    g.db_session.commit()
+    try:
+        g.db_session.add(admin)
+        g.db_session.commit()
+    except sqlalchemy.exc.IntegrityError as e:
+        print "Username is taken."
+        exit(e)
 
     print "Administrator account created!"
 
