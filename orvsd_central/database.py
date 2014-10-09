@@ -5,8 +5,8 @@ from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from orvsd_central.util import (get_valid_username, get_valid_email,
-                  get_matching_password)
+from orvsd_central.util_validation import (prompt_valid_email,
+                                           prompt_matching_passwords)
 
 from orvsd_central.constants import USER_PERMS
 from orvsd_central.models import Model, User
@@ -37,18 +37,22 @@ def create_admin_account(silent):
 
     if not silent:
         # get the number of admins
-        admin_list = User.query.filter_by(role=admin_role).count()
-        if admin_list == 0:
-            print("There are currently no admin accounts.")
+        admin_count = User.query.filter_by(role=admin_role).count()
+        if admin_count == 0:
+            print("There are currently %d admin accounts." % admin_count)
 
         ans = raw_input("Would you like to create an admin account? (Y/N) ")
         if not ans.lower().startswith("y"):
             return
 
         # Proceed to making the admin user.
-        username = get_valid_username()
-        email = get_valid_email()
-        password = get_matching_password()
+        username = raw_input("Username: ")
+        while not username:
+            print("Please input a username")
+            username = raw_input("Username: ")
+
+        email = prompt_valid_email()
+        password = prompt_matching_passwords()
     else:
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
