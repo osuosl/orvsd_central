@@ -7,6 +7,8 @@ from flask.ext.login import (current_user, login_required,
 import requests
 from requests.exceptions import HTTPError
 
+from sqlalchemy.exc import IntegrityError
+
 from orvsd_central import constants
 from orvsd_central.forms import AddUser, LoginForm
 from orvsd_central.models import User
@@ -54,16 +56,20 @@ def register():
             message = "The passwords provided did not match!\n"
         else:
             # Add user to db
-            g.db_session.add(
-                User(
-                    name=form.user.data,
-                    email=form.email.data,
-                    password=form.password.data,
-                    role=constants.USER_PERMS.get(form.role.data, 1)
+            try:
+                g.db_session.add(
+                    User(
+                        name=form.user.data,
+                        email=form.email.data,
+                        password=form.password.data,
+                        role=constants.USER_PERMS.get(form.role.data, 1)
+                    )
                 )
-            )
-            g.db_session.commit()
-            message = form.user.data + " has been added successfully!\n"
+                g.db_session.commit()
+
+                message = form.user.data + " has been added successfully!\n"
+            except IntegrityError:
+                message = form.user.data + " is a username already in use.\n"
 
     return render_template('add_user.html', form=form,
                            message=message, user=current_user)
