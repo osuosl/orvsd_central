@@ -4,6 +4,7 @@ import sys
 from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.exc import IntegrityError
 
 from orvsd_central.util_validation import (prompt_valid_email,
                                            prompt_matching_passwords)
@@ -67,7 +68,7 @@ def create_admin_account(silent):
     try:
         g.db_session.add(admin)
         g.db_session.commit()
-    except sqlalchemy.exc.IntegrityError as e:
+    except IntegrityError as e:
         print "Username is taken."
         exit(e)
 
