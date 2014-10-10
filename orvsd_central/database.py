@@ -1,5 +1,4 @@
 import os
-import sys
 
 from flask import current_app, g
 from sqlalchemy import create_engine
