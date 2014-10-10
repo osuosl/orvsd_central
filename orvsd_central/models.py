@@ -16,6 +16,7 @@ class SiteCourse(Model):
 
     __tablename__ = 'sites_courses'
 
+    id = Column(Integer, primary_key=True)
     site_id = Column(
         Integer,
         ForeignKey(
