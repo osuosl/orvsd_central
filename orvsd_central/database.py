@@ -31,6 +31,7 @@ def create_admin_account(silent):
 
     config: Bool - use config vars
     """
+
     # make sure the role is defined
     admin_role = USER_PERMS.get('admin')
     if not admin_role:
@@ -58,6 +59,8 @@ def create_admin_account(silent):
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
         email = os.getenv('CENTRAL_ADMIN_EMAIL', 'example@example.com')
 
+    # Get admin role.
+    admin_role = USER_PERMS.get('admin')
     admin = User (
         name=username,
         email=email,
@@ -69,7 +72,10 @@ def create_admin_account(silent):
         g.db_session.add(admin)
         g.db_session.commit()
     except IntegrityError:
-        print("Username is taken.")
+        if User.query.filter_by(email=email).first():
+            print("Email is already in use.\n")
+        else: # assume error was duplicate username since not email
+            print("Username is already in use.\n")
         exit(-1)
 
     print "Administrator account created!"

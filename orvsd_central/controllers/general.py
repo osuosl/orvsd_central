@@ -44,12 +44,8 @@ def register():
     if request.method == "POST":
         if not form.user.data:
             message = "Please enter a username.\n"
-        #elif not is_unique_username(form.user.data):
-            #message = "The name is taken. Please try again.\n"
         elif not is_valid_email(form.email.data):
             message = "This does not look like an E-mail. Please try again.\n"
-        #elif not is_unique_email(form.email.data):
-            #message = "The E-mail is taken. Please try again.\n"
         elif not form.password.data:
             message = "Please enter a password.\n"
         elif form.password.data != form.confirm_pass.data:
@@ -57,19 +53,21 @@ def register():
         else:
             # Add user to db
             try:
-                g.db_session.add(
-                    User(
-                        name=form.user.data,
-                        email=form.email.data,
-                        password=form.password.data,
-                        role=constants.USER_PERMS.get(form.role.data, 1)
-                    )
+                user = User(
+                    name=form.user.data,
+                    email=form.email.data,
+                    password=form.password.data,
+                    role=constants.USER_PERMS.get(form.role.data, 1)
                 )
+                g.db_session.add(user)
                 g.db_session.commit()
 
                 message = form.user.data + " has been added successfully!\n"
             except IntegrityError:
-                message = form.user.data + " is a username already in use.\n"
+                if User.query.filter_by(email=form.email.data).first():
+                    message = "Email is already in use.\n"
+                else: # assume error was duplicate username since not email
+                    message = "Username is already in use.\n"
 
     return render_template('add_user.html', form=form,
                            message=message, user=current_user)

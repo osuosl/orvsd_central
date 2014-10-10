@@ -50,7 +50,7 @@ class User(Model):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True)
-    email = Column(String(120))
+    email = Column(String(120), unique=True)
     password = Column(String(768))
     # 1 = Standard User
     # 2 = Helpdesk
