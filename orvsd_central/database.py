@@ -68,9 +68,8 @@ def create_admin_account(silent):
     try:
         g.db_session.add(admin)
         g.db_session.commit()
-    except IntegrityError as e:
+    except IntegrityError:
         print("Username is taken.")
-        print(e)
         exit(-1)
 
     print "Administrator account created!"
