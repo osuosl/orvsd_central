@@ -72,6 +72,7 @@ def create_admin_account(silent):
         g.db_session.add(admin)
         g.db_session.commit()
     except IntegrityError:
+        g.db_session.rollback()
         if User.query.filter_by(email=email).first():
             print("Email is already in use.\n")
         else: # assume error was duplicate username since not email

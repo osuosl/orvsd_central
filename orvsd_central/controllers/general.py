@@ -64,6 +64,7 @@ def register():
 
                 message = form.user.data + " has been added successfully!\n"
             except IntegrityError:
+                g.db_session.rollback()
                 if User.query.filter_by(email=form.email.data).first():
                     message = "Email is already in use.\n"
                 else: # assume error was duplicate username since not email
