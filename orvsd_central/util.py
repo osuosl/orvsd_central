@@ -622,7 +622,7 @@ def install_course_to_site(course_detail_id, install_url):
             'email': current_app.config['INSTALL_COURSE_EMAIL'],
             'pass': current_app.config['INSTALL_COURSE_PASS']}
 
-    resp = requests.post(install_url, data=data)
+    resp = requests.post(install_url, data=data, timeout=None)
 
     return "%s\n\n%s\n\n\n" % (course.shortname, resp.text)
 
