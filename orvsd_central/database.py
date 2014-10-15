@@ -5,8 +5,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.exc import IntegrityError
 
-from orvsd_central.util import (prompt_valid_email, prompt_matching_passwords)
-
 from orvsd_central.constants import USER_PERMS
 from orvsd_central.models import Model, User
 
@@ -29,6 +27,8 @@ def create_admin_account(silent):
 
     config: Bool - use config vars
     """
+    from orvsd_central.util import (prompt_valid_email,
+                                    prompt_matching_passwords)
 
     if not silent:
         # get the number of admins
