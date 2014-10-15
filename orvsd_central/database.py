@@ -69,7 +69,6 @@ def create_admin_account(silent):
                 print("Email is already in use.\n")
             else: # assume error was duplicate username since not email
                 print("Username is already in use.\n")
-            exit(-1)
     else:
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
