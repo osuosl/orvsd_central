@@ -31,11 +31,6 @@ def create_admin_account(silent):
     config: Bool - use config vars
     """
 
-    # make sure the role is defined
-    admin_role = USER_PERMS.get('admin')
-    if not admin_role:
-        sys.exit('admin key is needed in constants.USER_PERMS')
-
     if not silent:
         # get the number of admins
         admin_count = User.query.filter_by(role=admin_role).count()
@@ -46,37 +41,55 @@ def create_admin_account(silent):
             return
 
         # Proceed to making the admin user.
-        username = raw_input("Username: ")
-        while not username:
-            print("Please input a username")
+        admin_created = False
+        while not admin_created:
             username = raw_input("Username: ")
+            while not username:
+                print("Please input a username")
+                username = raw_input("Username: ")
 
-        email = prompt_valid_email()
-        password = prompt_matching_passwords()
+            email = prompt_valid_email()
+            password = prompt_matching_passwords()
+
+        # Get admin role.
+        admin_role = USER_PERMS.get('admin')
+        admin = User (
+            name=username,
+            email=email,
+            password=password,
+            role=admin_role
+        )
+
+        try:
+            g.db_session.add(admin)
+            g.db_session.commit()
+        except IntegrityError:
+            g.db_session.rollback()
+            if User.query.filter_by(email=email).first():
+                print("Email is already in use.\n")
+            else: # assume error was duplicate username since not email
+                print("Username is already in use.\n")
+            exit(-1)
     else:
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
         email = os.getenv('CENTRAL_ADMIN_EMAIL', 'example@example.com')
 
-    # Get admin role.
-    admin_role = USER_PERMS.get('admin')
-    admin = User (
-        name=username,
-        email=email,
-        password=password,
-        role=admin_role
-    )
 
-    try:
-        g.db_session.add(admin)
-        g.db_session.commit()
-    except IntegrityError:
-        g.db_session.rollback()
-        if User.query.filter_by(email=email).first():
-            print("Email is already in use.\n")
-        else: # assume error was duplicate username since not email
-            print("Username is already in use.\n")
-        exit(-1)
+        # Get admin role.
+        admin_role = USER_PERMS.get('admin')
+        admin = User (
+            name=username,
+            email=email,
+            password=password,
+            role=admin_role
+        )
+
+        try:
+            g.db_session.add(admin)
+            g.db_session.commit()
+        except IntegrityError:
+            g.db_session.rollback()
 
     print "Administrator account created!"
 
