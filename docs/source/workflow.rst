@@ -1,28 +1,29 @@
-Orvsd_Cenral Development Workflow
-=================================
+Development Workflow
+====================
 
-The Workflow for Orvsd Central 
-------------------------------
-When developing TheOC please follow this general workflow (details provided
-below the numbered list)
+When developing ORVSD Central please follow this general workflow.
 
-1. Create Issues.
+General Workflow Guidelines
+---------------------------
 
-    * When an issue arises create an issue for it 
-    * When a feature needs to be developed create an issue for it
+1. Create Issues
+
+    * When an issue arises create a GitHub issue to fix it. 
+    * When a feature needs to be developed create an issue for that as well.
     * Do not work on anything that will eventually be pushed to production
-      unless there is an issue create before work begins
+      unless there is an issue exists for that task.
 
-2. Make Branches for each issue
+2. Make Branches for each issue you work on
     
-    * Unless expressly specified one should always branch from the `develop`
-      branch.
-    * Once you have created an appropriate issue on either GitHub or Code.O.O
-      for ORVSD Central or the Moodle Plugins respectively.
-    * When creating a new branch in orvsd_central please follow `these
+    * Unless expressly specified, one should always branch from `develop` on
+      ORVSD Central.
+    * When creating a new branch in the orvsd_central repo please follow `these
       guidelines <./tranching.html>`_. [descriptive_name-<issue #>]
-    * Refer to `these docs <./plugins.html>`_ for specific branching syntax to
+    * Refer to `these docs <./plugins.html>`_ for specific branching syntax with 
       plugins. `[<moodle version>/<feature or bug>/<issue #>_optional_descriptive_name]`
+    * Only after you have created an issue on either GitHub or Code.O.O for 
+      ORVSD Central or the Moodle Plugins respectively work can begin on that 
+      issue.
 
 3. Assign individuals to each issue
 
@@ -30,11 +31,14 @@ below the numbered list)
       developers on the project who can best resolve the issue. If you yourself
       can handle the issue assign yourself.
     * Contact whoever you have assigned to the issue in the dev irc channel so
-      they know they have been assigned the issue.
+      they know they have been assigned said issue; otherwise it may never get
+      done and nobody wants that to happen.
       
 
 4. Review regularly
 
     * Projects should be reviewed from the planning stages onward 
-    * Before beginning a project be sure to have your plan reviewed by the one
+    * Before beginning a task be sure to have your plan reviewed by the one
       of your peers.
+    * Throughout your development make sure your progress and plans are being
+      assessed by your peers, especially if they are changing frequently.

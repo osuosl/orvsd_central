@@ -1,5 +1,5 @@
-ORVSD Central Branching
-=======================
+Branching
+=========
 
 Branching Naming Scheme
 -----------------------
@@ -16,6 +16,6 @@ on Page Reload` (for example). The branch name would look like this:
 
 `submit_button_fix-97`
 
-The descriptive title should be should but also summarize the issue at hand
+The descriptive title should be short but also summarize the issue at hand
 so someone looking at the list of branches can figure out what the branch is
 for without having to look at the list of issues.
