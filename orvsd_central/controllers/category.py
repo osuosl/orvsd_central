@@ -171,7 +171,7 @@ def update_courselist():
     and course detail entries, based on available files.
     """
     num_courses = 0
-    base_path = current_app.config['MOODLE_COURSE_BASE_PATH'] 
+    base_path = current_app.config['INSTALL_COURSE_FILE_PATH']
     mdl_files = []
     if request.method == "POST":
         # Get a list of all moodle course files
