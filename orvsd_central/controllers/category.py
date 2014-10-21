@@ -170,41 +170,47 @@ def update_courselist():
     Updates the database to contain the most recent course
     and course detail entries, based on available files.
     """
-    num_courses = 0
-    base_path = current_app.config['INSTALL_COURSE_FILE_PATH']
-    mdl_files = []
     if request.method == "POST":
-        # Get a list of all moodle course files
-        # for source in os.listdir(base_path):
-        for root, sub_folders, files in os.walk(base_path):
-            for file in files:
-                full_file_path = os.path.join(root, file)
-                if os.path.isfile(full_file_path):
-                    mdl_files.append(full_file_path)
+        num_courses = 0
+        base_path = current_app.config['INSTALL_COURSE_FILE_PATH']
+        mdl_files = []
 
-        filenames = []
-        sources = []
-        for filename in mdl_files:
-            source, path = get_path_and_source(base_path, filename)
-            sources.append(source)
-            filenames.append(path)
+        if os.path.exists(base_path):
 
-        details = g.db_session.query(CourseDetail) \
-            .join(CourseDetail.course) \
-            .filter(CourseDetail.filename.in_(
-                    filenames)).all()
+            # Get a list of all moodle course files
+            # for source in os.listdir(base_path):
+            for root, sub_folders, files in os.walk(base_path):
+                for file in files:
+                    full_file_path = os.path.join(root, file)
+                    if os.path.isfile(full_file_path):
+                        mdl_files.append(full_file_path)
 
-        for detail in details:
-            if detail.filename in filenames:
-                sources.pop(filenames.index(detail.filename))
-                filenames.pop(filenames.index(detail.filename))
+            filenames = []
+            sources = []
+            for filename in mdl_files:
+                source, path = get_path_and_source(base_path, filename)
+                sources.append(source)
+                filenames.append(path)
 
-        for source, file_path in zip(sources, filenames):
-            create_course_from_moodle_backup(base_path, source, file_path)
-            num_courses += 1
+            details = g.db_session.query(CourseDetail) \
+                .join(CourseDetail.course) \
+                .filter(CourseDetail.filename.in_(
+                        filenames)).all()
 
-        if num_courses > 0:
-            flash(str(num_courses) + ' new courses added successfully!')
+            for detail in details:
+                if detail.filename in filenames:
+                    sources.pop(filenames.index(detail.filename))
+                    filenames.pop(filenames.index(detail.filename))
+
+            for source, file_path in zip(sources, filenames):
+                create_course_from_moodle_backup(base_path, source, file_path)
+                num_courses += 1
+
+            if num_courses > 0:
+                flash(str(num_courses) + ' new courses added successfully!')
+        else:
+            flash("Invalid INSTALL_COURSE_FILE_PATH in your config")
+
     return render_template('update_courses.html', user=current_user)
 
 
