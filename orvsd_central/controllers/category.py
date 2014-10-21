@@ -172,10 +172,10 @@ def update_courselist():
     """
     if request.method == "POST":
         num_courses = 0
-        base_path = current_app.config['INSTALL_COURSE_FILE_PATH']
+        base_path = current_app.config.get('INSTALL_COURSE_FILE_PATH', None)
         mdl_files = []
 
-        if os.path.exists(base_path):
+        if base_path and os.path.exists(base_path):
 
             # Get a list of all moodle course files
             # for source in os.listdir(base_path):
