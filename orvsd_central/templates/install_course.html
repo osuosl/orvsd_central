@@ -12,30 +12,28 @@
 {% block content %}
 
 <form name='install_course' method='POST' action="{{ url_for('category.install_course') }}">
-    <fieldset>
-        <legend>Install Course(s)</legend>
-        <label class="control-label" for="site">Site</label>
-        <div class="row">
-            <div class="span7">
-                {{form.site}}
-            </div>
-            <div class="span5" id="selected-names"></div>
+    <legend>Install Course(s)</legend>
+    <label class="control-label" for="site">Site</label>
+    <div class="row">
+        <div class="col-xs-5">
+            {{form.site(class='form-control')}}
         </div>
-        <label class="control-label" for="filter">Filter</label>
-        <div class="row">
-            <div class="span7">
-                {{form.filter}}
-            </div>
+        <div class="col-xs-5 col-xs-offset-1" id="selected-names"></div>
+    </div>
+    <label class="control-label" for="filter">Filter</label>
+    <div class="row">
+        <div class="col-xs-7">
+            {{form.filter}}
         </div>
-        <label class="control-label" for="course">Course(s)</label>
-        <div class="row">
-            <div class="span7">
-                {{form.course}}
-            </div>
-            <div class="span5" id="selected-courses"></div>
+    </div>
+    <label class="control-label" for="course">Course(s)</label>
+    <div class="row">
+        <div class="col-xs-5">
+            {{form.course}}
         </div>
-        <button class="btn" type='submit'>Install</button>
-    </fieldset>
+        <div class="col-xs-5 col-xs-offset-1" id="selected-courses"></div>
+    </div>
+    <button class="btn btn-primary" type='submit'>Install</button>
 </form>
 
 {% endblock %}
