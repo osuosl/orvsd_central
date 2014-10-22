@@ -197,14 +197,13 @@ $(function() {
 
 // Used to generate the html for an input field for an attribute.
 function generate_row(key, value) {
-    html =  "<div class=\"control-group pull-left\">\n" +
-            "<label for=\""+key+"\" class=\"control-label min-padding\">\n"+capitalize(key)+":\n</label>\n" +
-            "<div class=\"controls\">\n" +
-            "<input id=\""+key+"\" name=\"" + key + "\" type=\"text\" value=\"" + value + "\"";
+    html =  "<div class=\"col-xs-6\">\n<div class=\"row\">\n" +
+            "<label for=\""+key+"\" class=\"control-label col-xs-2\">\n"+capitalize(key)+":\n</label>\n" +
+            "<div class=\"col-xs-10\"><input id=\""+key+"\" class=\"form-control\" name=\"" + key + "\" type=\"text\" value=\"" + value + "\"";
     if (key == "id") {
     html += " readonly";
     }
-    html += ">\n" +
+    html += "></div>\n" +
             "</div>\n" +
             "</div>\n";
     return html;
