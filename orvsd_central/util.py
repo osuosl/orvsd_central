@@ -457,6 +457,64 @@ def get_path_and_source(base_path, file_path):
     path = file_path.replace(base_path, '').partition('/')
     return path[0] + '/', path[2]
 
+def get_active_counts():
+    """
+    Get the active counts of all the things - schools, sites, districts, users,
+    admins, and teachers
+    """
+
+    # Dictionary being returned of all count data
+    active_counts = {
+        'districts': 0,
+        'schools': 0,
+        'sites': 0,
+        'courses': Course.query.count(),
+        'admins': 0,
+        'teachers': 0,
+        'totalusers': 0,
+        'activeusers': 0
+    }
+
+    # Starting from the perspective of sites
+    sites = Site.query.all()
+
+    # When looking for districts and schools, record unique names and count
+    # those at the end
+    active_schools = set()
+    active_districts = set()
+
+    # For each site, check if there is a SiteDetail associated. If there is,
+    # that means the site is active and we want all the details about users.
+    for site in sites:
+        sd = SiteDetail.query.filter(
+            SiteDetail.site_id == site.id
+        ).order_by(
+            SiteDetail.timemodified.desc()
+        ).first()
+
+        if sd:
+            # Grab all the details about the users
+            active_counts['admins'] += sd.adminusers
+            active_counts['teachers'] += sd.teachers
+            active_counts['totalusers'] += sd.totalusers
+            active_counts['activeusers'] += sd.activeusers
+            active_counts['sites'] += 1
+
+            # Add the school and district names to their respective sets for
+            # later counting
+            school = School.query.filter(id==site.school_id).first()
+            if school:
+                active_schools += school.name
+                district = District.query.filter(id=school.district_id).first()
+                if district:
+                    active_districts += district.name
+
+    # Count all the unique schools and districts
+    active_counts['districts'] = len(active_districts)
+    active_counts['schools'] = len(active_schools)
+
+    return active_counts
+
 
 def get_schools(dist_id, active):
     """

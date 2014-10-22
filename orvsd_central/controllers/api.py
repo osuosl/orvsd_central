@@ -6,7 +6,7 @@ from flask import Blueprint, abort, g, jsonify, request
 from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
-                                get_schools, string_to_type)
+                                get_active_counts, get_schools, string_to_type)
 
 
 mod = Blueprint('api', __name__, url_prefix="/1")
@@ -256,34 +256,7 @@ def report_stats():
     and the numebr of total users and available courses
     """
 
-    active_data = get_schools(None, True)
-
-    stats = {
-        'districts': 0,
-        'schools': 0,
-        'sites': 0,
-        'courses': Course.query.count(),
-        'admins': 0,
-        'teachers': 0,
-        'totalusers': 0,
-        'activeusers': 0
-    }
-
-    # Get sites we have details for.
-    sds = g.db_session.query(SiteDetail.site_id).distinct()
-    # Convert the single element tuple with a long, to a simple integer.
-    for sd in map(lambda x: int(x[0]), sds):
-        # Get each's most recent result.
-        info = SiteDetail.query.filter_by(site_id=sd).order_by(
-            SiteDetail.timemodified.desc()
-        ).first()
-
-        stats['admins'] += info.adminusers or 0
-        stats['teachers'] += info.teachers or 0
-        stats['totalusers'] += info.totalusers or 0
-        stats['activeusers'] += info.activeusers or 0
-
-    return jsonify(stats)
+    return jsonify(get_active_counts())
 
 
 @mod.route('/get_site_by/<int:site_id>', methods=['GET'])
@@ -291,5 +264,6 @@ def site_by_id(site_id):
     """
     Returns a JSONified name of a site, identifed by it's 'site_id'.
     """
+
     name = Site.query.filter_by(id=site_id).first().name
     return jsonify(name=name)
