@@ -249,29 +249,31 @@ def get_task_status(celery_id):
     return jsonify(status=status)
 
 
-@mod.route("/report/stats")
+@mod.route("/report/stats", methods=['GET'])
 def report_stats():
-    stats = defaultdict(int)
+    """
+    Get the stats of active users, teachers, admins, districts, schools, sites,
+    and the numebr of total users and available courses
+    """
 
-    stats['districts'] = District.query.count()
-    stats['schools'] = School.query.count()
-    stats['sites'] = Site.query.count()
+    stats = {
+        'districts': 0,
+        'schools': 0,
+        'sites': 0,
+        'courses': 0,
+        'admins': 0,
+        'teachers': 0,
+        'totalusers': 0,
+        'activeusers': 0
+    }
+
     stats['courses'] = Course.query.count()
 
-    # Get sites we have details for.
-    sds = g.db_session.query(SiteDetail.site_id).distinct()
-    # Convert the single element tuple with a long, to a simple integer.
-    for sd in map(lambda x: int(x[0]), sds):
-        # Get each's most recent result.
-        info = SiteDetail.query.filter_by(site_id=sd).order_by(
-            SiteDetail.timemodified.desc()
-        ).first()
+    #active_data = get_schools(None, True)
+    #inactive_data = get_schools(None, False)
 
-        stats['adminusers'] += info.adminusers or 0
-        stats['teachers'] += info.teachers or 0
-        stats['totalusers'] += info.totalusers or 0
-        stats['activeusers'] += info.activeusers or 0
-
+    #print active_data['counts']
+    #print inactive_data['counts']
     return jsonify(stats)
 
 

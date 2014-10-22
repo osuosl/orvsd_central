@@ -524,7 +524,7 @@ def get_schools(dist_id, active):
                                              'sitedata': sitedata}
 
     # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return jsonify(schools=school_list,
+    return dict(schools=school_list,
                    counts=district_details(schools, active))
 
 
