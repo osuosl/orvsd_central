@@ -14,7 +14,7 @@ $(function() {
         for (var id in data['category']) {
             $.get("/1/districts/"+data['category'][id], function(d) {
                 $("#report_tables").append(
-                    "<div class=\"row\" ><strong>"+d['name']+"</strong></div>\n<div class=\"row\" id=\""+d['shortname']+"\"></div>"
+                    "<div class=\"row\"><h4>"+d['name']+"</h4></div>\n<div class=\"row\" id=\""+d['shortname']+"\">Loading...</div>"
                 );
                 $.post(
                     "/1/report/get_active_schools",
