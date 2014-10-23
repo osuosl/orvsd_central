@@ -14,7 +14,11 @@ mod = Blueprint('api', __name__, url_prefix="/1")
 
 @mod.route("/districts/active", methods=['GET'])
 def active_districts():
-    active_districts = g.db_session.query(District.name, District.shortname, District.id).join(School).join(Site).join(SiteDetail).distinct().all()
+    active_districts = g.db_session.query(
+        District.name,
+        District.shortname,
+        District.id
+    ).join(School).join(Site).join(SiteDetail).distinct().all()
 
     return jsonify(category=active_districts)
 
@@ -154,7 +158,7 @@ def get_course_list():
     # This means the folder selected was not the source folder or None.
     if not courses:
         courses = g.db_session.query(CourseDetail).filter(
-            CourseDetail.filename.like("%"+dir+"%")
+            CourseDetail.filename.like("%" + dir + "%")
         ).all()
 
     courses = sorted(courses, key=lambda x: x.course.name)

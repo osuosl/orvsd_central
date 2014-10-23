@@ -113,7 +113,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     project_folder = current_app.config["PROJECT_PATH"]
 
     # Unzip the file to get the manifest (All course backups are zip files)
-    zip = zipfile.ZipFile(base_path+source+file_path)
+    zip = zipfile.ZipFile(base_path + source + file_path)
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
     xml = Soup(xmlfile.read(), "lxml")
     info = xml.moodle_backup.information
@@ -457,6 +457,7 @@ def get_path_and_source(base_path, file_path):
     path = file_path.replace(base_path, '').partition('/')
     return path[0] + '/', path[2]
 
+
 def get_active_counts():
     """
     Get the active counts of all the things - schools, sites, districts, users,
@@ -502,7 +503,7 @@ def get_active_counts():
 
             # Add the school and district names to their respective sets for
             # later counting
-            school = School.query.filter(id==site.school_id).first()
+            school = School.query.filter(id == site.school_id).first()
             if school:
                 active_schools += school.name
                 district = District.query.filter(id=school.district_id).first()
