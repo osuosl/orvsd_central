@@ -551,6 +551,7 @@ def get_schools(dist_id, active):
             district_info[str(site.id)]['sitename'] = site.name
             district_info[str(site.id)]['schoolname'] = school.name
             district_info[str(site.id)]['schoolid'] = school.id
+            district_info[str(site.id)]['baseurl'] = site.baseurl
             if details:
                 district_info[str(site.id)]['admin'] = details.adminemail
                 district_info[str(site.id)]['teachers'] = details.teachers

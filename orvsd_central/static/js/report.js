@@ -45,8 +45,8 @@ $(function() {
                     </tr>";
                     for (var school in tdata) {
                         table += "<tr>\
-                        <td><a>"+tdata[school]['sitename']+"</a></td>\
-                        <td><a href=\"/schools/" + tdata[school]['schoolid'] + "/view\">"+tdata[school]['schoolname']+"</a></td>\
+                        <td><a href=\"http://" + tdata[school]['baseurl'] + "\">" + tdata[school]['sitename'] + "</a></td>\
+                        <td><a href=\"/schools/" + tdata[school]['schoolid'] + "/view\">" + tdata[school]['schoolname'] + "</a></td>\
                         <td>"+tdata[school]['admin']+"</td>\
                         <td>"+tdata[school]['users']+"</td>\
                         <td>"+tdata[school]['teachers']+"</td>\
