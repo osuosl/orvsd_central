@@ -30,7 +30,7 @@ $(function() {
                 </div>"
             );
 
-            $.post(
+            $.get(
                 "/1/report/get_active_schools",
                 {distid: value[2]},
                 function(tdata) {

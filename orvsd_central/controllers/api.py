@@ -208,23 +208,23 @@ def get_object(category, id):
     abort(404)
 
 
-@mod.route('/report/get_active_schools', methods=['POST'])
+@mod.route('/report/get_active_schools', methods=['GET'])
 def get_active_schools():
     """
     Returns all active schools for a district.
     """
     # From the POST, we need the district id, or distid
-    dist_id = request.form.get('distid')
+    dist_id = request.args.get('distid')
     return jsonify(get_schools(dist_id, True))
 
 
-@mod.route('/report/get_inactive_schools', methods=['POST'])
+@mod.route('/report/get_inactive_schools', methods=['GET'])
 def get_inactive_schools():
     """
     Returns all inactive schools for a district.
     """
     # From the POST, we need the district id, or distid
-    dist_id = request.form.get('distid')
+    dist_id = request.args.get('distid')
     return jsonify(get_schools(dist_id, False))
 
 
