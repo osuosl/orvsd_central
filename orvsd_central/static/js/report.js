@@ -43,6 +43,7 @@ $(function() {
             // then generate table data from the returned
             $.get(
                 "/1/report/get_active_schools",
+                // value[2] is the district id
                 {distid: value[2]},
                 function(tdata) {
                     var table = "<table class=\"table table-condensed table-responsive table-bordered table-hover table-striped\">";
@@ -58,7 +59,7 @@ $(function() {
                     for (var school in tdata) {
                         table += "<tr>\
                         <td><a>"+tdata[school]['sitename']+"</a></td>\
-                        <td><a>"+tdata[school]['schoolname']+"</a></td>\
+                        <td><a href=\"/schools/" + tdata[school]['schoolid'] + "/view\">"+tdata[school]['schoolname']+"</a></td>\
                         <td>"+tdata[school]['admin']+"</td>\
                         <td>"+tdata[school]['users']+"</td>\
                         <td>"+tdata[school]['teachers']+"</td>\
