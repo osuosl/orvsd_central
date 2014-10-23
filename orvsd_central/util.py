@@ -477,7 +477,7 @@ def get_active_counts():
     }
 
     # Starting from the perspective of sites
-    sites = Site.query.all()
+    sites = Site.query.join(SiteDetail).distinct().all()
 
     # When looking for districts and schools, record unique names and count
     # those at the end
@@ -503,12 +503,14 @@ def get_active_counts():
 
             # Add the school and district names to their respective sets for
             # later counting
-            school = School.query.filter(id == site.school_id).first()
+            school = School.query.filter(School.id == site.school_id).first()
             if school:
-                active_schools += school.name
-                district = District.query.filter(id=school.district_id).first()
+                active_schools.add(school.name)
+                district = District.query.filter(
+                    District.id == school.district_id
+                ).first()
                 if district:
-                    active_districts += district.name
+                    active_districts.add(district.name)
 
     # Count all the unique schools and districts
     active_counts['districts'] = len(active_districts)
