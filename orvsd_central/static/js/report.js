@@ -1,17 +1,4 @@
 $(function() {
-    // Get the top of the reort page stats
-    $.get("/1/report/stats", function(data) {
-        // Since Active Sites also displays the sites count, we have a special
-        // case for it
-        $.each(data, function(k,v) {
-            if (k === 'sites') {
-                $("."+k).html(v);
-            } else {
-                $("#"+k).html(v);
-            }
-        });
-    });
-
     // Get active districts
     // Data is [(dist_name, dist_shortname, dist_id), ...]
     $.get("/1/districts/active", function(data) {
@@ -74,6 +61,19 @@ $(function() {
                     $("#"+value[1]).html(table);
                 }
             );
+        });
+    });
+    //
+    // Get the top of the reort page stats
+    $.get("/1/report/stats", function(data) {
+        // Since Active Sites also displays the sites count, we have a special
+        // case for it
+        $.each(data, function(k,v) {
+            if (k === 'sites') {
+                $("."+k).html(v);
+            } else {
+                $("#"+k).html(v);
+            }
         });
     });
 
