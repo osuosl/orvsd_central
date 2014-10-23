@@ -527,63 +527,32 @@ def get_schools(dist_id, active):
     active  -- Status of schools to find
     """
 
-    # Given the distid, we get all the schools
-    if dist_id:
-        schools = School.query.filter_by(district_id=dist_id) \
-                              .order_by("name").all()
-    else:
-        schools = School.query.order_by("name").all()
+    # Get all schools in the district with dist_id
+    schools = School.query.filter_by(district_id=dist_id)
+    active_schools = schools.join(Site).join(SiteDetail).distinct()
 
-    # the dict to be jsonify'd
-    school_list = {}
+    # Dict to return for the report
+    district_info = {}
 
-    for school in schools:
-        sitedata = []
-        admincount = 0
-        teachercount = 0
-        usercount = 0
+    for school in active_schools:
+        # Get the sites associated with the school
+        sites = Site.query.filter_by(school_id=school.id).distinct()
 
-        sites = Site.query.filter(Site.school_id == school.id).all()
         for site in sites:
-            admin = None
-            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
-                                 .order_by(SiteDetail.timemodified.desc())\
-                                 .first()
-            if sd:
-                admin = sd.adminemail
-                admincount += sd.adminusers or 0
-                teachercount += sd.teachers or 0
-                usercount += sd.totalusers or 0
+            details = SiteDetail.query.filter_by(site_id=site.id).order_by(
+                SiteDetail.timemodified.desc()
+            ).first()
 
-            sitedata.append({'name': site.name,
-                             'baseurl': site.baseurl,
-                             'sitetype': site.sitetype,
-                             'admin': admin})
+            if details:
+                district_info[str(site.id)] = {}
+                district_info[str(site.id)]['sitename'] = site.name
+                district_info[str(site.id)]['schoolname'] = school.name
+                district_info[str(site.id)]['admin'] = details.adminemail
+                district_info[str(site.id)]['users'] = details.activeusers
+                district_info[str(site.id)]['teachers'] = details.teachers
+                district_info[str(site.id)]['courses'] = details.totalcourses
 
-        # Get around potential moodle plugin issues
-        totalcount = admincount + teachercount + usercount
-
-        usercount = usercount - admincount - teachercount
-        # For active schools, the totalcount better be greater than 0
-        if active and totalcount > 0:
-            school_list[school.shortname] = {'name': school.name,
-                                             'id': school.id,
-                                             'admincount': admincount,
-                                             'teachercount': teachercount,
-                                             'usercount': usercount,
-                                             'sitedata': sitedata}
-        # For inactive, the totalcount better be 0
-        elif not active and totalcount == 0:
-            school_list[school.shortname] = {'name': school.name,
-                                             'id': school.id,
-                                             'admincount': admincount,
-                                             'teachercount': teachercount,
-                                             'usercount': usercount,
-                                             'sitedata': sitedata}
-
-    # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return dict(schools=school_list,
-                   counts=district_details(schools, active))
+    return district_info
 
 
 @celery.task(name='tasks.install_course')
