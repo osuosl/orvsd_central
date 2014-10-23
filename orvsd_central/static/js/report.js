@@ -1,5 +1,8 @@
 $(function() {
+    // Get the top of the reort page stats
     $.get("/1/report/stats", function(data) {
+        // Since Active Sites also displays the sites count, we have a special
+        // case for it
         $.each(data, function(k,v) {
             if (k === 'sites') {
                 $("."+k).html(v);
@@ -9,7 +12,10 @@ $(function() {
         });
     });
 
+    // Get active districts
+    // Data is [(dist_name, dist_shortname, dist_id), ...]
     $.get("/1/districts/active", function(data) {
+        // Sort based on name for alphabetical display
         data.category.sort(function(a, b) {
             if (a[0] > b[0])
                 return 1;
@@ -18,9 +24,12 @@ $(function() {
             return 0;
         });
 
+        // Remove 'Loading...'
         $("#report_tables").html("");
 
+        // For each district
         $.each(data['category'], function(id, value) {
+            // Apend a row for the district name and the district table
             $("#report_tables").append(
                 "<div class=\"row\" data-district=\""+value[0]+"\">\
                     <h4>"+value[0]+"</h4>\
@@ -30,6 +39,8 @@ $(function() {
                 </div>"
             );
 
+            // Get the active details for the district to be displayed
+            // then generate table data from the returned
             $.get(
                 "/1/report/get_active_schools",
                 {distid: value[2]},
@@ -65,7 +76,7 @@ $(function() {
         });
     });
 
-
+    // Filter districts when input is changed
     $("#filter").on('input propertychange paste', function() {
         var keyword = $(this).val();
         $("#report_tables > div[data-district]").filter(function() {
