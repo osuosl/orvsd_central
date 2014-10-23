@@ -14,7 +14,7 @@ $(function() {
         $.each(data['category'], function(id, value) {
             $.get("/1/districts/"+value, function(d) {
                 $("#report_tables").append(
-                    "<div class=\"row\"><h4>"+d['name']+"</h4></div>\n<div class=\"row\" id=\""+d['shortname']+"\">Loading...</div>"
+                    "<div class=\"row\" data-district=\""+d['name']+"\"><h4>"+d['name']+"</h4></div>\n<div class=\"row\" id=\""+d['shortname']+"\" data-district=\""+d['name']+"\">Loading...</div>"
                 );
                 $.post(
                     "/1/report/get_active_schools",
@@ -50,5 +50,16 @@ $(function() {
                 );
             });
         });
+    });
+
+
+    $("#filter").on('input propertychange paste', function() {
+        var filter = $(this).val();
+        if (filter === "") {
+            $("#report_tables *").show();
+        } else {
+            $("#report_tables > div").not("[data-district*="+filter+"]").hide();
+            $("#report_tables > div:[data-district*="+filter+"]").show();
+        }
     });
 });
