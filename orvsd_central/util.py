@@ -2,6 +2,7 @@
 Utility class containing useful methods not tied to specific models or views
 """
 from bs4 import BeautifulSoup as Soup
+import json
 import os
 import re
 import zipfile
@@ -546,15 +547,17 @@ def get_schools(dist_id, active):
                 SiteDetail.timemodified.desc()
             ).first()
 
+            district_info[str(site.id)] = {}
+            district_info[str(site.id)]['sitename'] = site.name
+            district_info[str(site.id)]['schoolname'] = school.name
+            district_info[str(site.id)]['schoolid'] = school.id
             if details:
-                district_info[str(site.id)] = {}
-                district_info[str(site.id)]['sitename'] = site.name
-                district_info[str(site.id)]['schoolname'] = school.name
-                district_info[str(site.id)]['schoolid'] = school.id
                 district_info[str(site.id)]['admin'] = details.adminemail
-                district_info[str(site.id)]['users'] = details.activeusers
                 district_info[str(site.id)]['teachers'] = details.teachers
-                district_info[str(site.id)]['courses'] = details.totalcourses
+                district_info[str(site.id)]['users'] = details.activeusers
+                district_info[str(site.id)]['courses'] = (
+                    len(json.loads(details.courses)) if details.courses else 0
+                )
 
     return district_info
 
