@@ -12,6 +12,13 @@ from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
 mod = Blueprint('api', __name__, url_prefix="/1")
 
 
+@mod.route("/districts/active", methods=['GET'])
+def active_districts():
+    active_districts = District.query.join(School).join(Site).join(SiteDetail).distinct().all()
+
+    return jsonify(category=[d.id for d in sorted(active_districts, key=lambda x: x.name)])
+
+
 @mod.route("/<category>/object/add", methods=["POST"])
 def add_object(category):
     """
@@ -204,7 +211,7 @@ def get_active_schools():
     """
     # From the POST, we need the district id, or distid
     dist_id = request.form.get('distid')
-    return get_schools(dist_id, True)
+    return jsonify(get_schools(dist_id, True))
 
 
 @mod.route('/report/get_inactive_schools', methods=['POST'])
@@ -214,7 +221,7 @@ def get_inactive_schools():
     """
     # From the POST, we need the district id, or distid
     dist_id = request.form.get('distid')
-    return get_schools(dist_id, False)
+    return jsonify(get_schools(dist_id, False))
 
 
 @mod.route("/site/<string:baseurl>")

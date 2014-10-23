@@ -8,4 +8,15 @@ $(function() {
             }
         });
     });
+
+    $.get("/1/districts/active", function(data) {
+        $("#report_tables").html("");
+        for (var id in data['category']) {
+            $.get("/1/districts/"+data['category'][id], function(d) {
+                $("#report_tables").append(
+                    "<div class=\"row\"><strong>"+d['name']+"</strong></div>"
+                );
+            });
+        }
+    });
 });
