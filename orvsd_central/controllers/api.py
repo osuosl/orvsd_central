@@ -14,9 +14,9 @@ mod = Blueprint('api', __name__, url_prefix="/1")
 
 @mod.route("/districts/active", methods=['GET'])
 def active_districts():
-    active_districts = District.query.join(School).join(Site).join(SiteDetail).distinct().all()
+    active_districts = g.db_session.query(District.name, District.shortname, District.id).join(School).join(Site).join(SiteDetail).distinct().all()
 
-    return jsonify(category=[d.id for d in sorted(active_districts, key=lambda x: x.name)])
+    return jsonify(category=active_districts)
 
 
 @mod.route("/<category>/object/add", methods=["POST"])

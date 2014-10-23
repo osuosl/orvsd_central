@@ -10,50 +10,58 @@ $(function() {
     });
 
     $.get("/1/districts/active", function(data) {
+        data.category.sort(function(a, b) {
+            if (a[0] > b[0])
+                return 1;
+            if (a[0] < b[0])
+                return -1;
+            return 0;
+        });
+
         $("#report_tables").html("");
+
         $.each(data['category'], function(id, value) {
-            $.get("/1/districts/"+value, function(d) {
-                $("#report_tables").append(
-                    "<div class=\"row\" data-district=\""+d['name']+"\">\
-                        <h4>"+d['name']+"</h4>\
-                    </div>\
-                    <div class=\"row\" id=\""+d['shortname']+"\" data-district=\""+d['name']+"\">\
-                        Loading...\
-                    </div>"
-                );
-                $.post(
-                    "/1/report/get_active_schools",
-                    {distid: value},
-                    function(tdata) {
-                        var table = "<table class=\"table table-condensed table-responsive table-bordered table-hover table-striped\">";
+            $("#report_tables").append(
+                "<div class=\"row\" data-district=\""+value[0]+"\">\
+                    <h4>"+value[0]+"</h4>\
+                </div>\
+                <div class=\"row\" id=\""+value[1]+"\" data-district=\""+value[0]+"\">\
+                    Loading...\
+                </div>"
+            );
+
+            $.post(
+                "/1/report/get_active_schools",
+                {distid: value[2]},
+                function(tdata) {
+                    var table = "<table class=\"table table-condensed table-responsive table-bordered table-hover table-striped\">";
+                    table += "<tr>\
+                        <th>Site</th>\
+                        <th>School</th>\
+                        <th>Admin</th>\
+                        <th>Users</th>\
+                        <th>Teachers</th>\
+                        <th>Courses</th>\
+                        <th>Actions</th>\
+                    </tr>";
+                    for (var school in tdata) {
                         table += "<tr>\
-                            <th>Site</th>\
-                            <th>School</th>\
-                            <th>Admin</th>\
-                            <th>Users</th>\
-                            <th>Teachers</th>\
-                            <th>Courses</th>\
-                            <th>Actions</th>\
-                        </tr>";
-                        for (var school in tdata) {
-                            table += "<tr>\
-                            <td><a>"+tdata[school]['sitename']+"</a></td>\
-                            <td><a>"+tdata[school]['schoolname']+"</a></td>\
-                            <td>"+tdata[school]['admin']+"</td>\
-                            <td>"+tdata[school]['users']+"</td>\
-                            <td>"+tdata[school]['teachers']+"</td>\
-                            <td>"+tdata[school]['courses']+"</td>\
-                            <td>\
-                                <a>Add Course</a><br />\
-                                <a>Add User</a><br />\
-                                <a>Edit</a>\
-                            </td></tr>";
-                        }
-                        table += "</table>";
-                        $("#"+d['shortname']).html(table);
+                        <td><a>"+tdata[school]['sitename']+"</a></td>\
+                        <td><a>"+tdata[school]['schoolname']+"</a></td>\
+                        <td>"+tdata[school]['admin']+"</td>\
+                        <td>"+tdata[school]['users']+"</td>\
+                        <td>"+tdata[school]['teachers']+"</td>\
+                        <td>"+tdata[school]['courses']+"</td>\
+                        <td>\
+                            <a>Add Course</a><br />\
+                            <a>Add User</a><br />\
+                            <a>Edit</a>\
+                        </td></tr>";
                     }
-                );
-            });
+                    table += "</table>";
+                    $("#"+value[1]).html(table);
+                }
+            );
         });
     });
 
