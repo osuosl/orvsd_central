@@ -79,9 +79,9 @@ $(function() {
 
     // Filter districts when input is changed
     $("#filter").on('input propertychange paste', function() {
-        var keyword = $(this).val();
+        var keyword = $(this).val().toLowerCase();
         $("#report_tables > div[data-district]").filter(function() {
-            if ($(this).data('district').indexOf(keyword) > -1) {
+            if ($(this).data('district').toLowerCase().indexOf(keyword) > -1) {
                 $(this).show();
             } else {
                 $(this).hide();
