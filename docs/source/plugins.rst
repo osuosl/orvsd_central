@@ -1,8 +1,8 @@
 Information About Plugins
 =========================
 
-ORVSD Central's Moodle Plugins
-------------------------------
+Moodle Plugins
+--------------
 ORVSD_Central currently has three moodle plugins/webservices which it uses to
 install courses and get site-info. Create_Course is a webservice while 
 Site_Info is a regular plugin currently in development to become a
