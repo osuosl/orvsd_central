@@ -63,7 +63,7 @@ def import_data(data):
         g.db_session = create_db_session()
         from orvsd_central.models import District, School
 
-        # Only words, no simbols
+        # Only words, no symbols
         pattern = re.compile('[\W_]+')
 
         # For all the districts
