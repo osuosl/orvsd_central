@@ -8,7 +8,7 @@ from sqlalchemy import and_
 
 from orvsd_central.forms import InstallCourse
 from orvsd_central.models import (CourseDetail, District, School, Site,
-                                  SiteDetail)
+                                  SiteCourse, SiteDetail)
 from orvsd_central.util import (create_course_from_moodle_backup,
                                 get_course_folders, get_path_and_source,
                                 get_obj_by_category, get_obj_identifier,
@@ -131,18 +131,17 @@ def install_course():
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
         site_ids = [site_id for site_id in request.form.getlist('site')]
-        site_urls = [Site.query.filter_by(id=site_id).first().baseurl
-                     for site_id in site_ids]
+        sites = [(site_id, Site.query.filter_by(id=site_id).first().baseurl) for site_id in site_ids]
 
         course_details = g.db_session.query(CourseDetail).filter(
             CourseDetail.course_id.in_(selected_courses)
         ).all()
 
-        for site_url in site_urls:
+        for site in sites:
             # The site to install the courses
             install_url = ("http://%s/webservice/rest/server.php?" +
                            "wstoken=%s&wsfunction=%s") % (
-                        site_url,
+                        site[1],
                         current_app.config['INSTALL_COURSE_WS_TOKEN'],
                         current_app.config['INSTALL_COURSE_WS_FUNCTION'])
             install_url = str(install_url.encode('utf-8'))
@@ -152,10 +151,15 @@ def install_course():
             #
             # Currently this will break as our db is not setup correctly yet
             for course_detail in course_details:
-                install_course_to_site.delay(course_detail.id, install_url)
+                res = install_course_to_site.delay(
+                    course_detail.id, install_url
+                )
+                result_data = SiteCourse(site[0], course_detail.id, res.id)
+                g.db_session.add(result_data)
+                g.db_session.commit()
 
             output += (str(len(course_details)) + " course install(s) for " +
-                       site_url + " started.\n")
+                       site[1] + " started.\n")
 
         return render_template('install_course_output.html',
                                output=output,

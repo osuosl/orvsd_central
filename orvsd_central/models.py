@@ -10,30 +10,35 @@ from orvsd_central.database import Model
 
 # A representation of the connection between the courses each site has
 # installed, and information about those course details.
-sites_courses = Table('sites_courses',
-                      Model.metadata,
-                      Column('site_id',
-                             Integer,
-                             ForeignKey(
-                                 'sites.id',
-                                 use_alter=True,
-                                 name='fk_sites_courses_site_id')
-                             ),
-                      Column('course_id',
-                             Integer,
-                             ForeignKey(
-                                 'courses.id',
-                                 use_alter=True,
-                                 name='fk_sites_courses_course_id')
-                             ),
-                      Column('celery_task_id',
-                             String(255),
-                             ForeignKey(
-                                 'celery_taskmeta.task_id',
-                                 use_alter=True,
-                                 name='fk_sites_courses_celery_task_id')
-                             ),
-                      Column('students', Integer))
+class SiteCourse(Model):
+    """
+    """
+
+    __tablename__ = 'sites_courses'
+
+    id = Column(Integer, primary_key=True)
+    site_id = Column(
+        Integer,
+        ForeignKey(
+            'sites.id',
+            use_alter=True,
+            name='fk_sites_courses_site_id'
+        )
+    )
+    course_id = Column(
+        Integer,
+        ForeignKey(
+            'courses.id',
+            use_alter=True,
+            name='fk_sites_courses_course_id'
+        )
+    )
+    celery_task_id = Column(String(255))
+
+    def __init__(self, site_id, course_id, celery_task_id):
+        self.site_id = site_id
+        self.course_id = course_id
+        self.celery_task_id = celery_task_id
 
 
 class User(Model):
