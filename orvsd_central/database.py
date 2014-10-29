@@ -51,22 +51,30 @@ def create_admin_account(silent):
         email = current_app.config['CENTRAL_ADMIN_EMAIL']
 
     # Get admin role.
-    admin_role = USER_PERMS.get('admin')
-    admin = models.User(
-        name=username,
-        email=email,
-        password=password,
-        role=admin_role
-    )
+    from orvsd_central.models import User
 
-    g.db_session.add(admin)
-    g.db_session.commit()
+    user_exists = g.db_session.query(User).filter(User.name==username)
+    email_exists = g.db_session.query(User).filter(User.email==email)
 
-    print "Administrator account created!"
+    if user_exists:
+        print "Username already in use."
+    elif email_exists:
+        print "Email address already in use."
+    else:
+        admin_role = USER_PERMS.get('admin')
+        admin = User(
+            name=username,
+            email=email,
+            password=password,
+            role=admin_role
+        )
 
-def init_db(admin=False, silent=False):
+        g.db_session.add(admin)
+        g.db_session.commit()
+
+        print "Administrator account created!"
+
+def init_db():
     engine = g.db_session.get_bind()
     from orvsd_central import models
     Model.metadata.create_all(bind=engine)
-    if admin:
-        create_admin_account(silent)
