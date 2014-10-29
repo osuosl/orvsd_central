@@ -106,13 +106,8 @@ def import_data(data):
     print "Data imported"
 
 
-@manager.option(
-    '-s',
-    '--from-config',
-    dest='conf',
-    help="Get admin credentials from config rather than waiting on user input"
-)
-def initdb(conf=False):
+@manager.command
+def initdb(silent=False):
     """
     Sets up the schema for a database that already exists (MySQL, Postgres) or
     creates the database (SQLite3) outright.
@@ -122,7 +117,7 @@ def initdb(conf=False):
     with current_app.app_context():
         g.db_session = create_db_session()
         init_db()
-        create_admin_account(conf)
+        create_admin_account(silent)
 
 
 @manager.option('-n', '--nosetest', help="Specific tests for nose to run")
