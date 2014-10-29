@@ -1,18 +1,38 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    <title>Add User</title>
+    <title>Register User</title>
 {% endblock %}
 
 {% block content %}
-    <form method="POST">
-        Username: {{form.user}}</br>
-        Password: {{form.password}}</br>
-        Confirm Password: {{form.confirm_pass}}</br>
-        Email: {{form.email}}</br>
-        Role: {{form.role}}</br>
+    <form class="form-horizontal" method="POST">
+        <legend>Register User</legend>
+        <div class="form-group">
+            <label for="user" class="control-label col-xs-2">Username</label>
+            <div class="col-xs-5">{{form.user(class_='form-control')}}</div>
+        </div>
+        <div class="form-group">
+            <label for="password" class="control-label col-xs-2">Password</label>
+            <div class="col-xs-5">{{form.password(class_='form-control')}}</div>
+        </div>
+        <div class="form-group">
+            <label for="confirm_pass" class="control-label col-xs-2">Confirm Password</label>
+            <div class="col-xs-5">{{form.confirm_pass(class_='form-control')}}</div>
+        </div>
+        <div class="form-group">
+            <label for="email" class="control-label col-xs-2">Email</label>
+            <div class="col-xs-5">{{form.email(class_='form-control')}}</div>
+        </div>
+        <div class="form-group">
+            <label for="role" class="control-label col-xs-2">Role</label>
+            <div class="col-xs-5">{{form.role(class_='form-control')}}</div>
+        </div>
         </br>
-        <input class="btn" type="submit" value="Add User"></input></br>
+        <div class="form-group">
+            <div class="col-xs-offset-2">
+                <input class="btn btn-primary" type="submit" value="Add User"></input>
+            </div>
+        </div>
     </form>
     {% if message %}
         {{message}}

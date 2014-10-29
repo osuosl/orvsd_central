@@ -9,24 +9,58 @@
 {% endblock %}
 
 {% block content %}
-    <div class='row'>
-        <div class='span12'>&nbsp;</div>
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row">
+            <div class="col-xs-3">
+                <strong>Districts:</strong> <span id="districts">Loading...</span>
+            </div>
+            <div class="col-xs-3">
+                <strong>Schools:</strong> <span id="schools">Loading...</span>
+            </div>
+            <div class="col-xs-3">
+                <strong>Sites:</strong> <span class="sites">Loading...</span>
+            </div>
+            <div class="col-xs-3">
+                <strong>Courses:</strong> <span id="courses">Loading...</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">
+                <strong>Admins:</strong> <span id="admins">Loading...</span>
+            </div>
+            <div class="col-xs-3">
+                <strong>Teachers:</strong> <span id="teachers">Loading...</span>
+            </div>
+            <div class="col-xs-3">
+                <strong>Total Users:</strong> <span id="totalusers">Loading...</span>
+            </div>
+            <div class="col-xs-3">
+                <strong>Active Users:</strong> <span id="activeusers">Loading...</span>
+            </div>
+        </div>
     </div>
-    <div class="row pagination-centered">
-        <div id="districts" class="span3"><strong>Districts:</strong> </div>
-        <div id="schools" class="span3"><strong>Schools:</strong> </div>
-        <div id="sites" class="span3"><strong>Sites:</strong> </div>
-        <div id="courses" class="span3"><strong>Courses:</strong> </div>
+    <!-- End Page Header -->
+
+    <!-- Report Body -->
+    <div class="row">
+        <h4>
+        <div class="col-xs-5">
+            <strong>Active Sites (<span class="sites">Loading...</span>)</strong>
+            <small><a>See Inactive</a></small>
+        </div>
+        <div class="cal-xs-offset-3 col-xs-5 pull-right">
+            <div class="pull-right">
+                <label for="filter"><strong>Filter List:</strong></label>
+                <input placeholder="District" type="text" id="filter"></input>
+            </div>
+        </div>
+        </h4>
+    </div>
+    <div class="container-fluid" id="report_tables">
+        <div class="row">Loading...</div>
     </div>
 
-    <div class="row pagination-centered">
-        <div id="adminusers" class="span3"><strong>Admins:</strong> </div>
-        <div id="teachers" class="span3"><strong>Teachers:</strong> </div>
-        <div id="totalusers" class="span3"><strong>Total Users:</strong> </div>
-        <div id="activeusers" class="span3"><strong>Active Users:</strong> </div>
-    </div>
-     <div class='row'>
-        <div class='span12'>&nbsp;</div>
-    </div>
-    {{datadump|safe}}
+</div>
 {% endblock %}

@@ -2,6 +2,7 @@
 Utility class containing useful methods not tied to specific models or views
 """
 from bs4 import BeautifulSoup as Soup
+import json
 import os
 import re
 import zipfile
@@ -87,76 +88,6 @@ def page_not_found(e):
     return render_template('404.html', user=current_user), 404
 
 
-def build_accordion(districts, active_accordion_id, inactive_accordion_id,
-                    type, user, extra=None):
-    """
-    Builds the accordion from pre-defined templates.
-    * Note: There is some complex logic in here to differentiate schools
-            with and without students/teachers/admins. These usually refer
-            back to the database entries that we have on districts/schools, but
-            are not continuously tracking.
-    """
-    inner_t = current_app.jinja_env.get_template('accordion_inner.html')
-    outer_t = current_app.jinja_env.get_template('accordion.html')
-
-    active_inner = ""
-    inactive_inner = ""
-
-    # Find all active schools (a school with a site that has a SiteDetail)
-    active_schools = set(
-        g.db_session.query(School).join(Site).join(SiteDetail).distinct().all()
-    )
-
-    # All other schools are inactive
-    inactive_schools = set(g.db_session.query(School).all()) - active_schools
-
-    # Get the district ids of active and inactive schools
-    active_district_ids = set(
-        int(school.district_id) for school in active_schools
-    )
-    inactive_district_ids = set(
-        int(school.district_id) for school in inactive_schools
-    )
-
-    # List of districts in the
-    active_districts = set(
-        district for district in districts
-        if district.id in active_district_ids
-    )
-    inactive_districts = set(
-        district for district in districts
-        if district.id in inactive_district_ids
-    )
-
-    for district in sorted(active_districts, key=lambda x: x.shortname):
-        inner_id = "%s_active" % district.shortname
-        active_inner += inner_t.render(
-            accordion_id=active_accordion_id,
-            inner_id=inner_id,
-            type=type,
-            link=district.name,
-            extra=None if not extra else extra % district.id
-        )
-
-    for district in sorted(inactive_districts, key=lambda x: x.shortname):
-        inner_id = "%s_inactive" % district.shortname
-        inactive_inner += inner_t.render(
-            accordion_id=active_accordion_id,
-            inner_id=inner_id,
-            type=type,
-            link=district.name,
-            extra=None if not extra else extra % district.id
-        )
-
-    return outer_t.render(active_accordion_id=active_accordion_id,
-                          inactive_accordion_id=inactive_accordion_id,
-                          active=active_inner,
-                          active_count=len(active_districts),
-                          inactive=inactive_inner,
-                          inactive_count=len(inactive_districts),
-                          user=user)
-
-
 def create_course_from_moodle_backup(base_path, source, file_path):
     """
     This creates a Course object from a backup xml file for FLVS/NROC courses.
@@ -183,7 +114,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     project_folder = current_app.config["PROJECT_PATH"]
 
     # Unzip the file to get the manifest (All course backups are zip files)
-    zip = zipfile.ZipFile(base_path+source+file_path)
+    zip = zipfile.ZipFile(base_path + source + file_path)
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
     xml = Soup(xmlfile.read(), "lxml")
     info = xml.moodle_backup.information
@@ -528,6 +459,67 @@ def get_path_and_source(base_path, file_path):
     return path[0] + '/', path[2]
 
 
+def get_active_counts():
+    """
+    Get the active counts of all the things - schools, sites, districts, users,
+    admins, and teachers
+    """
+
+    # Dictionary being returned of all count data
+    active_counts = {
+        'districts': 0,
+        'schools': 0,
+        'sites': 0,
+        'courses': Course.query.count(),
+        'admins': 0,
+        'teachers': 0,
+        'totalusers': 0,
+        'activeusers': 0
+    }
+
+    # Starting from the perspective of sites
+    sites = Site.query.join(SiteDetail).distinct().all()
+
+    # When looking for districts and schools, record unique names and count
+    # those at the end
+    active_schools = set()
+    active_districts = set()
+
+    # For each site, check if there is a SiteDetail associated. If there is,
+    # that means the site is active and we want all the details about users.
+    for site in sites:
+        sd = SiteDetail.query.filter(
+            SiteDetail.site_id == site.id
+        ).order_by(
+            SiteDetail.timemodified.desc()
+        ).first()
+
+        if sd:
+            # Grab all the details about the users
+            active_counts['admins'] += sd.adminusers
+            active_counts['teachers'] += sd.teachers
+            active_counts['totalusers'] += sd.totalusers
+            active_counts['activeusers'] += sd.activeusers
+            active_counts['sites'] += 1
+
+            # Add the school and district names to their respective sets for
+            # later counting
+            school = School.query.filter(School.id == site.school_id).first()
+            if school:
+                active_schools.add(school.name)
+                district = District.query.filter(
+                    District.id == school.district_id
+                ).first()
+                if district:
+                    active_districts.add(district.name)
+
+    # Count all the unique schools and districts
+    active_counts['districts'] = len(active_districts)
+    active_counts['schools'] = len(active_schools)
+
+    return active_counts
+
+
 def get_schools(dist_id, active):
     """
     Gets the active or inactive schools for a given ditrict.
@@ -539,63 +531,36 @@ def get_schools(dist_id, active):
     active  -- Status of schools to find
     """
 
-    # Given the distid, we get all the schools
-    if dist_id:
-        schools = School.query.filter_by(district_id=dist_id) \
-                              .order_by("name").all()
-    else:
-        schools = School.query.order_by("name").all()
+    # Get all schools in the district with dist_id
+    schools = School.query.filter_by(district_id=dist_id)
+    active_schools = schools.join(Site).join(SiteDetail).distinct()
 
-    # the dict to be jsonify'd
-    school_list = {}
+    # Dict to return for the report
+    district_info = {}
 
-    for school in schools:
-        sitedata = []
-        admincount = 0
-        teachercount = 0
-        usercount = 0
+    for school in active_schools:
+        # Get the sites associated with the school
+        sites = Site.query.filter_by(school_id=school.id).distinct()
 
-        sites = Site.query.filter(Site.school_id == school.id).all()
         for site in sites:
-            admin = None
-            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
-                                 .order_by(SiteDetail.timemodified.desc())\
-                                 .first()
-            if sd:
-                admin = sd.adminemail
-                admincount += sd.adminusers or 0
-                teachercount += sd.teachers or 0
-                usercount += sd.totalusers or 0
+            details = SiteDetail.query.filter_by(site_id=site.id).order_by(
+                SiteDetail.timemodified.desc()
+            ).first()
 
-            sitedata.append({'name': site.name,
-                             'baseurl': site.baseurl,
-                             'sitetype': site.sitetype,
-                             'admin': admin})
+            district_info[str(site.id)] = {}
+            district_info[str(site.id)]['sitename'] = site.name
+            district_info[str(site.id)]['schoolname'] = school.name
+            district_info[str(site.id)]['schoolid'] = school.id
+            district_info[str(site.id)]['baseurl'] = site.baseurl
+            if details:
+                district_info[str(site.id)]['admin'] = details.adminemail
+                district_info[str(site.id)]['teachers'] = details.teachers
+                district_info[str(site.id)]['users'] = details.activeusers
+                district_info[str(site.id)]['courses'] = (
+                    len(json.loads(details.courses)) if details.courses else 0
+                )
 
-        # Get around potential moodle plugin issues
-        totalcount = admincount + teachercount + usercount
-
-        usercount = usercount - admincount - teachercount
-        # For active schools, the totalcount better be greater than 0
-        if active and totalcount > 0:
-            school_list[school.shortname] = {'name': school.name,
-                                             'id': school.id,
-                                             'admincount': admincount,
-                                             'teachercount': teachercount,
-                                             'usercount': usercount,
-                                             'sitedata': sitedata}
-        # For inactive, the totalcount better be 0
-        elif not active and totalcount == 0:
-            school_list[school.shortname] = {'name': school.name,
-                                             'id': school.id,
-                                             'admincount': admincount,
-                                             'teachercount': teachercount,
-                                             'usercount': usercount,
-                                             'sitedata': sitedata}
-
-    # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return jsonify(schools=school_list,
-                   counts=district_details(schools, active))
+    return district_info
 
 
 @celery.task(name='tasks.install_course')

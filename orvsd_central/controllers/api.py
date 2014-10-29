@@ -6,10 +6,21 @@ from flask import Blueprint, abort, g, jsonify, request
 from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
-                                get_schools, string_to_type)
+                                get_active_counts, get_schools, string_to_type)
 
 
 mod = Blueprint('api', __name__, url_prefix="/1")
+
+
+@mod.route("/districts/active", methods=['GET'])
+def active_districts():
+    active_districts = g.db_session.query(
+        District.name,
+        District.shortname,
+        District.id
+    ).join(School).join(Site).join(SiteDetail).distinct().all()
+
+    return jsonify(category=active_districts)
 
 
 @mod.route("/<category>/object/add", methods=["POST"])
@@ -147,7 +158,7 @@ def get_course_list():
     # This means the folder selected was not the source folder or None.
     if not courses:
         courses = g.db_session.query(CourseDetail).filter(
-            CourseDetail.filename.like("%"+dir+"%")
+            CourseDetail.filename.like("%" + dir + "%")
         ).all()
 
     courses = sorted(courses, key=lambda x: x.course.name)
@@ -197,24 +208,24 @@ def get_object(category, id):
     abort(404)
 
 
-@mod.route('/report/get_active_schools', methods=['POST'])
+@mod.route('/report/get_active_schools', methods=['GET'])
 def get_active_schools():
     """
     Returns all active schools for a district.
     """
     # From the POST, we need the district id, or distid
-    dist_id = request.form.get('distid')
-    return get_schools(dist_id, True)
+    dist_id = request.args.get('distid')
+    return jsonify(get_schools(dist_id, True))
 
 
-@mod.route('/report/get_inactive_schools', methods=['POST'])
+@mod.route('/report/get_inactive_schools', methods=['GET'])
 def get_inactive_schools():
     """
     Returns all inactive schools for a district.
     """
     # From the POST, we need the district id, or distid
-    dist_id = request.form.get('distid')
-    return get_schools(dist_id, False)
+    dist_id = request.args.get('distid')
+    return jsonify(get_schools(dist_id, False))
 
 
 @mod.route("/site/<string:baseurl>")
@@ -249,30 +260,14 @@ def get_task_status(celery_id):
     return jsonify(status=status)
 
 
-@mod.route("/report/stats")
+@mod.route("/report/stats", methods=['GET'])
 def report_stats():
-    stats = defaultdict(int)
+    """
+    Get the stats of active users, teachers, admins, districts, schools, sites,
+    and the numebr of total users and available courses
+    """
 
-    stats['districts'] = District.query.count()
-    stats['schools'] = School.query.count()
-    stats['sites'] = Site.query.count()
-    stats['courses'] = Course.query.count()
-
-    # Get sites we have details for.
-    sds = g.db_session.query(SiteDetail.site_id).distinct()
-    # Convert the single element tuple with a long, to a simple integer.
-    for sd in map(lambda x: int(x[0]), sds):
-        # Get each's most recent result.
-        info = SiteDetail.query.filter_by(site_id=sd).order_by(
-            SiteDetail.timemodified.desc()
-        ).first()
-
-        stats['adminusers'] += info.adminusers or 0
-        stats['teachers'] += info.teachers or 0
-        stats['totalusers'] += info.totalusers or 0
-        stats['activeusers'] += info.activeusers or 0
-
-    return jsonify(stats)
+    return jsonify(get_active_counts())
 
 
 @mod.route('/get_site_by/<int:site_id>', methods=['GET'])
@@ -280,5 +275,6 @@ def site_by_id(site_id):
     """
     Returns a JSONified name of a site, identifed by it's 'site_id'.
     """
+
     name = Site.query.filter_by(id=site_id).first().name
     return jsonify(name=name)
