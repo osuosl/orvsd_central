@@ -107,7 +107,7 @@ def import_data(data):
 
 
 @manager.command
-def initdb(silent=False):
+def initdb(admin=False, silent=False):
     """
     Sets up the schema for a database that already exists (MySQL, Postgres) or
     creates the database (SQLite3) outright.
@@ -117,7 +117,8 @@ def initdb(silent=False):
     with current_app.app_context():
         g.db_session = create_db_session()
         init_db()
-        create_admin_account(silent)
+        if admin:
+            create_admin_account(silent)
 
 
 @manager.option('-n', '--nosetest', help="Specific tests for nose to run")

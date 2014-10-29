@@ -8,6 +8,7 @@ DEBUG = False
 # Flask session key
 SECRET_KEY = "secret key"
 
+# Flask CSRF
 CSRF_ENABLED = True
 CSRF_SESSION_KEY = "your csrf session key"
 

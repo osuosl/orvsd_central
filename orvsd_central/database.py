@@ -22,7 +22,7 @@ def create_db_session():
     return db_session
 
 
-def create_admin_account(config):
+def create_admin_account(silent):
     """
     Create an admin account. This con be done via raw input from the user or
     through config variables
@@ -30,7 +30,7 @@ def create_admin_account(config):
     config: Bool - use config vars
     """
 
-    if not config:
+    if not silent:
         # Create an admin account.
         ans = raw_input("There are currently no admin accounts, would you like to "
                         "create one? (Y/N) ")
@@ -64,7 +64,9 @@ def create_admin_account(config):
 
     print "Administrator account created!"
 
-def init_db():
+def init_db(admin=False, silent=False):
     engine = g.db_session.get_bind()
     from orvsd_central import models
     Model.metadata.create_all(bind=engine)
+    if admin:
+        create_admin_account(silent)
