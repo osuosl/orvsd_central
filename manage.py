@@ -8,7 +8,8 @@ from flask.ext.script import Manager
 import nose
 
 from orvsd_central import attach_blueprints, create_app
-from orvsd_central.database import create_db_session, init_db
+from orvsd_central.database import (create_db_session, create_admin_account,
+                                    init_db)
 
 
 def setup_app(config=None):
@@ -105,8 +106,13 @@ def import_data(data):
     print "Data imported"
 
 
-@manager.command
-def initdb():
+@manager.option(
+    '-s',
+    '--from-config',
+    dest='conf',
+    help="Get admin credentials from config rather than waiting on user input"
+)
+def initdb(conf=False):
     """
     Sets up the schema for a database that already exists (MySQL, Postgres) or
     creates the database (SQLite3) outright.
@@ -116,6 +122,7 @@ def initdb():
     with current_app.app_context():
         g.db_session = create_db_session()
         init_db()
+        create_admin_account(conf)
 
 
 @manager.option('-n', '--nosetest', help="Specific tests for nose to run")
