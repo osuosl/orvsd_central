@@ -22,11 +22,6 @@ CELERY_BROKER_URL = 'sqla+sqlite:///'
 CELERY_RESULT_BACKEND = 'database'
 CELERY_RESULT_DBURI = 'sqlite:///'
 
-# ORVSD Central Admin account credentials
-CENTRAL_ADMIN_USRENAME = ''
-CENTRAL_ADMIN_PASSWORD = ''
-CENTRAL_ADMIN_EMAIL = ''
-
 # database info for data gathering
 SITEINFO_DATABASE_HOST = "localhost"
 SITEINFO_DATABASE_USER = ""
