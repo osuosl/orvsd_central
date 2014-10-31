@@ -57,7 +57,7 @@ def import_data(data):
         schools = csv.reader(csvfile)
         for row in schools:
             dist_state_ids[row[1]] = row[0]
-            district_schools[row[1]].append(row[2:-1])
+            district_schools[row[1]].append(row[2:])
 
     with current_app.app_context():
         # Create a db session
