@@ -115,6 +115,7 @@ def create_admin(silent=False):
     """
 
     with current_app.app_context():
+        g.db_session = create_db_session()
         create_admin_account(silent)
 
 
