@@ -1,3 +1,5 @@
+import os
+
 from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -46,9 +48,9 @@ def create_admin_account(silent):
             if not matching:
                 print "Passwords do not match. Please try again."
     else:
-        username = current_app.config['CENTRAL_ADMIN_USERNAME']
-        password = current_app.config['CENTRAL_ADMIN_PASSWORD']
-        email = current_app.config['CENTRAL_ADMIN_EMAIL']
+        username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
+        password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
+        email = os.getenv('CENTRAL_ADMIN_EMAIL', 'example@example.com')
 
     # Get admin role.
     from orvsd_central.models import User
