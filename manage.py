@@ -8,7 +8,8 @@ from flask.ext.script import Manager
 import nose
 
 from orvsd_central import attach_blueprints, create_app
-from orvsd_central.database import create_db_session, init_db
+from orvsd_central.database import (create_db_session, create_admin_account,
+                                    init_db)
 
 
 def setup_app(config=None):
@@ -56,7 +57,7 @@ def import_data(data):
         schools = csv.reader(csvfile)
         for row in schools:
             dist_state_ids[row[1]] = row[0]
-            district_schools[row[1]].append(row[2:-1])
+            district_schools[row[1]].append(row[2:])
 
     with current_app.app_context():
         # Create a db session
@@ -104,15 +105,27 @@ def import_data(data):
 
     print "Data imported"
 
+@manager.command
+def create_admin(silent=False):
+    """
+    Create an admin account
+
+    -s/--silent: flag to silence user input and instead look for ENVVARs for
+    admin credentials
+    """
+
+    with current_app.app_context():
+        g.db_session = create_db_session()
+        create_admin_account(silent)
+
 
 @manager.command
 def initdb():
     """
     Sets up the schema for a database that already exists (MySQL, Postgres) or
     creates the database (SQLite3) outright.
-    * This also includes an option to create a new user, but that won't work
-      on an in-memory database.
     """
+
     with current_app.app_context():
         g.db_session = create_db_session()
         init_db()

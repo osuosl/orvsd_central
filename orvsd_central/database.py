@@ -1,3 +1,5 @@
+import os
+
 from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -22,34 +24,59 @@ def create_db_session():
     return db_session
 
 
+def create_admin_account(silent):
+    """
+    Create an admin account. This con be done via raw input from the user or
+    through config variables
+
+    config: Bool - use config vars
+    """
+
+    if not silent:
+        # Create an admin account.
+        ans = raw_input("There are currently no admin accounts, would you like to "
+                        "create one? (Y/N) ")
+        if not ans.lower().startswith("y"):
+            return
+        username = raw_input("Username: ")
+        email = raw_input("Email: ")
+        matching = False
+        while not matching:
+            password = getpass.getpass("Password: ")
+            confirm = getpass.getpass("Confirm Password: ")
+            matching = password == confirm
+            if not matching:
+                print "Passwords do not match. Please try again."
+    else:
+        username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
+        password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
+        email = os.getenv('CENTRAL_ADMIN_EMAIL', 'example@example.com')
+
+    # Get admin role.
+    from orvsd_central.models import User
+
+    user_exists = g.db_session.query(User).filter(User.name==username)
+    email_exists = g.db_session.query(User).filter(User.email==email)
+
+    if user_exists:
+        print "Username already in use."
+    elif email_exists:
+        print "Email address already in use."
+    else:
+        admin_role = USER_PERMS.get('admin')
+        admin = User(
+            name=username,
+            email=email,
+            password=password,
+            role=admin_role
+        )
+
+        g.db_session.add(admin)
+        g.db_session.commit()
+
+        print "Administrator account created!"
+
 def init_db():
     engine = g.db_session.get_bind()
     from orvsd_central import models
     Model.metadata.create_all(bind=engine)
-
-    # Create an admin account.
-    ans = raw_input("There are currently no admin accounts, would you like to "
-                    "create one? (Y/N) ")
-    if not ans.lower().startswith("y"):
-        return
-    username = raw_input("Username: ")
-    email = raw_input("Email: ")
-    matching = False
-    while not matching:
-        password = getpass.getpass("Password: ")
-        confirm = getpass.getpass("Confirm Password: ")
-        matching = password == confirm
-        if not matching:
-            print "Passwords do not match. Please try again."
-
-    # Get admin role.
-    admin_role = USER_PERMS.get('admin')
-    admin = models.User(name=username,
-                        email=email,
-                        password=password,
-                        role=admin_role)
-
-    g.db_session.add(admin)
-    g.db_session.commit()
-
-    print "Administrator account created!"
