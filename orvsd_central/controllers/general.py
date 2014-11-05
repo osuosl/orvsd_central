@@ -12,9 +12,9 @@ from sqlalchemy.exc import IntegrityError
 from orvsd_central import constants
 from orvsd_central.forms import AddUser, LoginForm
 from orvsd_central.models import User
-from orvsd_central.util import google, login_manager, requires_role
+from orvsd_central.util import (google, is_valid_email,
+                                login_manager, requires_role)
 
-from orvsd_central.util_validation import is_valid_email
 
 mod = Blueprint('general', __name__)
 
