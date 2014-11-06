@@ -51,25 +51,28 @@ def create_admin_account(silent):
             email = prompt_valid_email()
             password = prompt_matching_passwords()
 
-        # Get admin role.
-        admin_role = USER_PERMS.get('admin')
-        admin = User (
-            name=username,
-            email=email,
-            password=password,
-            role=admin_role
-        )
+            # Get admin role.
+            admin_role = USER_PERMS.get('admin')
+            admin = User (
+                name=username,
+                email=email,
+                password=password,
+                role=admin_role
+            )
 
-        try:
-            g.db_session.add(admin)
-            g.db_session.commit()
-        except IntegrityError:
-            g.db_session.rollback()
-            if User.query.filter_by(email=email).first():
-                print("Email is already in use.\n")
-            else: # assume error was duplicate username since not email
-                print("Username is already in use.\n")
-    else:
+            try:
+                g.db_session.add(admin)
+                g.db_session.commit()
+                admin_created = True
+            except IntegrityError:
+                g.db_session.rollback()
+                if User.query.filter_by(email=email).first():
+                    print("Email is already in use.\n")
+                else: # assume error was duplicate username since not email
+                    print("Username is already in use.\n")
+
+
+    else: # silent
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
         email = os.getenv('CENTRAL_ADMIN_EMAIL', 'example@example.com')
