@@ -22,6 +22,7 @@ def create_db_session():
 
 def create_admin_account(silent):
     """
+    command 'create_admin'
     Create an admin account. This con be done via raw input from the user or
     through config variables
 
@@ -32,6 +33,7 @@ def create_admin_account(silent):
 
     if not silent:
         # get the number of admins
+        admin_role = USER_PERMS.get('admin')
         admin_count = User.query.filter_by(role=admin_role).count()
         print("There are currently %d admin accounts." % admin_count)
 
@@ -51,7 +53,6 @@ def create_admin_account(silent):
             password = prompt_matching_passwords()
 
             # Get admin role.
-            admin_role = USER_PERMS.get('admin')
             admin = User (
                 name=username,
                 email=email,
