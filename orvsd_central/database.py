@@ -98,5 +98,4 @@ def create_admin_account(silent):
 
 def init_db():
     engine = g.db_session.get_bind()
-    from orvsd_central import models
     Model.metadata.create_all(bind=engine)
