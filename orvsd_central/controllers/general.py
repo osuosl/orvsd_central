@@ -67,7 +67,7 @@ def register():
                 g.db_session.rollback()
                 if User.query.filter_by(email=form.email.data).first():
                     message = "Email is already in use.\n"
-                else: # assume error was duplicate username since not email
+                else:  # assume error was duplicate username since not email
                     message = "Username is already in use.\n"
 
     return render_template('add_user.html', form=form,

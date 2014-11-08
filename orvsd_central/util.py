@@ -11,7 +11,7 @@ from functools import wraps
 from getpass import getpass
 
 from celery import Celery
-from flask import current_app, flash, g, jsonify, redirect, render_template
+from flask import current_app, flash, g, redirect, render_template
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
 from oursql import DictCursor, connect
@@ -645,6 +645,7 @@ def requires_role(role):
         return wraps(f)(wrapper)
     return decorator
 
+
 def is_valid_email(email):
     """
     Check that `email` is not empty and looks like an e-mail.
@@ -660,6 +661,7 @@ def is_valid_email(email):
 
     return True
 
+
 def prompt_valid_email():
     """
     Prompts for an email that does not already exist
@@ -673,6 +675,7 @@ def prompt_valid_email():
         email = raw_input("E-mail: ")
 
     return email
+
 
 def prompt_matching_passwords():
     """

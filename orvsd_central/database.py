@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from orvsd_central.constants import USER_PERMS
 from orvsd_central.models import Model, User
 
+
 def create_db_session():
     # Get the db address from the current app
     _db_address = current_app.config['SQLALCHEMY_DATABASE_URI']
@@ -53,7 +54,7 @@ def create_admin_account(silent):
             password = prompt_matching_passwords()
 
             # Get admin role.
-            admin = User (
+            admin = User(
                 name=username,
                 email=email,
                 password=password,
@@ -68,19 +69,17 @@ def create_admin_account(silent):
                 g.db_session.rollback()
                 if User.query.filter_by(email=email).first():
                     print("Email is already in use.\n")
-                else: # assume error was duplicate username since not email
+                else:  # assume error was duplicate username since not email
                     print("Username is already in use.\n")
 
-
-    else: # silent
+    else:  # silent
         username = os.getenv('CENTRAL_ADMIN_USERNAME', 'admin')
         password = os.getenv('CENTRAL_ADMIN_PASSWORD', 'admin')
         email = os.getenv('CENTRAL_ADMIN_EMAIL', 'example@example.com')
 
-
         # Get admin role.
         admin_role = USER_PERMS.get('admin')
-        admin = User (
+        admin = User(
             name=username,
             email=email,
             password=password,
