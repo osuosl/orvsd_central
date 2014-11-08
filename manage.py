@@ -105,6 +105,7 @@ def import_data(data):
 
     print "Data imported"
 
+
 @manager.command
 def create_admin(silent=False):
     """

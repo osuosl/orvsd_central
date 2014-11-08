@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import orvsd_central
-from orvsd_central import attach_blueprints, models
-from orvsd_central.database import Model
+from orvsd_central import attach_blueprints
+from orvsd_central.models import Model
 
 
 class TestBase(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestBase(unittest.TestCase):
 
             self.test_engine = create_engine(
                 "sqlite:///:memory:",
-                 convert_unicode=True
+                convert_unicode=True
             )
             g.db_session = scoped_session(
                 sessionmaker(
