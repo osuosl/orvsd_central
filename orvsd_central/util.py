@@ -15,6 +15,7 @@ from flask import current_app, flash, g, redirect, render_template
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
 from oursql import DictCursor, connect
+from sqlalchemy import create_engine
 import requests
 
 from orvsd_central import constants
@@ -199,6 +200,40 @@ def district_details(schools, active):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+def gather_siteinfo_new():
+    """
+    Gathers moodle/drupal site information to be put into our db.
+    * This is where all of our SiteDetail objects are generated.
+    """
+
+    siteinfo_user = current_app.config['SITEINFO_DATABASE_USER']
+    siteinfo_password = current_app.config['SITEINFO_DATABASE_PASS']
+    siteinfo_host = current_app.config['SITEINFO_DATABASE_HOST']
+
+    # Site Info DB connection
+    siteinfo_engine = create_engine(
+        "mysql://%s:%s@%s" % (
+            siteinfo_user,
+            siteinfo_password,
+            siteinfo_host
+        )
+    )
+
+    # Fancy query to get all moodle sites with the siteinfo plugin
+    siteinfo_installed_query = (
+        "SELECT table_schema, table_name "
+        "FROM information_schema.tables "
+        "WHERE table_name =  'siteinfo' "
+        "OR table_name = 'mdl_siteinfo';"
+    )
+
+    # Query the DB for moodle db's with the plugin installed
+    siteinfo_installed = siteinfo_engine.execute(siteinfo_installed_query)
+
+    for installed in siteinfo_installed:
+        print installed
+    siteinfo_installed.close()
 
 
 def gather_siteinfo():
