@@ -323,6 +323,21 @@ def gather_siteinfo():
                 # Find the site
                 site = Site.query.filter_by(baseurl=school_url).first()
 
+                # Get the moodle_token for the site if we don't have it
+                if getattr(site, 'moodle_token', None) == None:
+                    resp = requests.post(
+                        "%s/login/token.php" % data['baseurl'],
+                        data={
+                            'username': current_app.config['INSTALL_COURSE_USERNAME'],
+                            'password': current_app.config['INSTALL_COURSE_PASS'],
+                            'service': 'orvsd_installcourse'
+                        }
+                    )
+                    if 'token' in resp.json():
+                        moodle_token = resp.json()['token']
+                else:
+                    moodle_token = site.moodle_token
+
                 # if no site exists, make a new one and commit it to the db
                 if not site:
                     site = Site(
@@ -334,6 +349,11 @@ def gather_siteinfo():
                         location=location,
                         school_id=school.id
                     )
+
+                # Update the moodle token
+                site.moodle_token = moodle_token
+
+                # Commit the site to the db
                 g.db_session.add(site)
                 g.db_session.commit()
 
