@@ -196,7 +196,7 @@ class Site(Model):
     jenkins_cron_job = Column(DateTime)
     # what machine is this on, or is it in the moodle cloud?
     location = Column(String(255))
-    api_key = Column(String(40))
+    moodle_token = Column(String(40))
 
     site_details = relationship("SiteDetail", backref=backref('sites'))
     courses = relationship("Course",
@@ -204,7 +204,7 @@ class Site(Model):
                            backref='sites')
 
     def generate_new_key(self):
-        self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
+        self.moodle_token = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % \
@@ -225,7 +225,7 @@ class Site(Model):
                 'basepath': self.basepath,
                 'jenkins_cron_job': self.jenkins_cron_job,
                 'location': self.location,
-                'api_key': self.api_key}
+                'moodle_token': self.moodle_token}
 
 
 class SiteDetail(Model):
