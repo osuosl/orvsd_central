@@ -200,6 +200,28 @@ def district_details(schools, active):
             'teachers': teacher_count,
             'users': user_count}
 
+def get_installcourse_token(site):
+    resp = requests.post(
+        "%s/login/token.php" % site.baseurl,
+        data={
+            'username': current_app.config['INSTALL_COURSE_USERNAME'],
+            'password': current_app.config['INSTALL_COURSE_PASS'],
+            'service': 'orvsd_installcourse'
+        }
+    )
+
+    current_token = site.moodle_token
+
+    if not resp.json():
+        print "Unable to access site - %s" % site.baseurl
+        print resp.text
+    elif 'error' in resp.json():
+        print "Error: " % resp.json()['error']
+    else:
+        if 'token' in resp.json():
+            if current_token != resp.json()['token']:
+                site.moodle_token = resp.json()['token']
+
 def gather_siteinfo():
     """
     Gathers moodle/drupal site information to be put into our db.
@@ -323,25 +345,6 @@ def gather_siteinfo():
                 # Find the site
                 site = Site.query.filter_by(baseurl=school_url).first()
 
-                # Get the moodle_token for the site if we don't have it
-                if getattr(site, 'moodle_token', None) == None:
-                    resp = requests.post(
-                        "%s/login/token.php" % data['baseurl'],
-                        data={
-                            'username': current_app.config['INSTALL_COURSE_USERNAME'],
-                            'password': current_app.config['INSTALL_COURSE_PASS'],
-                            'service': 'orvsd_installcourse'
-                        }
-                    )
-                    if 'token' in resp.json():
-                        moodle_token = resp.json()['token']
-                    else:
-                        print "Unable to access site - %s" % school_url
-                        print resp.text
-                        continue
-                else:
-                    moodle_token = site.moodle_token
-
                 # if no site exists, make a new one and commit it to the db
                 if not site:
                     site = Site(
@@ -354,8 +357,8 @@ def gather_siteinfo():
                         school_id=school.id
                     )
 
-                # Update the moodle token
-                site.moodle_token = moodle_token
+                # Check the install course plugin and update if needed
+                get_installcourse_token(site)
 
                 # Commit the site to the db
                 g.db_session.add(site)
