@@ -212,15 +212,16 @@ def get_installcourse_token(site):
 
     current_token = site.moodle_token
 
-    if not resp.json():
+    try:
+        if 'error' in resp.json():
+            print "Error: " % resp.json()['error']
+        else:
+            if 'token' in resp.json():
+                if current_token != resp.json()['token']:
+                    site.moodle_token = resp.json()['token']
+    except:
         print "Unable to access site - %s" % site.baseurl
         print resp.text
-    elif 'error' in resp.json():
-        print "Error: " % resp.json()['error']
-    else:
-        if 'token' in resp.json():
-            if current_token != resp.json()['token']:
-                site.moodle_token = resp.json()['token']
 
 def gather_siteinfo():
     """
