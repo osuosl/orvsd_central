@@ -335,6 +335,10 @@ def gather_siteinfo():
                     )
                     if 'token' in resp.json():
                         moodle_token = resp.json()['token']
+                    else:
+                        print "Unable to access site - %s" % school_url
+                        print resp.text
+                        continue
                 else:
                     moodle_token = site.moodle_token
 
