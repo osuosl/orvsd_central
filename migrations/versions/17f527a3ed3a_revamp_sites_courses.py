@@ -14,18 +14,28 @@ from alembic import op
 import sqlalchemy as sa
 
 
-def upgrade():
-    op.drop_column('sites_courses', 'celery_task_id')
+def upgrade(engine_name):
+    eval("upgrade_%s" % engine_name)()
+
+
+def downgrade(engine_name):
+    eval("downgrade_%s" % engine_name)()
+
+
+
+
+
+def upgrade_engine1():
     op.drop_column('sites_courses', 'students')
-    op.add_column('sites_courses', sa.Column('celery_task_id', sa.String(255))
+    op.alter_column('sites_courses', 'celery_task_id', type_=sa.String(255))
 
 
-def downgrade():
-    op.drop_column('sites_courses', 'celery_task_id')
-    op.add_column('sites_courses', sa.Column('students', sa.Integer)
-    op.add_column('sites_courses', sa.Column(
+def downgrade_engine1():
+    op.add_column('sites_courses', sa.Column('students'), sa.Integer)
+    op.alter_column(
+        'sites_courses',
         'celery_task_id',
-        sa.ForeignKey(
+        type_=sa.ForeignKey(
             'celery_taskmeta.task_id',
             use_alter=True,
             name='fk_sites_courses_celery_task_id'
