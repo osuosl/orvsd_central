@@ -2,6 +2,9 @@ import os
 # Get rid of the /config at the end.
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
+# Logifile Location
+PROJECT_LOGFILE = "%s/orvsd_central.log" % PROJECT_PATH
+
 # Enable/Disable debug output from flask
 DEBUG = False
 
