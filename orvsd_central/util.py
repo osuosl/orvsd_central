@@ -3,6 +3,7 @@ Utility class containing useful methods not tied to specific models or views
 """
 from bs4 import BeautifulSoup as Soup
 import json
+import logging
 import os
 import re
 import zipfile
@@ -200,204 +201,89 @@ def district_details(schools, active):
             'teachers': teacher_count,
             'users': user_count}
 
-def get_installcourse_token(site):
-    resp = requests.post(
-        "%s/login/token.php" % site.baseurl,
-        data={
-            'username': current_app.config['INSTALL_COURSE_USERNAME'],
-            'password': current_app.config['INSTALL_COURSE_PASS'],
-            'service': 'orvsd_installcourse'
-        }
-    )
 
-    current_token = site.moodle_token
-
-    try:
-        if 'error' in resp.json():
-            print "Error: " % resp.json()['error']
-        else:
-            if 'token' in resp.json():
-                if current_token != resp.json()['token']:
-                    site.moodle_token = resp.json()['token']
-    except:
-        print "Unable to access site - %s" % site.baseurl
-        print resp.text
-
-def gather_siteinfo():
+def gather_tokens(sites=[], service_names=[]):
     """
-    Gathers moodle/drupal site information to be put into our db.
-    * This is where all of our SiteDetail objects are generated.
+    gather_tokens will get tokens required for moodle webservices provided in
+    the list of service_names list
+
+    sites: list of moodle sites to get tokens from
+    service_names: list of service names to get tokens for
     """
 
-    siteinfo_user = current_app.config['SITEINFO_DATABASE_USER']
-    siteinfo_password = current_app.config['SITEINFO_DATABASE_PASS']
-    siteinfo_host = current_app.config['SITEINFO_DATABASE_HOST']
+    # If there are no sites listed, why is this even being called?
+    if sites == []:
+        return
 
-    # Site Info DB connection
-    siteinfo_engine = create_engine(
-        "mysql://%s:%s@%s" % (
-            siteinfo_user,
-            siteinfo_password,
-            siteinfo_host
-        )
-    )
+    # We allow for service names to be passed, though most likely only services
+    # listed in the applications config will ever be used
+    if service_names == []:
+        service_names = current_app.config['MOODLE_SERVICES']
 
-    # Fancy query to get all moodle sites with the siteinfo plugin
-    siteinfo_installed_query = (
-        "SELECT table_schema, table_name "
-        "FROM information_schema.tables "
-        "WHERE table_name =  'siteinfo' "
-        "OR table_name = 'mdl_siteinfo';"
-    )
+    # If no services, whys is the even being called?
+    if not service_names:
+        return
 
-    # Query the DB for moodle db's with the plugin installed
-    siteinfo_installed = siteinfo_engine.execute(siteinfo_installed_query)
+    # For each site in the list of sites we need to get tokens
+    for site in sites:
+        # If the object was built odly and no baseurl exists, move onto the
+        # next sit
+        if site.baseurl in ['', None]:
+            continue
 
-    unknown_district = District.query.filter_by(
-        name='z No district found'
-    ).first()
+        # For the request, prepend the protocol if necessary
+        site_url = ("http://%s" % site.baseurl
+            if not site.baseurl.startswith("http") else site.baseurl)
 
-    # For each relevant database, get the siteinfo
-    for installed in siteinfo_installed:
-        '''
-        installed[0] - database name
-        installed[1] - siteinfo table name
-        '''
-
-        # Create a connection to this relevant database
-        site_engine = create_engine(
-            "mysql://%s:%s@%s/%s" % (
-                siteinfo_user,
-                siteinfo_password,
-                siteinfo_host,
-                installed[0]
+        # First check if the tokens column is valid json, if not, report the
+        # issue and continue to the next site
+        try:
+            current_tokens = json.loads(site.tokens)
+        except ValueError:
+            logging.warning(
+                "Unable to read tokens as json, prehaps the column "
+                "for %s hasn't been migrated?" % site_url
             )
-        )
+            continue
 
+        # For each service, gather a token
+        for service in service_names:
+            # Using the siteurl and the account information stored in the
+            # config, request a token for the given service
+            resp = request(
+                "%s/login/token.php" % site_url,
+                data={
+                    'username': current_app.config['INSTALL_COURSE_USERNAME'],
+                    'password': current_app.config['INSTALL_COURSE_PASS'],
+                    'service': service
+                }
+            )
 
-        # Grab the siteinfo data
-        siteinfo_data = site_engine.execute(
-            "select * from `%s`" % installed[1]
-        )
-
-        # pattern used to remove the baseurl's protocol
-        school_re = "https?:\/\/"
-
-        # For all the data, shove it into the central db
-        for data in siteinfo_data:
-            # Remove the protocol from the base url
-            school_url = re.sub(school_re, '', data['baseurl'])
-
-            if 'location' in data and data['location'][:3] == 'php':
-                location = 'platform'
-            else:
-                location = 'unknown'
-
-            # Get the school associated with the school_url
-            school = School.query.filter_by(domain=school_url).first()
-
-            # if no school is found by school_url, try by sitename
-            if not school:
-                school = School.query.filter_by(name=data['sitename']).first()
-
-            # If no school has been found yet, create a new one with
-            # a name of sitename in the unknown district
-            if not school:
-                school = School(
-                    name=data['sitename'],
-                    shortname=data['sitename'],
-                    domain=school_url,
-                    license='',
-                    state_id=None
-                )
-
-                dist_id = unknown_district.id
-                if school_url:
-                    # Find similar schools
-                    similar_schools = g.db_session.query(School).filter(
-                        School.domain.like("%%%s%%" % school_url)
-                    ).all()
-
-                    if not similar_schools:
-                        # No luck still? Let's try without a subdomain
-                        broad_url = school_url[school_url.find('.'):]
-                        similar_schools = g.db_session.query(School).filter(
-                            School.domain.like("%%%s%%" % school_url)
-                        ).all()
-
-                    # If we've found similar schools, we'll add this school
-                    # to the same domain
-                    if similar_schools:
-                        dist_id = similar_school[0].district_id
-
-                        # If all results don't match, this isn't
-                        # accurate enough
-                        for school in similar_schools:
-                            if school.district_id != dist_id:
-                                dist_id = unknown_district.id
-                                break
-
-
-                # Create the school
-                school.district_id = dist_id
-                g.db_session.add(school)
-                g.db_session.commit()
-
-                # Find the site
-                site = Site.query.filter_by(baseurl=school_url).first()
-
-                # if no site exists, make a new one and commit it to the db
-                if not site:
-                    site = Site(
-                        name=data['sitename'],
-                        sitetype=data['sitetype'],
-                        baseurl=school_url,
-                        basepath=data['basepath'],
-                        jenkins_cron_job=None,
-                        location=location,
-                        school_id=school.id
+            # Try and decode the json, if we did not receive json, we need to
+            # return the string (resp.text) back to the user as an error
+            try:
+                returned = resp.json()
+                # Check for an error log and continue
+                if 'error' in returned:
+                    log.warning("error: %s" % returned['error'])
+                    continue
+                else:
+                    # Assign the service the retreived token
+                    current_tokens[service] = returned['token']
+                    # dump the json string and store it for the site
+                    site.tokens = json.dumps(current_tokens)
+                    # Commit the change to the database
+                    g.db_session.commit()
+                    log.info(
+                        "Added '%s':'%s' to %s" %
+                        (service, token, site_url)
                     )
-
-                # Check the install course plugin and update if needed
-                get_installcourse_token(site)
-
-                # Commit the site to the db
-                g.db_session.add(site)
-                g.db_session.commit()
-
-                # Now for the site details
-                now = datetime.now()
-                site_details = SiteDetail(
-                    site_id=site.id,
-                    siteversion=data['siteversion'],
-                    siterelease=data['siterelease'],
-                    adminemail=data['adminemail'],
-                    totalusers=data['totalusers'],
-                    adminusers=data['adminusers'],
-                    teachers=data['teachers'],
-                    activeusers=data['activeusers'],
-                    totalcourses=data['totalcourses'],
-                    timemodified=now
+            except ValueError:
+                # Unable to parse JSON, log the problem
+                log.warning(
+                    "Unable to parse JSON for %s: %s" %
+                    (site_url, resp.text)
                 )
-
-                # if there are courses on this site, try to
-                # associate them with our catalog
-                if data['courses']:
-                    # quick and ugly check to make sure we have
-                    # a json string
-                    if data['courses'][:2] != "[{":
-                        continue
-
-                    site_details.courses = d['courses']
-
-                # Add/commit the siteinfo_details we just retreived to the db
-                g.db_session.add(site_details)
-                g.db_session.commit()
-
-        # Close the siteinfo_data result loop
-        siteinfo_data.close()
-    # Close the siteinfo_installed result loop
-    siteinfo_installed.close()
 
 
 def get_course_folders(base_path):
