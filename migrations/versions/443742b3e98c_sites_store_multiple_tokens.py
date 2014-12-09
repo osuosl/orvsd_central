@@ -1,14 +1,14 @@
 """sites store multiple tokens
 
 Revision ID: 443742b3e98c
-Revises: 4d880890ec68
+Revises: 17f527a3ed3a
 Create Date: 2014-12-08 18:45:00.187657
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '443742b3e98c'
-down_revision = '4d880890ec68'
+down_revision = '17f527a3ed3a'
 
 import json
 
