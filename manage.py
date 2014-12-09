@@ -32,7 +32,7 @@ manager.add_option('-c', '--config', dest='config')
 
 
 @manager.command
-def gather():
+def gather_tokens():
     """
     For all sites added to ORVSD_Central's database and all services listed
     in the MOODLE_SERVICES config option, gather will gather all tokens for
