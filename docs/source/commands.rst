@@ -27,8 +27,8 @@ Options:
 - -t <IP Address> - server listening address
 - -p <Port> - Port Number to listen on
 
-gather
-------
+gather_tokens
+-------------
 
 Gathers tokens from moodle sites. The tokens are for services listed in the
 MOODLE_SERVICES configuration option
