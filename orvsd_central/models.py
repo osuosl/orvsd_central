@@ -203,9 +203,6 @@ class Site(Model):
                            secondary='sites_courses',
                            backref='sites')
 
-    def generate_new_key(self):
-        self.moodle_token = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
-
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % \
                (self.name, self.school_id, self.dev, self.sitetype,
