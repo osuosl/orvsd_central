@@ -196,7 +196,7 @@ class Site(Model):
     jenkins_cron_job = Column(DateTime)
     # what machine is this on, or is it in the moodle cloud?
     location = Column(String(255))
-    moodle_token = Column(String(40))
+    moodle_tokens = Column(String(2048))
 
     site_details = relationship("SiteDetail", backref=backref('sites'))
     courses = relationship("Course",
