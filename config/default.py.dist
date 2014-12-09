@@ -25,15 +25,15 @@ CELERY_BROKER_URL = 'sqla+sqlite:///'
 CELERY_RESULT_BACKEND = 'database'
 CELERY_RESULT_DBURI = 'sqlite:///'
 
-# database info for data gathering
-SITEINFO_DATABASE_HOST = "localhost"
-SITEINFO_DATABASE_USER = ""
-SITEINFO_DATABASE_PASS = ""
-
 # google oauth credentials info
 GOOGLE_CLIENT_ID = 'CLIENT ID HERE'
 GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
+#
+# database info for data gathering
+SITEINFO_DATABASE_HOST = "localhost"
+SITEINFO_DATABASE_USER = ""
+SITEINFO_DATABASE_PASS = ""
 
 # Moodle course install web service definitions
 INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
@@ -48,4 +48,4 @@ INSTALL_COURSE_LASTNAME = 'central'
 INSTALL_COURSE_CITY = 'none'
 INSTALL_COURSE_USERNAME = 'admin'
 INSTALL_COURSE_EMAIL = 'a@a.aa'
-INSTALL_COURSE_PASS = 'adminpaINSTALL_COURSE_ss'
+INSTALL_COURSE_PASS = 'adimn'
