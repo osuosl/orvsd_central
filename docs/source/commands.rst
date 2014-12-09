@@ -30,7 +30,8 @@ Options:
 gather
 ------
 
-Gathers Moodle Site course and usage details
+Gathers tokens from moodle sites. The tokens are for services listed in the
+MOODLE_SERVICES configuration option
 
 Options: None
 
