@@ -29,11 +29,12 @@ CELERY_RESULT_DBURI = 'sqlite:///'
 GOOGLE_CLIENT_ID = 'CLIENT ID HERE'
 GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
 REDIRECT_URI = "/oauth2callback"
-#
-# database info for data gathering
-SITEINFO_DATABASE_HOST = "localhost"
-SITEINFO_DATABASE_USER = ""
-SITEINFO_DATABASE_PASS = ""
+
+# Moodle Services list
+MOODLE_SERVICES = [
+    'my_servicename_1',
+    'my_servicename_2'
+]
 
 # Moodle course install web service definitions
 INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
