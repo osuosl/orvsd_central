@@ -238,7 +238,7 @@ def gather_tokens(sites=[], service_names=[]):
         # First check if the tokens column is valid json, if not, report the
         # issue and continue to the next site
         try:
-            current_tokens = json.loads(site.tokens)
+            current_tokens = json.loads(site.moodle_tokens)
         except ValueError:
             logging.warning(
                 "Unable to read tokens as json, prehaps the column "
@@ -271,7 +271,7 @@ def gather_tokens(sites=[], service_names=[]):
                     # Assign the service the retreived token
                     current_tokens[service] = returned['token']
                     # dump the json string and store it for the site
-                    site.tokens = json.dumps(current_tokens)
+                    site.moodle_tokens = json.dumps(current_tokens)
                     # Commit the change to the database
                     g.db_session.commit()
                     log.info(

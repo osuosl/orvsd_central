@@ -40,7 +40,7 @@ def gather_tokens():
     """
 
     with current_app.app_context():
-        from ovrsd_central.models import Site
+        from orvsd_central.models import Site
         from orvsd_central.util import gather_tokens
 
         g.db_session = create_db_session()
