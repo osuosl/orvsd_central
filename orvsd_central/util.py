@@ -235,22 +235,26 @@ def gather_tokens(sites=[], service_names=[]):
         site_url = ("http://%s" % site.baseurl
             if not site.baseurl.startswith("http") else site.baseurl)
 
+        # initialize for later use if the following try/except fails
+        current_tokens = {}
+
         # First check if the tokens column is valid json, if not, report the
         # issue and continue to the next site
         try:
             current_tokens = json.loads(site.moodle_tokens)
         except ValueError:
-            logging.warning(
-                "Unable to read tokens as json, prehaps the column "
-                "for %s hasn't been migrated?" % site_url
-            )
-            continue
+            if site.moodle_tokens != '':
+                logging.warning(
+                    "Unable to read tokens as json, prehaps the column "
+                    "for %s hasn't been migrated?" % site_url
+                )
+                continue
 
         # For each service, gather a token
         for service in service_names:
             # Using the siteurl and the account information stored in the
             # config, request a token for the given service
-            resp = request(
+            resp = requests.post(
                 "%s/login/token.php" % site_url,
                 data={
                     'username': current_app.config['INSTALL_COURSE_USERNAME'],
@@ -265,7 +269,7 @@ def gather_tokens(sites=[], service_names=[]):
                 returned = resp.json()
                 # Check for an error log and continue
                 if 'error' in returned:
-                    log.warning("error: %s" % returned['error'])
+                    logging.warning("error: %s" % returned['error'])
                     continue
                 else:
                     # Assign the service the retreived token
@@ -274,13 +278,13 @@ def gather_tokens(sites=[], service_names=[]):
                     site.moodle_tokens = json.dumps(current_tokens)
                     # Commit the change to the database
                     g.db_session.commit()
-                    log.info(
+                    logging.info(
                         "Added '%s':'%s' to %s" %
-                        (service, token, site_url)
+                        (service, returned['token'], site_url)
                     )
             except ValueError:
                 # Unable to parse JSON, log the problem
-                log.warning(
+                logging.warning(
                     "Unable to parse JSON for %s: %s" %
                     (site_url, resp.text)
                 )
