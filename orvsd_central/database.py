@@ -3,7 +3,7 @@ import os
 from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 
 from orvsd_central.constants import USER_PERMS
 from orvsd_central.models import Model, User
@@ -35,7 +35,13 @@ def create_admin_account(silent):
     if not silent:
         # get the number of admins
         admin_role = USER_PERMS.get('admin')
-        admin_count = User.query.filter_by(role=admin_role).count()
+        try:
+            admin_count = User.query.filter_by(role=admin_role).count()
+        except ProgrammingError:
+            # no database
+            print("\nPlease run `manage.py initdb` before adding admins to the database\n")
+            return
+            
         print("There are currently %d admin accounts." % admin_count)
 
         ans = raw_input("Would you like to create an admin account? (Y/N) ")
