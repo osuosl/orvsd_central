@@ -30,8 +30,9 @@ Options:
 gather_tokens
 -------------
 
-Gathers tokens from moodle sites. The tokens are for services listed in the
-MOODLE_SERVICES configuration option
+Gathers tokens from all moodle sites in ORVSD Central's database. The tokens
+are for services listed in the MOODLE_SERVICES configuration option. Each
+listed service must be the shortname of a plugin.
 
 Options: None
 
