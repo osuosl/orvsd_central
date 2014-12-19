@@ -1,5 +1,7 @@
 from collections import defaultdict
 import csv
+import logging
+import os
 import re
 import sys
 
@@ -121,15 +123,34 @@ def create_admin(silent=False):
 
 
 @manager.command
-def initdb():
+def setup_db():
     """
-    Sets up the schema for a database that already exists (MySQL, Postgres) or
-    creates the database (SQLite3) outright.
+    Either initialize the database if none yet exists, or migrate as needed
     """
 
+    from alembic.config import Config
+    from alembic import command
+
+
     with current_app.app_context():
+        # Alembic config used by migration or stamping
+        alembic_cfg = Config(
+            os.path.join(current_app.config["PROJECT_PATH"], "alembic.ini")
+        )
+
+        # Database connections
         g.db_session = create_db_session()
-        init_db()
+        con = g.db_session.connection()
+
+        # Query list of existing tables
+        tables = con.execute("show tables").fetchall()
+        if tables:
+            logging.info("Database already created, attempting a migration")
+            command.upgrade(alembic_cfg, "head")
+        else:
+            logging.info("Database to be initialized")
+            command.stamp(alembic_cfg, "head")
+            init_db()
 
 
 @manager.option('-n', '--nosetest', help="Specific tests for nose to run")
