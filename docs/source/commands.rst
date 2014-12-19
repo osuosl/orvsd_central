@@ -34,10 +34,9 @@ Gathers Moodle Site course and usage details
 
 Options: None
 
-initdb
-------
+setup_db
+--------
 
-Initializes the database configured in your config. This is typically only ran
-during the setup phase
+Initialize the database or keep the schema up to date with migrations
 
 Options: None
