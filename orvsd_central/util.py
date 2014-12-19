@@ -201,6 +201,26 @@ def district_details(schools, active):
             'teachers': teacher_count,
             'users': user_count}
 
+def gather_siteinfo(site):
+    """
+    Using the siteinfo webservice plugin for moodle, gather the siteinfo data
+    about a site
+    """
+
+    if not hasattr(site, 'moodle_tokens'):
+        logging.warn("Is this a site?")
+        return
+
+    url = "http://%s/webservice/rest/server.php" % site.baseurl
+    req = requests.get(
+        url,
+        data={
+            'wstoken': json.loads(site.moodle_tokens)['orvsd_siteinfo'],
+            'wsfunction': 'orvsd_siteinfo',
+            'moodlewsrestformat': 'json'
+        }
+    )
+
 
 def gather_tokens(sites=[], service_names=[]):
     """
