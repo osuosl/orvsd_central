@@ -10,12 +10,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 Model = declarative_base()
 
-# A representation of the connection between the courses each site has
-# installed, and information about those course details.
-
 
 class SiteCourse(Model):
     """
+    A representation of the connection between the courses each site has
+    installed, and information about those course details.
+
+    site_id        : the site's id
+    course_id      : the course's id
+    celery_task_id : celery task id for the site
     """
 
     __tablename__ = 'sites_courses'
@@ -48,15 +51,21 @@ class SiteCourse(Model):
 class User(Model):
     """
     A Model representation of your average User.
+
+    id       : the user's unique id
+    name     : the user's unique name
+    email    : the user's unique email
+    password : the user's password information
+    role     : 1 for standard users
+               2 for helpdesk user
+               3 for admins
+
     """
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True)
     email = Column(String(120), unique=True)
     password = Column(String(768))
-    # 1 = Standard User
-    # 2 = Helpdesk
-    # 3 = Admin
     role = Column(SmallInteger, default=1)
     # Possibly another column for current status
 
@@ -99,17 +108,19 @@ class District(Model):
     """
     A Model representation of a District.
     * Districts have many schools.
+
+    id        : The district's id
+    state_id  : State given ID number
+    name      : Full name of the district
+    shortname : Short name or abbreviation
+    base_path : Root path in which school sites are stored (maybe redundant)
     """
     __tablename__ = 'districts'
 
     id = Column(Integer, primary_key=True)
-    # State given ID number
     state_id = Column(Integer)
-    # Full name of the district
     name = Column(String(255))
-    # short name/abbreviation
     shortname = Column(String(255))
-    # root path in which school sites are stored - maybe redundant
     base_path = Column(String(255))
 
     def __repr__(self):
@@ -130,25 +141,29 @@ class School(Model):
     """
     A Model representation of a School.
     * Schools belong to one district, may have many sites and courses.
+
+    id          : The school id
+    district_id : Points to the owning district
+    state_id    : State assigned id
+    name        : School name
+    shortname   : Short name or abbreviation
+    domain      : The base domain name for this school's sites (possibly redundant)
+    license     : List of tokens indicating licenses for some courses - courses with
+                  license tokens in this list can be installed in this school
+    county      : The county the school belongs to
+    district    : The district with which the school is associated
     """
     __tablename__ = 'schools'
 
     id = Column(Integer, primary_key=True)
-    # points to the owning district
     district_id = Column(Integer,
                          ForeignKey('districts.id',
                                     use_alter=True,
                                     name='fk_school_to_district_id'))
-    # state assigned id
     state_id = Column(Integer)
-    # school name
     name = Column(String(255))
-    # short name or abbreviation
     shortname = Column(String(255))
-    # the base domain name for this school's sites (possibly redundant)
     domain = Column(String(255))
-    # list of tokens indicating licenses for some courses - courses with
-    # license tokens in this list can be installed in this school
     license = Column(String(255))
     county = Column(String(255))
 
@@ -174,27 +189,29 @@ class Site(Model):
     """
     A Model respresentation of a Site.
     * Sites belong to one school, and may have many SiteDetails.
+
+    school_id        : Points to the owning school
+    name             : Name of the site - (from siteinfo)
+    dev              : True if this a dev site, False by default
+    sitetype         : From siteinfo
+    baseurl          : Moodle or drupal's base url - (from siteinfo)
+    basepath         : The site's path on disk - (from siteinfo)
+    jenkins_cron_job : Last run of jenkins cron job, if there is one
+    location         : What machine the site is on, or is it in the cloud
+    api_key          : Undocumented - orvsd only displays this value
     """
     __tablename__ = 'sites'
 
     id = Column(Integer, primary_key=True)
-    # points to the owning school
     school_id = Column(Integer, ForeignKey('schools.id',
                                            use_alter=True,
                                            name="fk_sites_school_id"))
-    # name of the site - (from siteinfo)
     name = Column(String(255))
-    # Dev site?
     dev = Column(Boolean, default=False)
-    # (from siteinfo)
     sitetype = Column(Enum('moodle', 'drupal', name='site_types'))
-    # moodle or drupal's base_url - (from siteinfo)
     baseurl = Column(String(255))
-    # site's path on disk - (from siteinfo)
     basepath = Column(String(255))
-    # is there a jenkins cron job? If so, when did it last run?
     jenkins_cron_job = Column(DateTime)
-    # what machine is this on, or is it in the moodle cloud?
     location = Column(String(255))
     api_key = Column(String(40))
 
@@ -233,11 +250,19 @@ class SiteDetail(Model):
     Site_details belong to one site. This data is updated from the
     siteinfo tables, except the date - a new record is added with each
     update. See siteinfo notes.
+
+    courses      : A list of courses
+    siteversion  : A moodle style version such as 2014121900
+    siterelease  : Moodle version such as 2.7
+    adminemail   : Site admin's email
+    teachers     : Number of teachers
+    activeusers  : Number of active users
+    totalcourses : Number of courses
+    timemodified : Date set by the time of the call to util.gather_siteinfo()
     """
     __tablename__ = 'site_details'
 
     id = Column(Integer, primary_key=True)
-    # points to the owning site
     site_id = Column(Integer, ForeignKey('sites.id',
                                          use_alter=True,
                                          name='fk_site_details_site_id'))
@@ -277,6 +302,14 @@ class Course(Model):
     """
     A Model representation of a Course.
     * Courses belong to many schools
+
+    id        : Uniquely identifies among instances or versions of a course
+    serial    : Shared identifier among different versions of the same course
+    name      : The course name (a moodle setting)
+    shortname : The course short name (a moodle setting)
+    license   : Schools with a license token matching this can install this class
+    category  : Moodle category for this class (probably "default")
+    source    : Provider of the course, possibly used by moodle for storing the location
     """
     __tablename__ = 'courses'
 
@@ -284,9 +317,7 @@ class Course(Model):
     serial = Column(Integer)
     name = Column(String(255))
     shortname = Column(String(255))
-    # schools with a license token matching this can install this class
     license = Column(String(255))
-    # moodle category for this class (probably "default")
     category = Column(String(255))
     source = Column(String(255))
 
@@ -314,6 +345,15 @@ class Course(Model):
 class CourseDetail(Model):
     """
     A Model representation of a Course's details.
+
+    id               : Unique to orvsd
+    course_id        : Unique to orvsd
+    filename         : The name and extension without the full path
+    version          : The version, format determined by client
+    updated          : Time of the last update
+    active           : True if the course has recently been in use
+    moodle_version   : A moodle style version
+    moodle_course_id : The course id determined by moodle
     """
     __tablename__ = 'course_details'
     id = Column(Integer, primary_key=True)
@@ -321,11 +361,8 @@ class CourseDetail(Model):
                        ForeignKey('courses.id',
                                   use_alter=True,
                                   name='fk_course_details_site_id'))
-    # just the name, with extension, no path
     filename = Column(String(255))
-    # course version number (could be a string, ask client on format)
     version = Column(Float())
-    # When the Course was last updated
     updated = Column(DateTime)
     active = Column(Boolean)
     moodle_version = Column(String(255))
