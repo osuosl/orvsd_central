@@ -39,7 +39,7 @@ def create_admin_account(silent):
             admin_count = User.query.filter_by(role=admin_role).count()
         except ProgrammingError:
             # no database
-            print("\nPlease run `manage.py initdb` before adding admins to the database\n")
+            print("\nPlease run `manage.py init_db` before adding admins to the database\n")
             return
             
         print("There are currently %d admin accounts." % admin_count)
