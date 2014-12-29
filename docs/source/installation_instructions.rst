@@ -14,11 +14,9 @@ orvsd_central and run::
     
     pip install -r requirements.txt
 
-\2. Run the following command twice::
+\2. Run the following manage.py command before any others::
     
-    python manage.py initdb
-
-**Warning** It won't work the first time. This command has to be run twice.
+    python manage.py init_db
 
 A prompt for an admin account creation will show, choose any
 username, email, and password you wish.
