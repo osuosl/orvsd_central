@@ -198,7 +198,7 @@ class Site(Model):
     basepath         : The site's path on disk - (from siteinfo)
     jenkins_cron_job : Last run of jenkins cron job, if there is one
     location         : What machine the site is on, or is it in the cloud
-    api_key          : Undocumented - orvsd only displays this value
+    api_key          : Deprecated - orvsd only displays this value
     """
     __tablename__ = 'sites'
 
