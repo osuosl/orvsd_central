@@ -16,7 +16,7 @@ orvsd_central and run::
 
 \2. Run the following manage.py command before any others::
     
-    python manage.py init_db
+    python manage.py setup_db
 
 A prompt for an admin account creation will show, choose any
 username, email, and password you wish.
