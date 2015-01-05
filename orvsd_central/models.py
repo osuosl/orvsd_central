@@ -213,15 +213,12 @@ class Site(Model):
     basepath = Column(String(255))
     jenkins_cron_job = Column(DateTime)
     location = Column(String(255))
-    api_key = Column(String(40))
+    moodle_tokens = Column(String(2048))
 
     site_details = relationship("SiteDetail", backref=backref('sites'))
     courses = relationship("Course",
                            secondary='sites_courses',
                            backref='sites')
-
-    def generate_new_key(self):
-        self.api_key = hashlib.sha1(str(round(time.time() * 1000))).hexdigest()
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % \
@@ -242,7 +239,7 @@ class Site(Model):
                 'basepath': self.basepath,
                 'jenkins_cron_job': self.jenkins_cron_job,
                 'location': self.location,
-                'api_key': self.api_key}
+                'moodle_token': self.moodle_token}
 
 
 class SiteDetail(Model):

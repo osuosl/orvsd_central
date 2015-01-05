@@ -27,10 +27,12 @@ Options:
 - -t <IP Address> - server listening address
 - -p <Port> - Port Number to listen on
 
-gather
-------
+gather_tokens
+-------------
 
-Gathers Moodle Site course and usage details
+Gathers tokens from all moodle sites in ORVSD Central's database. The tokens
+are for services listed in the MOODLE_SERVICES configuration option. Each
+listed service must be the shortname of a plugin.
 
 Options: None
 

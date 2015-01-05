@@ -1,6 +1,17 @@
 Configuration Options
 =====================
 
+General Project Options
+-----------------------
+
+PROJECT_PATH
+
+- Project location used for migrations
+
+PROJECT_LOGFILE
+
+- Output file for the project's log statements
+
 Flask
 -----
 
@@ -50,36 +61,6 @@ CELERY_RESULT_DBURI
 
 - Celery result database lacation
 
-Database Server of Moodle Databases
------------------------------------
-
-SITEINFO_DATABASE_HOST
-
-- Host for the database server. An IP or domain name
-
-SITEINFO_DATABASE_USER
-
-- Username to use for connecting to SITEINFO_DATABASE_HOST
-
-SITEINFO_DATABASE_PASS
-
-- Password to use for connecting to SITEINFO_DATABASE_HOST
-
-Moodle Course Data
-------------------
-
-INSTALL_COURSE_FILE_PATH
-
-- Absolute path on the server where moodle courses are stored
-
-INSTALL_COURSE_WS_TOKEN
-
-- Moodle plugin token string
-
-INSTALL_COURSE_WS_FUNCTION
-
-- Function to call on the moodle site
-
 Google Auth
 -----------
 
@@ -94,3 +75,52 @@ GOOGLE_CLIENT_SECRET
 PROJECT_URI
 
 - Authentication callback uri
+
+Moodle Options (Services, Course locations, etc)
+------------------------------------------------
+
+MOODLE_SERVICES
+
+- List of services ORVSD_Central will utilize for operating with moodle sites
+
+INSTALL_COURSE_FILE_PATH
+
+- Absolute path on the server where moodle courses are stored
+
+INSTALL_COURSE_WS_TOKEN
+
+- Token used by the orvsd_installcourse service
+ - Deprication warning! - Moodle tokens will now be stored in the database
+
+INSTALL_COURSE_WS_FUNCTION
+
+- Function to call on the moodle site
+ - Deprication warning! - MOODLE_SERVICES replaces this
+
+INSTALL_COURSE_CATEGORY
+
+- Category assigned to an installed course
+
+INSTALL_COURSE_FIRSTNAME
+
+- Moodle site administrator account info
+
+INSTALL_COURSE_LASTNAME
+
+- Moodle site administrator account info
+
+INSTALL_COURSE_CITY
+
+- Moodle site administrator account info
+
+INSTALL_COURSE_EMAIL
+
+- Moodle site administrator account info
+
+INSTALL_COURSE_USERNAME
+
+- Moodle site administrator account info
+
+INSTALL_COURSE_PASS
+
+- Moodle site administrator account info

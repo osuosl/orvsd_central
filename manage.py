@@ -34,14 +34,19 @@ manager.add_option('-c', '--config', dest='config')
 
 
 @manager.command
-def gather():
+def gather_tokens():
     """
-    Runs the gather_siteinfo script to generate SiteDetails.
+    For all sites added to ORVSD_Central's database and all services listed
+    in the MOODLE_SERVICES config option, gather will gather all tokens for
+    each service of every site
     """
+
     with current_app.app_context():
-        from orvsd_central.util import gather_siteinfo
+        from orvsd_central.models import Site
+        from orvsd_central.util import gather_tokens
+
         g.db_session = create_db_session()
-        gather_siteinfo()
+        gather_tokens(Site.query.all())
 
 
 @manager.option('-d', "--data", help="CSV to import of Districts and Schools")
