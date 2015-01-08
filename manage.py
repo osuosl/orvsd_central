@@ -149,7 +149,8 @@ def setup_db():
 
         # Query list of existing tables
         tables = con.execute("show tables").fetchall()
-        if tables:
+        print("TABLES: {}", tables)
+        if 'districts' in tables:
             logging.info("Database already created, attempting a migration")
             command.upgrade(alembic_cfg, "head")
         else:
