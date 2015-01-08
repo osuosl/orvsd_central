@@ -149,14 +149,15 @@ def setup_db():
 
         # Query list of existing tables
         tables = con.execute("show tables").fetchall()
-        print("TABLES: {}", tables)
-        if 'districts' in tables:
-            logging.info("Database already created, attempting a migration")
+        if 'alembic_version' in tables:
+            # Latest version has been stamped or we have been upgrading
+            logging.info("Database: Migrating")
             command.upgrade(alembic_cfg, "head")
         else:
-            logging.info("Database to be initialized")
-            command.stamp(alembic_cfg, "head")
+            # The database needs to be initialized
+            logging.info("Database: Initializing")
             init_db()
+            command.stamp(alembic_cfg, "head")
 
 
 @manager.option('-n', '--nosetest', help="Specific tests for nose to run")
