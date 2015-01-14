@@ -239,7 +239,7 @@ class Site(Model):
                 'basepath': self.basepath,
                 'jenkins_cron_job': self.jenkins_cron_job,
                 'location': self.location,
-                'moodle_token': self.moodle_token}
+                'moodle_tokens': self.moodle_tokens}
 
 
 class SiteDetail(Model):
