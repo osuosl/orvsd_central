@@ -58,3 +58,11 @@ General Workflow Guidelines
     F. Implement the approved design
     G. Review implementation
     H. Review code before anything gets merged
+
+Workflow for Handling Dependency Upgrades
+-----------------------------------------
+
+1. Understand which version of a package you want to use (e.g. flask 1.0)
+2. Modify that one line in requirements.txt (e.g. Flask==1.0)
+3. pip inntall -r requirements.txt
+4. repin new dependencies as required
