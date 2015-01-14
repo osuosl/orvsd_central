@@ -239,6 +239,23 @@ def gather_siteinfo(site, from_when=7):
             # Log any nonsense that moodle may through at us
             logging.error("Moodle did not return json: %s" % req.text)
 
+        site_details = SiteDetail(
+            site_id=site.id,
+            courses=gathered_info.get('courses',''),
+            siteversion=gathered_info.get('siteversion',''),
+            siterelease=gathered_info.get('siterelease',''),
+            adminemail=gathered_info.get('adminemail',''),
+            totalusers=gathered_info.get('totalusers',''),
+            adminusers=gathered_info.get('adminusers',''),
+            teachers=gathered_info.get('teachers',''),
+            activeusers=gathered_info.get('activeusers',''),
+            totalcourses=gathered_info.get('totalcourses',''),
+            timemodified=datetime.now(),
+        )
+
+        g.db_session.add(site_details)
+        g.db_session.commit()
+
 
 def gather_tokens(sites=[], service_names=[]):
     """
