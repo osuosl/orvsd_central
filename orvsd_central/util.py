@@ -201,25 +201,43 @@ def district_details(schools, active):
             'teachers': teacher_count,
             'users': user_count}
 
-def gather_siteinfo(site):
+def gather_siteinfo(site, from_when=7):
     """
     Using the siteinfo webservice plugin for moodle, gather the siteinfo data
     about a site
     """
 
+    # Verify we have a site object
     if not hasattr(site, 'moodle_tokens'):
-        logging.warn("Is this a site?")
+        logging.error("Is this a site?")
         return
 
-    url = "http://%s/webservice/rest/server.php" % site.baseurl
-    req = requests.get(
-        url,
-        data={
-            'wstoken': json.loads(site.moodle_tokens)['orvsd_siteinfo'],
-            'wsfunction': 'orvsd_siteinfo',
-            'moodlewsrestformat': 'json'
-        }
-    )
+    # Attempt to pull the tokens out of the site object
+    try:
+        moodle_tokens = json.loads(site.moodle_tokens)
+    except ValueError:
+        logging.error("Please run gather tokens first")
+
+
+    # If we have the siteinfo token, lets grab the data
+    if moodle_tokens.get('orvsd_siteinfo'):
+        # Make the request
+        req = requests.post(
+            url="http://%s/webservice/rest/server.php" % site.baseurl,
+            data={
+                'wstoken': moodle_tokens['orvsd_siteinfo'],
+                'wsfunction': 'local_orvsd_siteinfo_siteinfo',
+                'moodlewsrestformat': 'json',
+                'datetime': str(from_when)
+            }
+        )
+
+        try:
+            # Add this data to the site details table
+            gathered_info = req.json()
+        except ValueError:
+            # Log any nonsense that moodle may through at us
+            logging.error("Moodle did not return json: %s" % req.text)
 
 
 def gather_tokens(sites=[], service_names=[]):
