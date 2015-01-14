@@ -21,6 +21,7 @@ def setup_app(config=None):
 manager = Manager(setup_app)
 manager.add_option('-c', '--config', dest='config')
 
+
 @manager.command
 def gather_siteinfo():
     """
@@ -38,6 +39,7 @@ def gather_siteinfo():
 
         for site in Site.query.all():
             gather_siteinfo(site)
+
 
 @manager.command
 def gather_tokens():
@@ -141,7 +143,6 @@ def setup_db():
 
     from alembic.config import Config
     from alembic import command
-
 
     with current_app.app_context():
         # Alembic config used by migration or stamping

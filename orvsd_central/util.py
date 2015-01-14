@@ -15,7 +15,6 @@ from celery import Celery
 from flask import current_app, flash, g, redirect, render_template
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
-from sqlalchemy import create_engine
 import requests
 
 from orvsd_central import constants
@@ -201,6 +200,7 @@ def district_details(schools, active):
             'teachers': teacher_count,
             'users': user_count}
 
+
 def gather_siteinfo(site, from_when=7):
     """
     Using the siteinfo webservice plugin for moodle, gather the siteinfo data
@@ -230,7 +230,6 @@ def gather_siteinfo(site, from_when=7):
         )
         return
 
-
     # If we have the siteinfo token, lets grab the data
     if moodle_tokens.get('orvsd_siteinfo'):
         # Make the request
@@ -249,7 +248,7 @@ def gather_siteinfo(site, from_when=7):
             gathered_info = req.json()
 
             # Check for errors from moodle
-            if gathered_info.get('error',None):
+            if gathered_info.get('error', None):
                 logging.error(
                     "'%s': Moodle - %s" % (site.name, gathered_info['error'])
                 )
@@ -270,15 +269,15 @@ def gather_siteinfo(site, from_when=7):
 
         site_details = SiteDetail(
             site_id=site.id,
-            courses=gathered_info.get('courses',''),
-            siteversion=gathered_info.get('siteversion',''),
-            siterelease=gathered_info.get('siterelease',''),
-            adminemail=gathered_info.get('adminemail',''),
-            totalusers=gathered_info.get('totalusers',''),
-            adminusers=gathered_info.get('adminusers',''),
-            teachers=gathered_info.get('teachers',''),
-            activeusers=gathered_info.get('activeusers',''),
-            totalcourses=gathered_info.get('totalcourses',''),
+            courses=gathered_info.get('courses', ''),
+            siteversion=gathered_info.get('siteversion', ''),
+            siterelease=gathered_info.get('siterelease', ''),
+            adminemail=gathered_info.get('adminemail', ''),
+            totalusers=gathered_info.get('totalusers', ''),
+            adminusers=gathered_info.get('adminusers', ''),
+            teachers=gathered_info.get('teachers', ''),
+            activeusers=gathered_info.get('activeusers', ''),
+            totalcourses=gathered_info.get('totalcourses', ''),
             timemodified=datetime.now(),
         )
 
