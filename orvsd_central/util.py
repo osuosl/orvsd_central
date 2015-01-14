@@ -215,8 +215,20 @@ def gather_siteinfo(site, from_when=7):
     # Attempt to pull the tokens out of the site object
     try:
         moodle_tokens = json.loads(site.moodle_tokens)
+        # If the orvsd_siteinfo token isn't available, we can't do anything
+        if not moodle_tokens.get('orvsd_siteinfo', None):
+            logging.error(
+                "'%s': Please gather tokens before gathering iteinfo" %
+                site.name
+            )
+            return
     except ValueError:
-        logging.error("Please run gather tokens first")
+        # This *should* only happen if the admin forgot to run migrations
+        logging.error(
+            "'%s': Unable to parse json from site.moodle_tokens. "
+            "Perhaps a migration was skipped?" % site.name
+        )
+        return
 
 
     # If we have the siteinfo token, lets grab the data
@@ -236,8 +248,18 @@ def gather_siteinfo(site, from_when=7):
             # Add this data to the site details table
             gathered_info = req.json()
         except ValueError:
-            # Log any nonsense that moodle may through at us
-            logging.error("Moodle did not return json: %s" % req.text)
+            # REST may be disabled
+            if req.status_code == 403:
+                logging.error(
+                    "'%s': 403 Returned, is the REST service enabled?" %
+                    site.name
+                )
+            # Response given by the site
+            logging.error(
+                "'%s': Moodle did not return json: '%s'" %
+                (site.name, req.text)
+            )
+            return
 
         site_details = SiteDetail(
             site_id=site.id,
