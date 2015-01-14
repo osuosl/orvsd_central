@@ -21,6 +21,23 @@ def setup_app(config=None):
 manager = Manager(setup_app)
 manager.add_option('-c', '--config', dest='config')
 
+@manager.command
+def gather_siteinfo():
+    """
+    Gather SiteInfo
+
+    This is a nice management wrapper to the util method that grabs moodle
+    sitedata from the orvsd_siteinfo webservice plugin for all sites in
+    orvsd_central's database
+    """
+
+    with current_app.app_context():
+        from orvsd_central.models import Site
+        from orvsd_central.util import gather_siteinfo
+        g.db_session = create_db_session()
+
+        for site in Site.query.all():
+            gather_siteinfo(site)
 
 @manager.command
 def gather_tokens():
