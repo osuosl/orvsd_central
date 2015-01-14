@@ -247,6 +247,13 @@ def gather_siteinfo(site, from_when=7):
         try:
             # Add this data to the site details table
             gathered_info = req.json()
+
+            # Check for errors from moodle
+            if gathered_info.get('error',None):
+                logging.error(
+                    "'%s': Moodle - %s" % (site.name, gathered_info['error'])
+                )
+                return
         except ValueError:
             # REST may be disabled
             if req.status_code == 403:
