@@ -149,7 +149,8 @@ def setup_db():
 
         # Query list of existing tables
         tables = con.execute("show tables").fetchall()
-        if 'alembic_version' in tables:
+        alembic_table = ('alembic_version',)
+        if alembic_table in tables:
             # Latest version has been stamped or we have been upgrading
             logging.info("Database: Migrating")
             command.upgrade(alembic_cfg, "head")
