@@ -10,6 +10,7 @@ Create Date: 2014-12-08 18:45:00.187657
 revision = '443742b3e98c'
 down_revision = '17f527a3ed3a'
 
+from collections import defaultdict
 import json
 
 from alembic import op
@@ -34,26 +35,33 @@ def upgrade_engine1():
     # Start a session for data migration
     session = Session(bind=op.get_bind())
 
-    # Alter the column name
-    op.alter_column('sites', column_name='api_key', new_column_name='moodle_tokens')
+    # site.id: tokens as {}
+    site_tokens = defaultdict(dict)
 
-    # For each site, convert the field to json, and re-add the token
-    # if it had one
+    # Gather the installcourse token for each site, if one exists
     for site in session.query(Site):
-        # Token object being dumped to the moodle_tokens column
-        tokens = {}
         # Current token (if one exists)
-        token = site.moodle_tokens
+        orvsd_installcourse_token = site.api_key
 
-        # Given that moodle_tokens is not '' - add the token for the
-        # named service
-        if token:
-            tokens['orvsd_installcourse'] = token
+        # If a token existed, add it to the dict
+        if orvsd_installcourse_token:
+            site_tokens[site.id]['orvsd_installcourse'] = token
 
-        # Update the column
-        site.moodle_tokens = json.dumps(tokens)
+    # Alter the column name and size
+    op.alter_column(
+        'sites',
+        column_name='api_key',
+        new_column_name='moodle_tokens',
+        existing_type=String(40),
+        type_=String(2048)
+    )
 
-    # Commit chages to the database
+    # for each site, either dump an empty dict (yay default dict) or dump
+    # json with the orvsd_installcourse token
+    for site in session.query(Site):
+        site.moodle_tokens = json.dump(site_tokens[site.id])
+
+    # Commit all to the database
     session.commit()
 
 
@@ -61,17 +69,27 @@ def downgrade_engine1():
     # Start a session for data migration
     session = Session(bind=op.get_bind())
 
-    # Alter the column name
-    op.alter_column('sites', column_name='moodle_tokens', new_column_name='api_key')
+    # A mapping of site_id to orvsd_installcourse token
+    site_tokens = defaultdict(str)
 
-    # For each site, get the orvsd_installcourse token, if there is one, and
-    # replace the existing data with it, make it an empty string
+    # Collect any tokens
     for site in session.query(Site):
-        # orvsd_installcourse token (if one exists)
-        token = site.moodle_tokens.get('orvsd_installcourse', None)
+        current_tokens = json.loads(site.moodle_tokens)
+        site_tokens[site.id] = current_tokens.get('orvsd_installcourse', '')
 
+    # Now we have a backup of the tokens to keep, alter the column
+    op.alter_column(
+        'sites',
+        column_name='moodle_tokens',
+        new_column_name='api_key',
+        existing_type=String(2048),
+        type_=String(40)
+    )
+
+    # Apply the tokens to the downgraded column
+    for site in session.query(Site):
         # Update the column
-        site.moodle_token = token or ''
+        site.api_key = site_tokens[site.id]
 
     # Commit chages to the database
     session.commit()
