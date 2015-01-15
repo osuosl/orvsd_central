@@ -15,6 +15,7 @@ import json
 
 from alembic import op
 from sqlalchemy.orm import Session
+from sqlalchemy import String
 import sqlalchemy as sa
 
 from orvsd_central.models import Site
@@ -32,20 +33,23 @@ def downgrade(engine_name):
 
 
 def upgrade_engine1():
-    # Start a session for data migration
-    session = Session(bind=op.get_bind())
+    # Get the connection to do some non-mapped queries
+    connection = op.get_bind()
 
     # site.id: tokens as {}
     site_tokens = defaultdict(dict)
 
-    # Gather the installcourse token for each site, if one exists
-    for site in session.query(Site):
-        # Current token (if one exists)
-        orvsd_installcourse_token = site.api_key
+    # Manual sites query
+    sql = "SELECT id,api_key FROM sites;"
 
+    # Execute the query
+    results = connection.execute(sql)
+
+    # Gather the installcourse token for each site, if one exists
+    for site in results:
         # If a token existed, add it to the dict
-        if orvsd_installcourse_token:
-            site_tokens[site.id]['orvsd_installcourse'] = token
+        if site.api_key:
+            site_tokens[site.id]['orvsd_installcourse'] = site.api_key
 
     # Alter the column name and size
     op.alter_column(
@@ -56,24 +60,39 @@ def upgrade_engine1():
         type_=String(2048)
     )
 
+    # Session for commiting altered data
+    session = Session(bind=op.get_bind())
+
+    # Commit the alter column
+    session.commit()
+
     # for each site, either dump an empty dict (yay default dict) or dump
     # json with the orvsd_installcourse token
     for site in session.query(Site):
-        site.moodle_tokens = json.dump(site_tokens[site.id])
+        site.moodle_tokens = json.dumps(site_tokens[site.id])
 
     # Commit all to the database
     session.commit()
 
 
 def downgrade_engine1():
-    # Start a session for data migration
-    session = Session(bind=op.get_bind())
+    # Get the connection to do some non-mapped queries
+    connection = op.get_bind()
+
+    # site.id: tokens as {}
+    site_tokens = defaultdict(dict)
+
+    # Manual sites query
+    sql = "SELECT id,moodle_tokens FROM sites;"
+
+    # Execute the query
+    results = connection.execute(sql)
 
     # A mapping of site_id to orvsd_installcourse token
     site_tokens = defaultdict(str)
 
     # Collect any tokens
-    for site in session.query(Site):
+    for site in results:
         current_tokens = json.loads(site.moodle_tokens)
         site_tokens[site.id] = current_tokens.get('orvsd_installcourse', '')
 
@@ -85,6 +104,12 @@ def downgrade_engine1():
         existing_type=String(2048),
         type_=String(40)
     )
+
+    # Start a session for data migration
+    session = Session(bind=op.get_bind())
+
+    # Commit the altered column
+    session.commit()
 
     # Apply the tokens to the downgraded column
     for site in session.query(Site):
