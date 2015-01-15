@@ -35,7 +35,7 @@ def upgrade_engine1():
     session = Session(bind=op.get_bind())
 
     # Alter the column name
-    op.alter_column('sites', column_name='moodle_token', new_column_name='moodle_tokens')
+    op.alter_column('sites', column_name='api_key', new_column_name='moodle_tokens')
 
     # For each site, convert the field to json, and re-add the token
     # if it had one
@@ -62,7 +62,7 @@ def downgrade_engine1():
     session = Session(bind=op.get_bind())
 
     # Alter the column name
-    op.alter_column('sites', column_name='moodle_tokens', new_column_name='moodle_token')
+    op.alter_column('sites', column_name='moodle_tokens', new_column_name='api_key')
 
     # For each site, get the orvsd_installcourse token, if there is one, and
     # replace the existing data with it, make it an empty string
