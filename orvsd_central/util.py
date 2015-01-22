@@ -533,6 +533,45 @@ def get_schools(dist_id, active):
 
     return district_info
 
+@celery.task(name='tasks.update_course_list')
+def update_courselist_task():
+        num_courses = 0
+        base_path = current_app.config.get('INSTALL_COURSE_FILE_PATH', None)
+        mdl_files = []
+
+
+        # Get a list of all moodle course files
+        # for source in os.listdir(base_path):
+        for root, sub_folders, files in os.walk(base_path):
+            for file in files:
+                full_file_path = os.path.join(root, file)
+                if os.path.isfile(full_file_path):
+                    mdl_files.append(full_file_path)
+
+        filenames = []
+        sources = []
+        for filename in mdl_files:
+            source, path = get_path_and_source(base_path, filename)
+            sources.append(source)
+            filenames.append(path)
+
+        details = g.db_session.query(CourseDetail) \
+            .join(CourseDetail.course) \
+            .filter(CourseDetail.filename.in_(
+                    filenames)).all()
+
+        for detail in details:
+            if detail.filename in filenames:
+                sources.pop(filenames.index(detail.filename))
+                filenames.pop(filenames.index(detail.filename))
+
+        for source, file_path in zip(sources, filenames):
+            create_course_from_moodle_backup(base_path, source, file_path)
+            num_courses += 1
+
+        if num_courses > 0:
+            logging.info("Added %s new courses!" % num_courses)
+
 
 @celery.task(name='tasks.install_course')
 def install_course_to_site(course_detail_id, install_url):
