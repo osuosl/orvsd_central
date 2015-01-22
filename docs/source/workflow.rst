@@ -8,21 +8,21 @@ General Workflow Guidelines
 
 1. Create Issues
 
-    * When an issue arises, create a GitHub issue to fix it. 
+    * When an issue arises, create a GitHub issue to fix it.
     * When a feature needs to be developed, create an issue for that as well.
     * Do not work on anything that will eventually be pushed to production,
       unless an issue exists for that task.
 
 2. Make Branches for each issue you work on
-    
+
     * Unless expressly specified, one should always branch from `develop` on
       ORVSD Central.
     * When creating a new branch in the orvsd_central repo please follow `these
       guidelines <./branching.html>`_. [descriptive_name-<issue #>]
-    * Refer to `these docs <./plugins.html>`_ for specific branching syntax with 
+    * Refer to `these docs <./plugins.html>`_ for specific branching syntax with
       plugins. `[<moodle version>/<feature or bug>/<issue #>_optional_descriptive_name]`
-    * Only after you have created an issue on either GitHub or Code.O.O for 
-      ORVSD Central or the Moodle Plugins respectively work can begin on that 
+    * Only after you have created an issue on either GitHub or Code.O.O for
+      ORVSD Central or the Moodle Plugins respectively work can begin on that
       issue.
 
 3. Assign individuals to each issue
@@ -36,11 +36,11 @@ General Workflow Guidelines
     * Contact whoever you have assigned to the issue in the dev irc channel so
       they know they have been assigned said issue; otherwise it may never get
       done and nobody wants that to happen.
-      
+
 
 4. Review regularly
 
-    * Projects should be reviewed from the planning stages onward 
+    * Projects should be reviewed from the planning stages onward
     * Before beginning a task be sure to have your plan reviewed by the one
       of your peers.
     * Throughout your development make sure your progress and plans are being
@@ -58,3 +58,11 @@ General Workflow Guidelines
     F. Implement the approved design
     G. Review implementation
     H. Review code before anything gets merged
+
+Workflow for Handling Dependency Upgrades
+-----------------------------------------
+
+1. Understand which version of a package you want to use (e.g. flask 1.0)
+2. Modify that one line in requirements.txt (e.g. Flask==1.0)
+3. pip inntall -r requirements.txt
+4. repin new dependencies as required
