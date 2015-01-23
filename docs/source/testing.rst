@@ -3,7 +3,7 @@ How to run automated tests
 
 Use the following commands
 
-.. code-block:: bash
+.. code-block:: text
 
   source /opt/orvsd-virtualenv/bin/activate
   cd <path/to/orvsd/trunk>
@@ -13,7 +13,7 @@ Use the following commands
 
 Example:
 
-.. code-block:: bash
+.. code-block:: text
 
   source /opt/orvsd-virtualenv/bin/activate
   cd /var/www/orvsd_central
