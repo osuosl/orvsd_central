@@ -17,8 +17,18 @@ class TestBase(unittest.TestCase):
         self.db_session and self.app respectively.
         """
 
+        # Config modifications for testing
+        db = 'sqlite:///:memory:'
+        cfg = {
+            'SQLALCHEMY_DATABASE_URI': db,
+            'CELERY_BROKER_URL': 'sqla+' + db,
+            'CELERY_RESULT_DBURI': db,
+            'TESTING': True,
+            'DEBUG': True
+        }
+
         # Create the app
-        self.app = orvsd_central.create_app()
+        self.app = orvsd_central.create_app(config_changes=cfg)
         self.app.testing = True
 
         with self.app.app_context():

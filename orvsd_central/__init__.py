@@ -3,7 +3,7 @@ from flask import Flask, current_app, g
 from orvsd_central.database import create_db_session
 
 
-def create_app(config='config.default', testing=False):
+def create_app(config='config.default', config_changes=None):
     """
     Creates an instance of our application.
 
@@ -14,9 +14,12 @@ def create_app(config='config.default', testing=False):
 
     app = Flask(__name__)
     app.config.from_object(config)
+
+    if config_changes:
+        app.config.update(config_changes)
+
     with app.app_context():
-        if not testing:
-            g.db_session = create_db_session()
+        g.db_session = create_db_session()
         attach_blueprints()
         return app
 
