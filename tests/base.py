@@ -1,15 +1,25 @@
 import unittest
 
-from flask import g
+from contextlib import contextmanager
+from flask import appcontext_pushed, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import orvsd_central
 from orvsd_central import attach_blueprints
+from orvsd_central.database import create_db_session
 from orvsd_central.models import Model
 
 
 class TestBase(unittest.TestCase):
+
+    @contextmanager
+    def database_set(self, app):
+        def handler(sender, **kwargs):
+            g.db_session = create_db_session()
+        with appcontext_pushed.connected_to(handler, app):
+            yield
+            Model.metadata.drop_all(bind=g.db_session.get_bind())
 
     def setUp(self):
         """
