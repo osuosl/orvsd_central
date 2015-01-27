@@ -12,21 +12,21 @@ from orvsd_central.models import Model
 def db_context(f):
     @wraps(f)
     def decorated(inst, *args, **kwargs):
-        with inst.database_set(inst.app):
+        with database_set(inst.app):
             with inst.app.app_context():
                 f(inst, *args, **kwargs)
     return decorated
 
 
-class TestBase(unittest.TestCase):
+@contextmanager
+def database_set(app):
+    def handler(sender, **kwargs):
+        g.db_session = create_db_session()
+    with appcontext_pushed.connected_to(handler, app):
+        yield
 
-    @contextmanager
-    def database_set(self, app):
-        def handler(sender, **kwargs):
-            g.db_session = create_db_session()
-        with appcontext_pushed.connected_to(handler, app):
-            yield
-            Model.metadata.drop_all(bind=g.db_session.get_bind())
+
+class TestBase(unittest.TestCase):
 
     def setUp(self):
         """
