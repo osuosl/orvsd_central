@@ -13,9 +13,12 @@ from orvsd_central import attach_blueprints, create_app
 from orvsd_central.database import (create_db_session, create_admin_account,
                                     init_db)
 
+def setup_app(config=None):
+    return create_app(config) if config else create_app()
+
 
 # Setup our manager
-manager = Manager(create_app)
+manager = Manager(setup_app)
 manager.add_option('-c', '--config', dest='config')
 
 
