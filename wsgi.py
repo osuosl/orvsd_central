@@ -1,3 +1,3 @@
-from manage import setup_app
+from orvsd_central import create_app
 
-app = setup_app()
+app = create_app()

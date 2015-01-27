@@ -13,20 +13,9 @@ from orvsd_central import attach_blueprints, create_app
 from orvsd_central.database import (create_db_session, create_admin_account,
                                     init_db)
 
-
 def setup_app(config=None):
-    """
-    Creates an instance of our application.
+    return create_app(config) if config else create_app()
 
-    We needed to create the app in this way so we could set different
-    configurations within the same app. (hint: not using the same database
-    when testing)
-    """
-    app = create_app(config) if config else create_app()
-    with app.app_context():
-        g.db_session = create_db_session()
-        attach_blueprints()
-        return app
 
 # Setup our manager
 manager = Manager(setup_app)
