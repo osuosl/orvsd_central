@@ -1,3 +1,4 @@
+from functools import wraps
 import unittest
 
 from contextlib import contextmanager
@@ -6,6 +7,15 @@ from flask import appcontext_pushed, g
 import orvsd_central
 from orvsd_central.database import create_db_session
 from orvsd_central.models import Model
+
+
+def db_context(f):
+    @wraps(f)
+    def decorated(inst, *args, **kwargs):
+        with inst.database_set(inst.app):
+            with inst.app.app_context():
+                f(inst, *args, **kwargs)
+    return decorated
 
 
 class TestBase(unittest.TestCase):
