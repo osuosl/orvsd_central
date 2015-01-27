@@ -1,4 +1,4 @@
-How to run automated tests
+How to Run Automated Tests
 ============
 
 Use the following commands
