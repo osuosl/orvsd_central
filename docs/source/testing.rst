@@ -33,9 +33,9 @@ An example
      def test_valid_email(self):
          """
          We *must* import from within an app context and each test
-         method happens to be in a context thanks to setUp, but this
-         does mean imports must happen at the method level rather
-         than at the module level
+         method happens to be in a context thanks to setUp. This means
+         imports must happen at the method level rather than at the
+         module level
          """
 
          from orvsd_central.util import is_valid_email
@@ -47,8 +47,8 @@ An example
 
      def test_invalid_email(self):
          """
-         The downside to context aware tests is that now, again we need
-         to import is_valid_email
+         The downside to context aware tests is that the method we are testing
+         must be imported again
          """
 
          from orvsd_central.util import is_valid_email
