@@ -21,7 +21,9 @@ def db_context(f):
 @contextmanager
 def database_set(app):
     def handler(sender, **kwargs):
+        from orvsd_central.database import init_db
         g.db_session = create_db_session()
+        init_db()
     with appcontext_pushed.connected_to(handler, app):
         yield
 
