@@ -30,7 +30,7 @@ def database_set(app):
 
 class TestBase(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self, test_cfg_changes=None):
         """
         Create a test database in memory and a test app to be referenced as
         self.db_session and self.app respectively.
@@ -45,6 +45,10 @@ class TestBase(unittest.TestCase):
             'TESTING': True,
             'DEBUG': True
         }
+
+        # Update the config with test-specific configuration changes
+        if test_cfg_changes:
+            cfg.update(test_cfg_changes)
 
         # Create the app
         self.app = orvsd_central.create_app(config_changes=cfg)
