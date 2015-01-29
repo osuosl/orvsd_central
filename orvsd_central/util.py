@@ -238,7 +238,7 @@ def gather_siteinfo(site, from_when=7):
 
         # Make the request
         req = requests.post(
-            url=site_url,
+            url="%s/webservice/rest/server.php" % site_url,
             data={
                 'wstoken': moodle_tokens['orvsd_siteinfo'],
                 'wsfunction': 'local_orvsd_siteinfo_siteinfo',
