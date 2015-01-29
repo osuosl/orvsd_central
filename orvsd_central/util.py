@@ -282,7 +282,7 @@ def gather_siteinfo(site, from_when=7):
             teachers=gathered_info.get('teachers', ''),
             activeusers=gathered_info.get('activeusers', ''),
             totalcourses=gathered_info.get('totalcourses', ''),
-            timemodified=gathered_info.get('timemodified', datetime.now())
+            timemodified=datetime.now()
         )
 
         g.db_session.add(site_details)
