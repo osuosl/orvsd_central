@@ -232,9 +232,13 @@ def gather_siteinfo(site, from_when=7):
 
     # If we have the siteinfo token, lets grab the data
     if moodle_tokens.get('orvsd_siteinfo'):
+
+        site_url = ("http://%s" % site.baseurl
+            if not site.baseurl.startswith("http") else site.baseurl)
+
         # Make the request
         req = requests.post(
-            url="http://%s/webservice/rest/server.php" % site.baseurl,
+            url=site_url,
             data={
                 'wstoken': moodle_tokens['orvsd_siteinfo'],
                 'wsfunction': 'local_orvsd_siteinfo_siteinfo',
