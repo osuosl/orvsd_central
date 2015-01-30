@@ -262,11 +262,11 @@ def gather_siteinfo(site, from_when=7):
             siteversion=gathered_info.get('siteversion', ''),
             siterelease=gathered_info.get('siterelease', ''),
             adminlist=adminlist,
-            totalusers=gathered_info.get('totalusers', ''),
-            adminusers=gathered_info.get('adminusers', ''),
-            teachers=gathered_info.get('teachers', ''),
-            activeusers=gathered_info.get('activeusers', ''),
-            totalcourses=gathered_info.get('totalcourses', ''),
+            totalusers=gathered_info.get('totalusers', 0),
+            adminusers=gathered_info.get('adminusers', 0),
+            teachers=gathered_info.get('teachers', 0),
+            activeusers=gathered_info.get('activeusers', 0),
+            totalcourses=gathered_info.get('totalcourses', 0),
             timemodified=datetime.now()
         )
 
