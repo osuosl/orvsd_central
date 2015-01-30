@@ -321,7 +321,7 @@ class SiteDetail(Model):
     courses = Column(Text())
     siteversion = Column(String(255))
     siterelease = Column(String(255))
-    adminlist = Column(String(4096))
+    adminlist = Column(Text())
     totalusers = Column(Integer)
     adminusers = Column(Integer)
     teachers = Column(Integer)
