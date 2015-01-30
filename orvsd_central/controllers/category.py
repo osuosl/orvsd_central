@@ -280,13 +280,13 @@ def view_schools(id):
                               .desc()) \
                     .first()
 
-        if site_detail and site_detail.courses:
-                site_detail.adminlist = site_detail.adminlist or None
-                # Filter courses to display based on num of users.
-                site_detail.courses = filter(
-                    lambda x: x['enrolled'] > min_users,
-                    json.loads(site_detail.courses)
-                )
+                if site_detail and site_detail.courses:
+                    site_detail.adminlist = json.loads(site_detail.adminlist)
+                    # Filter courses to display based on num of users.
+                    site_detail.courses = filter(
+                        lambda x: x['enrolled'] > min_users,
+                        json.loads(site_detail.courses)
+                    )
 
                 moodle_sitedetails.append(site_detail)
 
@@ -302,7 +302,7 @@ def view_schools(id):
                     .first()
 
                 if site_detail:
-                    site_detail.adminlist = site_detail.adminlist or None
+                    site_detail.adminlist = json.loads(site_detail.adminlist)
 
                     drupal_sitedetails.append(site_detail)
 
