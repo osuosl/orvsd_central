@@ -281,8 +281,7 @@ def view_schools(id):
                     .first()
 
         if site_detail and site_detail.courses:
-                # adminemail usually defaults to '', rather than None.
-                site_detail.adminemail = site_detail.adminemail or None
+                site_detail.adminlist = site_detail.adminlist or None
                 # Filter courses to display based on num of users.
                 site_detail.courses = filter(
                     lambda x: x['enrolled'] > min_users,
@@ -303,7 +302,7 @@ def view_schools(id):
                     .first()
 
                 if site_detail:
-                    site_detail.adminemail = site_detail.adminemail or None
+                    site_detail.adminlist = site_detail.adminlist or None
 
                     drupal_sitedetails.append(site_detail)
 
