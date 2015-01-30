@@ -275,10 +275,21 @@ class SiteDetail(Model):
     timemodified = Column(DateTime)
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s')>" % \
-               (self.siteversion, self.siterelease, self.adminemail,
-                self.totalusers, self.adminusers, self.teachers,
-                self.activeusers, self.totalcourses, self.timemodified)
+        return ("<Site('%s','%s','%s','%s','%s',"
+                "'%s','%s','%s','%s','%s','%s')>" % (
+                   self.site_id,
+                   self.courses,
+                   self.siteversion,
+                   self.siterelease,
+                   self.adminemail,
+                   self.totalusers,
+                   self.adminusers,
+                   self.teachers,
+                   self.activeusers,
+                   self.totalcourses,
+                   self.timemodified
+                )
+        )
 
     def serialize(self):
         return {'id': self.id,

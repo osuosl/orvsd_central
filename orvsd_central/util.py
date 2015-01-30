@@ -15,7 +15,6 @@ from celery import Celery
 from flask import current_app, flash, g, redirect, render_template
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
-from sqlalchemy import create_engine
 import requests
 
 from orvsd_central import constants
@@ -200,6 +199,94 @@ def district_details(schools, active):
     return {'admins': admin_count,
             'teachers': teacher_count,
             'users': user_count}
+
+
+def gather_siteinfo(site, from_when=7):
+    """
+    Using the siteinfo webservice plugin for moodle, gather the siteinfo data
+    about a site
+    """
+
+    # Verify we have a site object
+    if not hasattr(site, 'moodle_tokens'):
+        logging.error("Is this a site?")
+        return
+
+    # Attempt to pull the tokens out of the site object
+    try:
+        moodle_tokens = json.loads(site.moodle_tokens)
+        # If the orvsd_siteinfo token isn't available, we can't do anything
+        if not moodle_tokens.get('orvsd_siteinfo', None):
+            logging.error(
+                "'%s': Please gather tokens before gathering iteinfo" %
+                site.name
+            )
+            return
+    except ValueError:
+        # This *should* only happen if the admin forgot to run migrations
+        logging.error(
+            "'%s': Unable to parse json from site.moodle_tokens. "
+            "Perhaps a migration was skipped?" % site.name
+        )
+        return
+
+    # If we have the siteinfo token, lets grab the data
+    if moodle_tokens.get('orvsd_siteinfo'):
+
+        site_url = ("http://%s" % site.baseurl
+            if not site.baseurl.startswith("http") else site.baseurl)
+
+        # Make the request
+        req = requests.post(
+            url="%s/webservice/rest/server.php" % site_url,
+            data={
+                'wstoken': moodle_tokens['orvsd_siteinfo'],
+                'wsfunction': 'local_orvsd_siteinfo_siteinfo',
+                'moodlewsrestformat': 'json',
+                'datetime': str(from_when)
+            }
+        )
+
+        try:
+            # Add this data to the site details table
+            gathered_info = req.json()
+
+            # Check for errors from moodle
+            if gathered_info.get('error', None):
+                logging.error(
+                    "'%s': Moodle - %s" % (site.name, gathered_info['error'])
+                )
+                return
+        except ValueError:
+            # REST may be disabled
+            if req.status_code == 403:
+                logging.error(
+                    "'%s': 403 Returned, is the REST service enabled?" %
+                    site.name
+                )
+            # Response given by the site
+            logging.error(
+                "'%s': Moodle did not return json: '%s'" %
+                (site.name, req.text)
+            )
+            return
+
+        site_details = SiteDetail(
+            site_id=site.id,
+            courses=gathered_info.get('courses', ''),
+            siteversion=gathered_info.get('siteversion', ''),
+            siterelease=gathered_info.get('siterelease', ''),
+            adminemail=gathered_info.get('adminemail', ''),
+            totalusers=gathered_info.get('totalusers', ''),
+            adminusers=gathered_info.get('adminusers', ''),
+            teachers=gathered_info.get('teachers', ''),
+            activeusers=gathered_info.get('activeusers', ''),
+            totalcourses=gathered_info.get('totalcourses', ''),
+            timemodified=datetime.now()
+        )
+
+        g.db_session.add(site_details)
+        g.db_session.commit()
 
 
 def gather_tokens(sites=[], service_names=[]):

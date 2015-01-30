@@ -23,6 +23,25 @@ manager.add_option('-c', '--config', dest='config')
 
 
 @manager.command
+def gather_siteinfo():
+    """
+    Gather SiteInfo
+
+    This is a nice management wrapper to the util method that grabs moodle
+    sitedata from the orvsd_siteinfo webservice plugin for all sites in
+    orvsd_central's database
+    """
+
+    with current_app.app_context():
+        from orvsd_central.models import Site
+        from orvsd_central.util import gather_siteinfo
+        g.db_session = create_db_session()
+
+        for site in Site.query.all():
+            gather_siteinfo(site)
+
+
+@manager.command
 def gather_tokens():
     """
     For all sites added to ORVSD_Central's database and all services listed
@@ -124,7 +143,6 @@ def setup_db():
 
     from alembic.config import Config
     from alembic import command
-
 
     with current_app.app_context():
         # Alembic config used by migration or stamping
