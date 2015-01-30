@@ -253,12 +253,15 @@ def gather_siteinfo(site, from_when=7):
             )
             return
 
+        # handle the adminlist
+        adminlist = json.dumps(gathered_info.get('adminlist', ''))
+
         site_details = SiteDetail(
             site_id=site.id,
             courses=gathered_info.get('courses', ''),
             siteversion=gathered_info.get('siteversion', ''),
             siterelease=gathered_info.get('siterelease', ''),
-            adminemail=gathered_info.get('adminemail', ''),
+            adminlist=adminlist,
             totalusers=gathered_info.get('totalusers', ''),
             adminusers=gathered_info.get('adminusers', ''),
             teachers=gathered_info.get('teachers', ''),
