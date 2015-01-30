@@ -37,7 +37,7 @@ $(function() {
                     table += "<tr>\
                         <th>Site</th>\
                         <th>School</th>\
-                        <th>Admin</th>\
+                        <th>Admin(s)</th>\
                         <th>Users</th>\
                         <th>Teachers</th>\
                         <th>Courses</th>\
@@ -47,7 +47,12 @@ $(function() {
                         table += "<tr>\
                         <td><a href=\"http://" + tdata[school]['baseurl'] + "\">" + tdata[school]['sitename'] + "</a></td>\
                         <td><a href=\"/schools/" + tdata[school]['schoolid'] + "/view\">" + tdata[school]['schoolname'] + "</a></td>\
-                        <td>"+tdata[school]['admin']+"</td>\
+                        <td>";
+                        var json = JSON.parse(tdata[school]['admin']);
+                        for (var k in json) {
+                            table += json[k]["firstname"] + " " + json[k]["lastname"] + " - " + json[k]["email"] + "<br/>";
+                        }
+                        table + "</td>\
                         <td>"+tdata[school]['users']+"</td>\
                         <td>"+tdata[school]['teachers']+"</td>\
                         <td>"+tdata[school]['courses']+"</td>\
