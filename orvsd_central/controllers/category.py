@@ -272,39 +272,36 @@ def view_schools(id):
 
     if moodle_sites or drupal_sites:
         moodle_sitedetails = []
-        if moodle_sites:
-            for site in moodle_sites:
-                site_detail = SiteDetail.query.filter_by(site_id=site.id) \
-                    .order_by(SiteDetail
-                              .timemodified
-                              .desc()) \
-                    .first()
+        for site in moodle_sites:
+            site_detail = SiteDetail.query.filter_by(site_id=site.id) \
+                .order_by(SiteDetail
+                          .timemodified
+                          .desc()) \
+                .first()
 
-                if site_detail and site_detail.courses:
-                    site_detail.adminlist = json.loads(site_detail.adminlist)
-                    # Filter courses to display based on num of users.
+            if site_detail:
+                site_detail.adminlist = json.loads(site_detail.adminlist)
+                # Filter courses to display based on num of users.
+                if site_detail.courses:
                     site_detail.courses = filter(
                         lambda x: x['enrolled'] > min_users,
                         json.loads(site_detail.courses)
                     )
-
-                moodle_sitedetails.append(site_detail)
+            moodle_sitedetails.append(site_detail)
 
         moodle_siteinfo = zip(moodle_sites, moodle_sitedetails)
 
         drupal_sitedetails = []
-        if drupal_sites:
-            for site in drupal_sites:
-                site_detail = SiteDetail.query.filter_by(site_id=site.id) \
-                    .order_by(SiteDetail
-                              .timemodified
-                              .desc()) \
-                    .first()
+        for site in drupal_sites:
+            site_detail = SiteDetail.query.filter_by(site_id=site.id) \
+                .order_by(SiteDetail
+                          .timemodified
+                          .desc()) \
+                .first()
 
-                if site_detail:
-                    site_detail.adminlist = json.loads(site_detail.adminlist)
-
-                    drupal_sitedetails.append(site_detail)
+            if site_detail:
+                site_detail.adminlist = json.loads(site_detail.adminlist)
+                drupal_sitedetails.append(site_detail)
 
         drupal_siteinfo = zip(drupal_sites, drupal_sitedetails)
 
