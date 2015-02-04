@@ -264,6 +264,18 @@ class Site(Model):
                 "Unable to load moodle_tokens as JSON. Skipped migration?"
             )
 
+    def get_tokens(self):
+        """
+        Return a json object of moodle_tokens
+        """
+
+        try:
+            tokens = json.loads(self.moodle_tokens)
+        except ValueError:
+            tokens = {}
+
+        return tokens
+
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % \
                (self.name, self.school_id, self.dev, self.sitetype,
