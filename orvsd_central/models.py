@@ -230,7 +230,7 @@ class Site(Model):
         try:
             tokens = json.loads(self.moodle_tokens)
         except ValueError:
-            logging.warn("%s's moodle_tokens was not JSON.")
+            logging.warn("%s's moodle_tokens was not JSON." % self.name)
             tokens = {}
 
         tokens[service] = token
@@ -244,7 +244,7 @@ class Site(Model):
         try:
             tokens = json.loads(self.moodle_tokens)
         except ValueError:
-            logging.warn("%s's moodle_tokens was not JSON.")
+            logging.warn("%s's moodle_tokens was not JSON." % self.name)
             return
 
         if service in tokens.keys():
@@ -260,18 +260,17 @@ class Site(Model):
         try:
             return json.loads(self.moodle_tokens).get(service, None)
         except ValueError:
-            logging.warn(
-                "Unable to load moodle_tokens as JSON. Skipped migration?"
-            )
+            logging.warn("%s's moodle_tokens was not JSON." % self.name)
 
-    def get_tokens(self):
+    def get_moodle_tokens(self):
         """
-        Return a json object of moodle_tokens
+        Return a json.loads() object of moodle_tokens
         """
 
         try:
             tokens = json.loads(self.moodle_tokens)
         except ValueError:
+            logging.warn("%s's moodle_tokens was not JSON." % self.name)
             tokens = {}
 
         return tokens
