@@ -222,6 +222,35 @@ class Site(Model):
                            secondary='sites_courses',
                            backref='sites')
 
+    def add_taken(self, service, token):
+        """
+        Add token for service to moodle_tokens
+        """
+
+        try:
+            tokens = json.loads(self.moodle_tokens)
+        except ValueError:
+            logging.warn("%s's moodle_tokens was not JSON.")
+            tokens = {}
+
+        tokens[service] = token
+        self.moodle_tokens = json.dumps(tokens)
+
+    def remove_token(self, service):
+        """
+        Remove a service/token from the site's moodle_tokens
+        """
+
+        try:
+            tokens = json.loads(self.moodle_tokens)
+        except ValueError:
+            logging.warn("%s's moodle_tokens was not JSON.")
+            return
+
+        if service in tokens.keys():
+            del tokens[service]
+            self.moodle_tokens = json.dumps(tokens)
+
     def get_token(self, service):
         """
         Retrieve a the moodle token for the service. Return None if no key
