@@ -1,4 +1,6 @@
 import hashlib
+import json
+import logging
 import time
 
 from sqlalchemy import (Boolean, Column, DateTime, Enum, Float, ForeignKey,
@@ -219,6 +221,19 @@ class Site(Model):
     courses = relationship("Course",
                            secondary='sites_courses',
                            backref='sites')
+
+    def get_token(self, service):
+        """
+        Retrieve a the moodle token for the service. Return None if no key
+        is found
+        """
+
+        try:
+            return json.loads(self.moodle_tokens).get(service, None)
+        except ValueError:
+            logging.warn(
+                "Unable to load moodle_tokens as JSON. Skipped migration?"
+            )
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % \
