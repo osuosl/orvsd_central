@@ -212,27 +212,9 @@ def gather_siteinfo(site, from_when=7):
         logging.error("Is this a site?")
         return
 
-    # Attempt to pull the tokens out of the site object
-    try:
-        moodle_tokens = json.loads(site.moodle_tokens)
-        # If the orvsd_siteinfo token isn't available, we can't do anything
-        if not moodle_tokens.get('orvsd_siteinfo', None):
-            logging.error(
-                "'%s': Please gather tokens before gathering iteinfo" %
-                site.name
-            )
-            return
-    except ValueError:
-        # This *should* only happen if the admin forgot to run migrations
-        logging.error(
-            "'%s': Unable to parse json from site.moodle_tokens. "
-            "Perhaps a migration was skipped?" % site.name
-        )
-        return
-
     # If we have the siteinfo token, lets grab the data
-    if moodle_tokens.get('orvsd_siteinfo'):
-
+    siteinfo_token = site.get_token('orvsd_siteinfo')
+    if siteinfo_token:
         site_url = ("http://%s" % site.baseurl
             if not site.baseurl.startswith("http") else site.baseurl)
 
@@ -240,7 +222,7 @@ def gather_siteinfo(site, from_when=7):
         req = requests.post(
             url="%s/webservice/rest/server.php" % site_url,
             data={
-                'wstoken': moodle_tokens['orvsd_siteinfo'],
+                'wstoken': siteinfo_token,
                 'wsfunction': 'local_orvsd_siteinfo_siteinfo',
                 'moodlewsrestformat': 'json',
                 'datetime': str(from_when)
@@ -322,20 +304,8 @@ def gather_tokens(sites=[], service_names=[]):
         site_url = ("http://%s" % site.baseurl
             if not site.baseurl.startswith("http") else site.baseurl)
 
-        # initialize for later use if the following try/except fails
-        current_tokens = {}
-
-        # First check if the tokens column is valid json, if not, report the
-        # issue and continue to the next site
-        try:
-            current_tokens = json.loads(site.moodle_tokens)
-        except ValueError:
-            if site.moodle_tokens != '':
-                logging.warning(
-                    "Unable to read tokens as json, prehaps the column "
-                    "for %s hasn't been migrated?" % site_url
-                )
-                continue
+        # Use the get_moodle_tokens convinience function to get service names
+        service_names = site.get_moodle_tokens.keys()
 
         # For each service, gather a token
         for service in service_names:

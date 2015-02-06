@@ -1,4 +1,6 @@
 import hashlib
+import json
+import logging
 import time
 
 from sqlalchemy import (Boolean, Column, DateTime, Enum, Float, ForeignKey,
@@ -219,6 +221,59 @@ class Site(Model):
     courses = relationship("Course",
                            secondary='sites_courses',
                            backref='sites')
+
+    def add_taken(self, service, token):
+        """
+        Add token for service to moodle_tokens
+        """
+
+        try:
+            tokens = json.loads(self.moodle_tokens)
+        except ValueError:
+            logging.warn("%s's moodle_tokens was not JSON." % self.name)
+            tokens = {}
+
+        tokens[service] = token
+        self.moodle_tokens = json.dumps(tokens)
+
+    def remove_token(self, service):
+        """
+        Remove a service/token from the site's moodle_tokens
+        """
+
+        try:
+            tokens = json.loads(self.moodle_tokens)
+        except ValueError:
+            logging.warn("%s's moodle_tokens was not JSON." % self.name)
+            return
+
+        if service in tokens.keys():
+            del tokens[service]
+            self.moodle_tokens = json.dumps(tokens)
+
+    def get_token(self, service):
+        """
+        Retrieve a the moodle token for the service. Return None if no key
+        is found
+        """
+
+        try:
+            return json.loads(self.moodle_tokens).get(service, None)
+        except ValueError:
+            logging.warn("%s's moodle_tokens was not JSON." % self.name)
+
+    def get_moodle_tokens(self):
+        """
+        Return a json.loads() object of moodle_tokens
+        """
+
+        try:
+            tokens = json.loads(self.moodle_tokens)
+        except ValueError:
+            logging.warn("%s's moodle_tokens was not JSON." % self.name)
+            tokens = {}
+
+        return tokens
 
     def __repr__(self):
         return "<Site('%s','%s','%s','%s','%s','%s','%s')>" % \

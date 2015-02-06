@@ -131,8 +131,7 @@ def install_course():
         # for the query
         selected_courses = [int(cid) for cid in request.form.getlist('course')]
         site_ids = [site_id for site_id in request.form.getlist('site')]
-        sites = [(site_id, Site.query.filter_by(id=site_id).first().baseurl)
-                 for site_id in site_ids]
+        sites = [Site.query.filter_by(id=site).first() for site in site_ids]
 
         course_details = g.db_session.query(CourseDetail).filter(
             CourseDetail.course_id.in_(selected_courses)
@@ -142,8 +141,8 @@ def install_course():
             # The site to install the courses
             install_url = ("http://%s/webservice/rest/server.php?" +
                            "wstoken=%s&wsfunction=%s") % (
-                        site[1],
-                        current_app.config['INSTALL_COURSE_WS_TOKEN'],
+                        site.baseurl,
+                        site.get_token('orvsd_installcourse'),
                         current_app.config['INSTALL_COURSE_WS_FUNCTION'])
             install_url = str(install_url.encode('utf-8'))
 
