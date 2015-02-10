@@ -52,7 +52,7 @@ $(function() {
                         for (var k in json) {
                             table += json[k]["firstname"] + " " + json[k]["lastname"] + " - " + json[k]["email"] + "<br/>";
                         }
-                        table + "</td>\
+                        table += "</td>\
                         <td>"+tdata[school]['users']+"</td>\
                         <td>"+tdata[school]['teachers']+"</td>\
                         <td>"+tdata[school]['courses']+"</td>\
