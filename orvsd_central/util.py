@@ -16,6 +16,7 @@ from flask import current_app, flash, g, redirect, render_template
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
 import requests
+from requests.exceptions import ConnectionError
 
 from orvsd_central import constants
 from orvsd_central.database import create_db_session
@@ -236,34 +237,37 @@ def gather_siteinfo(site, from_when=7):
             # Check for errors from moodle
             if gathered_info.get('error', None):
                 logging.error(
-                    "'%s': Moodle - %s" % (site.name, gathered_info['error'])
+                    "%s: %s" % (site.name, gathered_info['error'])
                 )
                 return
         except ValueError:
             # REST may be disabled
             if req.status_code == 403:
                 logging.error(
-                    "'%s': 403 Returned, is the REST service enabled?" %
+                    "%s: 403 Returned, is the REST service enabled?" %
                     site.name
                 )
             # Response given by the site
             logging.error(
-                "'%s': Moodle did not return json: '%s'" %
+                "%s: did not receive json: '%s'" %
                 (site.name, req.text)
             )
             return
+
+        # handle the adminlist
+        adminlist = json.dumps(gathered_info.get('adminlist', ''))
 
         site_details = SiteDetail(
             site_id=site.id,
             courses=gathered_info.get('courses', ''),
             siteversion=gathered_info.get('siteversion', ''),
             siterelease=gathered_info.get('siterelease', ''),
-            adminemail=gathered_info.get('adminemail', ''),
-            totalusers=gathered_info.get('totalusers', ''),
-            adminusers=gathered_info.get('adminusers', ''),
-            teachers=gathered_info.get('teachers', ''),
-            activeusers=gathered_info.get('activeusers', ''),
-            totalcourses=gathered_info.get('totalcourses', ''),
+            adminlist=adminlist,
+            totalusers=gathered_info.get('totalusers', 0),
+            adminusers=gathered_info.get('adminusers', 0),
+            teachers=gathered_info.get('teachers', 0),
+            activeusers=gathered_info.get('activeusers', 0),
+            totalcourses=gathered_info.get('totalcourses', 0),
             timemodified=datetime.now()
         )
 
@@ -304,21 +308,22 @@ def gather_tokens(sites=[], service_names=[]):
         site_url = ("http://%s" % site.baseurl
             if not site.baseurl.startswith("http") else site.baseurl)
 
-        # Use the get_moodle_tokens convinience function to get service names
-        service_names = site.get_moodle_tokens.keys()
-
         # For each service, gather a token
         for service in service_names:
-            # Using the siteurl and the account information stored in the
-            # config, request a token for the given service
-            resp = requests.post(
-                "%s/login/token.php" % site_url,
-                data={
-                    'username': current_app.config['INSTALL_COURSE_USERNAME'],
-                    'password': current_app.config['INSTALL_COURSE_PASS'],
-                    'service': service
-                }
-            )
+            try:
+                # Using the siteurl and the account information stored in the
+                # config, request a token for the given service
+                resp = requests.post(
+                    "%s/login/token.php" % site_url,
+                    data={
+                        'username': current_app.config['INSTALL_COURSE_USERNAME'],
+                        'password': current_app.config['INSTALL_COURSE_PASS'],
+                        'service': service
+                    }
+                )
+            except ConnectionError:
+                logging.error("%s: Unable to connect to the site" % site.name)
+                continue
 
             # Try and decode the json, if we did not receive json, we need to
             # return the string (resp.text) back to the user as an error
@@ -326,9 +331,13 @@ def gather_tokens(sites=[], service_names=[]):
                 returned = resp.json()
                 # Check for an error log and continue
                 if 'error' in returned:
-                    logging.warning("error: %s" % returned['error'])
+                    logging.error("%s:  %s" % (
+                        site.name,
+                        returned['error']
+                    ))
                     continue
                 else:
+                    current_tokens = site.get_moodle_tokens()
                     # Assign the service the retreived token
                     current_tokens[service] = returned['token']
                     # dump the json string and store it for the site
@@ -509,7 +518,7 @@ def get_schools(dist_id, active):
             district_info[str(site.id)]['schoolid'] = school.id
             district_info[str(site.id)]['baseurl'] = site.baseurl
             if details:
-                district_info[str(site.id)]['admin'] = details.adminemail
+                district_info[str(site.id)]['admin'] = details.adminlist
                 district_info[str(site.id)]['teachers'] = details.teachers
                 district_info[str(site.id)]['users'] = details.activeusers
                 district_info[str(site.id)]['courses'] = (

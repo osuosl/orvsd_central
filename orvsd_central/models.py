@@ -200,7 +200,7 @@ class Site(Model):
     basepath         : The site's path on disk - (from siteinfo)
     jenkins_cron_job : Last run of jenkins cron job, if there is one
     location         : What machine the site is on, or is it in the cloud
-    api_key          : Deprecated - orvsd only displays this value
+    moodle_tokens    : Moodle plugins - service -> token (json)
     """
     __tablename__ = 'sites'
 
@@ -306,7 +306,7 @@ class SiteDetail(Model):
     courses      : A list of courses
     siteversion  : A moodle style version such as 2014121900
     siterelease  : Moodle version such as 2.7
-    adminemail   : Site admin's email
+    adminlist    : JSON object of current site admins
     teachers     : Number of teachers
     activeusers  : Number of active users
     totalcourses : Number of courses
@@ -321,7 +321,7 @@ class SiteDetail(Model):
     courses = Column(Text())
     siteversion = Column(String(255))
     siterelease = Column(String(255))
-    adminemail = Column(String(255))
+    adminlist = Column(Text())
     totalusers = Column(Integer)
     adminusers = Column(Integer)
     teachers = Column(Integer)
@@ -336,7 +336,7 @@ class SiteDetail(Model):
                    self.courses,
                    self.siteversion,
                    self.siterelease,
-                   self.adminemail,
+                   self.adminlist,
                    self.totalusers,
                    self.adminusers,
                    self.teachers,
@@ -352,7 +352,7 @@ class SiteDetail(Model):
                 'courses': self.courses,
                 'siteversion': self.siteversion,
                 'siterelease': self.siterelease,
-                'adminemail': self.adminemail,
+                'adminlist': self.adminlist,
                 'totalusers': self.totalusers,
                 'adminusers': self.adminusers,
                 'teachers': self.teachers,
