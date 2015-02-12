@@ -46,15 +46,15 @@ def add_object(category):
                 inputs.update({column.name: string_to_type(
                                request.form.get(column.name))})
 
-        new_obj = obj(**inputs)
-        g.db_session.add(new_obj)
+        obj = obj(**inputs)
+        g.db_session.add(obj)
         g.db_session.commit()
 
-        if new_obj is Site:
-            gather_tokens(sites=[new_obj])
-            gather_siteinfo(sites=[new_obj])
+        if obj is Site:
+            gather_tokens(sites=[obj])
+            gather_siteinfo(sites=[obj])
 
-        return jsonify({'id': new_obj.id,
+        return jsonify({'id': obj.id,
                         'identifier': identifier,
                         identifier: inputs[identifier],
                         'message': "Object added successfully!"})
