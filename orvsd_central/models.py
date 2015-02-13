@@ -222,7 +222,7 @@ class Site(Model):
                            secondary='sites_courses',
                            backref='sites')
 
-    def add_taken(self, service, token):
+    def add_token(self, service, token):
         """
         Add token for service to moodle_tokens
         """
