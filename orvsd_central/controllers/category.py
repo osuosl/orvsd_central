@@ -154,12 +154,12 @@ def install_course():
                 res = install_course_to_site.delay(
                     course_detail.id, install_url
                 )
-                result_data = SiteCourse(site[0], course_detail.id, res.id)
+                result_data = SiteCourse(site.id, course_detail.id, res.id)
                 g.db_session.add(result_data)
                 g.db_session.commit()
 
             output += (str(len(course_details)) + " course install(s) for " +
-                       site[1] + " started.\n")
+                       site.name + " started.\n")
 
         return render_template('install_course_output.html',
                                output=output,
