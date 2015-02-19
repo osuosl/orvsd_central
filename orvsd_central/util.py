@@ -318,17 +318,14 @@ def gather_tokens(sites=[], service_names=[]):
             try:
                 # Using the siteurl and the account information stored in the
                 # config, request a token for the given service
+                resp_data = {
+                    'username': current_app.config['INSTALL_COURSE_USERNAME'],
+                    'password': current_app.config['INSTALL_COURSE_PASS'],
+                    'service': service
+                }
                 resp = requests.post(
                     "%s/login/token.php" % site_url,
-                    data={
-                        'username': current_app.config[
-                            'INSTALL_COURSE_USERNAME'
-                        ],
-                        'password': current_app.config[
-                            'INSTALL_COURSE_PASS'
-                        ],
-                        'service': service
-                    }
+                    data=resp_data
                 )
             except ConnectionError:
                 logging.error("%s: Unable to connect to the site" % site.name)
