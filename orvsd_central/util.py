@@ -240,6 +240,11 @@ def gather_siteinfo(site, from_when=7):
                     "%s: %s" % (site.name, gathered_info['error'])
                 )
                 return
+            elif gathered_info.get('exception', None):
+                logging.error(
+                    "%s: %s" % (site.name, gathered_info['exception'])
+                )
+                return
         except ValueError:
             # REST may be disabled
             if req.status_code == 403:
