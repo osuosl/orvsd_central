@@ -1,4 +1,3 @@
-from collections import defaultdict
 import json
 
 from flask import Blueprint, abort, g, jsonify, request

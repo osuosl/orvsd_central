@@ -15,7 +15,7 @@ $(function() {
         $("#report_tables").html("");
 
         // For each district
-        $.each(data['category'], function(id, value) {
+        $.each(data.category, function(id, value) {
             // Apend a row for the district name and the district table
             $("#report_tables").append(
                 "<div class=\"row\" data-district=\""+value[0]+"\">\
@@ -46,17 +46,17 @@ $(function() {
                     </tr>";*/
                     for (var school in tdata) {
                         table += "<tr>\
-                        <td><a href=\"http://" + tdata[school]['baseurl'] + "\">" + tdata[school]['sitename'] + "</a></td>\
-                        <td><a href=\"/schools/" + tdata[school]['schoolid'] + "/view\">" + tdata[school]['schoolname'] + "</a></td>\
+                        <td><a href=\"http://" + tdata[school].baseurl + "\">" + tdata[school].sitename + "</a></td>\
+                        <td><a href=\"/schools/" + tdata[school].schoolid + "/view\">" + tdata[school].schoolname + "</a></td>\
                         <td>";
-                        var json = JSON.parse(tdata[school]['admin']);
+                        var json = JSON.parse(tdata[school].admin);
                         for (var k in json) {
-                            table += json[k]["firstname"] + " " + json[k]["lastname"] + " - " + json[k]["email"] + "<br/>";
+                            table += json[k].firstname + " " + json[k].lastname + " - " + json[k].email + "<br/>";
                         }
                         table += "</td>\
-                        <td>"+tdata[school]['users']+"</td>\
-                        <td>"+tdata[school]['teachers']+"</td>\
-                        <td>"+tdata[school]['courses']+"</td>";//\
+                        <td>"+tdata[school].users+"</td>\
+                        <td>"+tdata[school].teachers+"</td>\
+                        <td>"+tdata[school].courses+"</td>";//\
                         /*<td>\
                             <a>Add Course</a><br />\
                             <a>Add User</a><br />\

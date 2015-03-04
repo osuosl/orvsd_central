@@ -1,7 +1,5 @@
-import hashlib
 import json
 import logging
-import time
 
 from sqlalchemy import (Boolean, Column, DateTime, Enum, Float, ForeignKey,
                         Integer, SmallInteger, String, Text)
@@ -149,9 +147,11 @@ class School(Model):
     state_id    : State assigned id
     name        : School name
     shortname   : Short name or abbreviation
-    domain      : The base domain name for this school's sites (possibly redundant)
-    license     : List of tokens indicating licenses for some courses - courses with
-                  license tokens in this list can be installed in this school
+    domain      : The base domain name for this school's sites
+                : (possibly redundant)
+    license     : List of tokens indicating licenses for some courses - courses
+                : with license tokens in this list can be installed in this
+                : school
     county      : The county the school belongs to
     district    : The district with which the school is associated
     """
@@ -342,9 +342,8 @@ class SiteDetail(Model):
                    self.teachers,
                    self.activeusers,
                    self.totalcourses,
-                   self.timemodified
+                   self.timemodified)
                 )
-        )
 
     def serialize(self):
         return {'id': self.id,
@@ -370,9 +369,11 @@ class Course(Model):
     serial    : Shared identifier among different versions of the same course
     name      : The course name (a moodle setting)
     shortname : The course short name (a moodle setting)
-    license   : Schools with a license token matching this can install this class
+    license   : Schools with a license token matching this can install this
+              : class
     category  : Moodle category for this class (probably "default")
-    source    : Provider of the course, possibly used by moodle for storing the location
+    source    : Provider of the course, possibly used by moodle for storing the
+              : location
     """
     __tablename__ = 'courses'
 

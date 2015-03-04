@@ -1,5 +1,3 @@
-import re
-
 from flask import (Blueprint, current_app, flash, g, redirect, render_template,
                    request, session, url_for)
 from flask.ext.login import (current_user, login_required,
