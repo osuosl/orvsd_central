@@ -55,12 +55,12 @@ $(function() {
                         table += "</td>\
                         <td>"+tdata[school]['users']+"</td>\
                         <td>"+tdata[school]['teachers']+"</td>\
-                        <td>"+tdata[school]['courses']+"</td>\
-                        <td>\
+                        <td>"+tdata[school]['courses']+"</td>";//\
+                        /*<td>\
                             <a>Add Course</a><br />\
                             <a>Add User</a><br />\
                             <a>Edit</a>\
-                        </td></tr>";
+                        </td></tr>";*/
                     }
                     table += "</table>";
                     $("#"+value[1]).html(table);
