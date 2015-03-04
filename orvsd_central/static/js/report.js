@@ -41,8 +41,9 @@ $(function() {
                         <th>Users</th>\
                         <th>Teachers</th>\
                         <th>Courses</th>\
-                        <th>Actions</th>\
                     </tr>";
+                    /*    <th>Actions</th>\
+                    </tr>";*/
                     for (var school in tdata) {
                         table += "<tr>\
                         <td><a href=\"http://" + tdata[school]['baseurl'] + "\">" + tdata[school]['sitename'] + "</a></td>\
