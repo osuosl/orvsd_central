@@ -5,7 +5,8 @@ from flask import Blueprint, abort, g, jsonify, request
 from orvsd_central.models import (Course, CourseDetail, District, School, Site,
                                   SiteDetail)
 from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
-                                get_active_counts, get_schools, string_to_type)
+                                get_active_counts, get_schools, string_to_type,
+                                gather_tokens, gather_siteinfo)
 
 
 mod = Blueprint('api', __name__, url_prefix="/1")
@@ -45,10 +46,15 @@ def add_object(category):
                 inputs.update({column.name: string_to_type(
                                request.form.get(column.name))})
 
-        new_obj = obj(**inputs)
-        g.db_session.add(new_obj)
+        obj = obj(**inputs)
+        g.db_session.add(obj)
         g.db_session.commit()
-        return jsonify({'id': new_obj.id,
+
+        if isinstance(obj, Site):
+            gather_tokens(sites=[obj])
+            gather_siteinfo(obj)
+
+        return jsonify({'id': obj.id,
                         'identifier': identifier,
                         identifier: inputs[identifier],
                         'message': "Object added successfully!"})
