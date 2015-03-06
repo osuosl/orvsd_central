@@ -11,7 +11,6 @@ revision = '2bf8713fd2bb'
 down_revision = '49e0d0a0a952'
 
 from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade(engine_name):
@@ -22,13 +21,17 @@ def downgrade(engine_name):
     eval("downgrade_%s" % engine_name)()
 
 
-
-
-
 def upgrade_engine1():
-    pass
+    op.alter_column(
+        'sites', 'moodle_tokens',
+        server_default="{}",
+        existing_server_default=None,
+    )
 
 
 def downgrade_engine1():
-    pass
-
+    op.alter_column(
+        'sites', 'moodle_tokens',
+        server_default=None,
+        existing_server_default="{}",
+    )
