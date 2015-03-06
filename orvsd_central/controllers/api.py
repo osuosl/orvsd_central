@@ -50,9 +50,9 @@ def add_object(category):
         g.db_session.add(obj)
         g.db_session.commit()
 
-        if obj is Site:
+        if isinstance(obj, Site):
             gather_tokens(sites=[obj])
-            gather_siteinfo(sites=[obj])
+            gather_siteinfo(obj)
 
         return jsonify({'id': obj.id,
                         'identifier': identifier,
