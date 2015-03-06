@@ -217,7 +217,7 @@ def gather_siteinfo(site, from_when=7):
     siteinfo_token = site.get_token('orvsd_siteinfo')
     if siteinfo_token:
         site_url = ("http://%s" % site.baseurl
-            if not site.baseurl.startswith("http") else site.baseurl)
+                    if not site.baseurl.startswith("http") else site.baseurl)
 
         # Make the request
         req = requests.post(
@@ -311,7 +311,7 @@ def gather_tokens(sites=[], service_names=[]):
 
         # For the request, prepend the protocol if necessary
         site_url = ("http://%s" % site.baseurl
-            if not site.baseurl.startswith("http") else site.baseurl)
+                    if not site.baseurl.startswith("http") else site.baseurl)
 
         # For each service, gather a token
         for service in service_names:
@@ -321,8 +321,12 @@ def gather_tokens(sites=[], service_names=[]):
                 resp = requests.post(
                     "%s/login/token.php" % site_url,
                     data={
-                        'username': current_app.config['INSTALL_COURSE_USERNAME'],
-                        'password': current_app.config['INSTALL_COURSE_PASS'],
+                        'username': current_app.config[
+                            'INSTALL_COURSE_USERNAME'
+                        ],
+                        'password': current_app.config[
+                            'INSTALL_COURSE_PASS'
+                        ],
                         'service': service
                     }
                 )

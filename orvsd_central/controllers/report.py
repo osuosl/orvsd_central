@@ -1,9 +1,6 @@
 from flask import Blueprint, render_template
 from flask.ext.login import current_user, login_required
 
-from orvsd_central.models import District
-
-
 mod = Blueprint("report", __name__, url_prefix='/report')
 
 

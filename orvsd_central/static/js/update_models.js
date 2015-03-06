@@ -44,13 +44,13 @@ $(function() {
         else {
             var data = get_form_data($(this));
             $.post(base_url + "/object/add", data).done(function(resp) {
-                $("#message").html(resp["message"]);
-                $("#id").val(resp["id"]);
+                $("#message").html(resp.message);
+                $("#id").val(resp.id);
 
                 // 'identifier' determines which key we use to identify an
                 // element.
-                var name = resp[resp["identifier"]];
-                insert_and_sort_list(name, resp["id"]);
+                var name = resp[resp.identifier];
+                insert_and_sort_list(name, resp.id);
                 reset_add_if_submit();
             });
         }
@@ -65,21 +65,21 @@ $(function() {
         // Data 'id' will be blank if we are adding a new object.
         // A user may either use the 'Submit' or 'Update' functionality for
         // adding a new item.
-        if (data["id"] == "" && $(this).val() !== "Delete") {
+        if (data.id === "" && $(this).val() !== "Delete") {
             $.post(base_url + "/object/add", data).done(function(resp) {
-                $("#message").html(resp["message"]);
-                $("#id").val(resp["id"]);
+                $("#message").html(resp.message);
+                $("#id").val(resp.id);
 
                 // 'identifier' determines which key we use to identify an
                 // element.
-                var name = resp[resp["identifier"]]
-                insert_and_sort_list(name, resp["id"]);
+                var name = resp[resp.identifier];
+                insert_and_sort_list(name, resp.id);
 
             });
             reset_add_if_submit();
         }
         // Delete an object.
-        else if (data["id"] == "" && $(this).val() === "Delete") {
+        else if (data.id === "" && $(this).val() === "Delete") {
                 var message = "You may not delete elements that do not exist!";
                 $("#message").html(message);
         }
@@ -87,14 +87,14 @@ $(function() {
             // Posts to /update or /delete, depending on the button that
             // was clicked.
             var method = $(this).attr("name");
-            var url = base_url + "/" + data['id'] + "/" + method;
+            var url = base_url + "/" + data.id + "/" + method;
             $.post(url, data).done(function(resp) {
                 if (method === "delete") {
                     // Remove all references to old object
                     $("#form").find("input[type=text]").val("");
 
                     // Record the next object before we delete the current.
-                    var next = $('#object_list option:selected').next()
+                    var next = $('#object_list option:selected').next();
 
                     $("#object_list option:selected").remove();
                     next.attr('selected', 'selected');
@@ -113,12 +113,12 @@ $(function() {
                     }
                 }
                 else {
-                    var name = resp[resp["identifier"]];
+                    var name = resp[resp.identifier];
                     console.log(resp);
                     $("#object_list option:selected").text(name);
-                    $("#message").html(resp["message"]);
+                    $("#message").html(resp.message);
                 }
-                $("#message").html(resp["message"]);
+                $("#message").html(resp.message);
             });
             reset_add_if_submit();
         }
@@ -133,7 +133,7 @@ $(function() {
                 rows += generate_row(key, resp[key]);
             }
             $("#form").html(rows);
-            pairs = resp
+            pairs = resp;
         });
         // Return keys and vals for the object we recieved.
         return pairs;
@@ -158,7 +158,7 @@ $(function() {
 
     // Get the data from the current form elements.
     function get_form_data(obj) {
-        data = new Object();
+        data = {};
         data[obj.val()] = obj.val();
         // Generate our JSON from the form to be sent back to the server.
         for (var key_name in pairs) {

@@ -9,9 +9,10 @@ from flask import current_app, g
 from flask.ext.script import Manager
 import nose
 
-from orvsd_central import attach_blueprints, create_app
+from orvsd_central import create_app
 from orvsd_central.database import (create_db_session, create_admin_account,
                                     init_db)
+
 
 def setup_app(config=None):
     return create_app(config) if config else create_app()
