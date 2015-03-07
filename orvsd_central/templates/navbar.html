@@ -84,18 +84,15 @@
                 {% endif %}
             </ul>
 
-            <div id="flash" class="nav navbar-nav navbar-right label label-important">
-                {% with messages = get_flashed_messages() %}
+            {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                    <ul class="flashes nav">
+                    <ul id="flash" class="flashes nav navbar-nav navbar-right">
                     {% for message in messages %}
-                        <li><samp>{{message}}</samp></li>
+                        <li class="navbar-text"><samp>{{message}}</samp></li>
                     {%endfor%}
                     </ul>
-                    {%endif%}
-                {%endwith%}
-            </div>
-
+                {%endif%}
+            {%endwith%}
         </div>
     </div>
 </div>
