@@ -85,13 +85,13 @@
             </ul>
 
             {% with messages = get_flashed_messages() %}
+                <ul id="flash" class="nav navbar-nav navbar-right">
                 {% if messages %}
-                    <ul id="flash" class="flashes nav navbar-nav navbar-right">
                     {% for message in messages %}
                         <li class="navbar-text"><samp>{{message}}</samp></li>
                     {%endfor%}
-                    </ul>
                 {%endif%}
+              </ul>
             {%endwith%}
         </div>
     </div>
