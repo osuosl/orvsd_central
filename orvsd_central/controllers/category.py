@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import os
 
@@ -57,71 +58,85 @@ Course
 @login_required
 def install_course():
     """
-    Displays a form for the admin user to pick courses to install on a site
+    GET  : Displays a form for the admin user to pick courses to
+         : install on a site
+    POST : Start a celery task to install selected courses to selected sites
 
-    Returns:
-        Rendered template
+    Returns : Rendered template
     """
 
     if request.method == 'GET':
         form = InstallCourse()
 
-        # Query all moodle 2.x courses
-        courses = g.db_session.query(CourseDetail).filter(
-            CourseDetail.moodle_version
-            .like('2%')
-            ).all()
+        # Query all course details
+        courses = g.db_session.query(CourseDetail).all()
 
-        # Query all moodle sites
-        sites = g.db_session.query(Site).filter(
-            Site.sitetype == 'moodle')
+        # Subquery for all moodle 2.x sites
+        v2_sitedetails = g.db_session.query(SiteDetail).filter(
+            SiteDetail.siterelease.like("2%")
+        ).order_by(SiteDetail.timemodified.desc()).limit(1).subquery()
 
-        moodle_2_sites = []
-
-        # For all sites query the SiteDetail to see if it's a moodle 2.x site
-        for site in sites:
-            details = g.db_session.query(SiteDetail).filter(
-                and_(
-                    SiteDetail.site_id == site.id,
-                    SiteDetail.siterelease.like('2%')
-                )
-            ).order_by(SiteDetail.timemodified.desc()).first()
-
-            if details is not None:
-                moodle_2_sites.append(site)
-
-        # Generate the list of choices for the template
-        courses_info = []
-        sites_info = []
-
-        listed_courses = []
-        # Create the courses list
-        for course in courses:
-            if course.course_id not in listed_courses:
-                if course.version:
-                    courses_info.append(
-                        (course.course_id, "%s - v%s" %
-                         (course.course.name, course.version)))
-                else:
-                    courses_info.append(
-                        (course.course_id, "%s" %
-                         (course.course.name)))
-                listed_courses.append(course.course_id)
+        # Returns: [(Site, SiteDetail), ... ]
+        # Site is needed for the id, name, and baseurl, whereas the SiteDetail
+        # is needed for the siterelease a.k.a. the moodle version
+        sites_details = g.db_session.query(Site, SiteDetail).\
+            join(v2_sitedetails).all()
 
         # Create the sites list
-        for site in moodle_2_sites:
-            sites_info.append((site.id, site.baseurl))
+        #
+        # Values needed for use on installcourse page
+        # id, name, version, moodle_version
+        #
+        # JSON Structure
+        #
+        # {
+        #    [{'id':'','name':'', 'baseurl':'', 'moodle_version'},],
+        # }
+        sites_info = []
+        for result in sites_details:
+            sites_info.append(
+                {
+                    'id': result[0].id,
+                    'name': result[0].name,
+                    'baseurl': result[0].baseurl,
+                    'moodle_version': result[1].siterelease,
+                }
+            )
 
-        form.course.choices = sorted(courses_info, key=lambda x: x[1])
-        form.site.choices = sorted(sites_info, key=lambda x: x[1])
+        # Generate the list of choices for the template
+        courses_info = defaultdict(list)
+
+        # Create the courses list
+        #
+        # Values needed for use on installcourse page
+        # id, name, version, moodle_version
+        #
+        # JSON Structure
+        #
+        # {
+        #    'moodle_ver': [
+        #       {'id':'','name':'', 'version':''},
+        #    ],
+        # }
+        for course in courses:
+            course_blob = {}
+            course_blob['id'] = course.id
+            course_blob['name'] = course.course.name
+            course_blob['version'] = course.version
+
+            courses_info[course.moodle_version].append(course_blob)
+
+        # Folders to help narrow down the course selection
         form.filter.choices = [
             (folder, folder) for folder in get_course_folders(
                 current_app.config['INSTALL_COURSE_FILE_PATH']
             )
         ]
 
+        # Send all this data to the user
         return render_template('install_course.html',
-                               form=form, user=current_user)
+                               form=form, user=current_user,
+                               sites=sites_info, courses=courses_info)
 
     elif request.method == 'POST':
         # Course installation results
