@@ -209,8 +209,8 @@ def gather_siteinfo(site, from_when=7):
     """
 
     # Verify we have a site object
-    if not hasattr(site, 'moodle_tokens'):
-        logging.error("Is this a site?")
+    if not isinstance(site, Site):
+        logging.error("Your 'site' appears to not be a site")
         return
 
     # If we have the siteinfo token, lets grab the data
