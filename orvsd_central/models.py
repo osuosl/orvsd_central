@@ -330,7 +330,7 @@ class SiteDetail(Model):
     timemodified = Column(DateTime)
 
     def __repr__(self):
-        return ("<Site('%s','%s','%s','%s','%s',"
+        return ("<SiteDetail('%s','%s','%s','%s','%s',"
                 "'%s','%s','%s','%s','%s','%s')>" % (
                    self.site_id,
                    self.courses,
