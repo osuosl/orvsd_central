@@ -280,7 +280,7 @@ def gather_siteinfo(site, from_when=7):
         g.db_session.commit()
 
 
-def gather_tokens(sites=[], service_names=[]):
+def gather_tokens(site, services=[]):
     """
     gather_tokens will get tokens required for moodle webservices provided in
     the list of service_names list
@@ -290,76 +290,69 @@ def gather_tokens(sites=[], service_names=[]):
     """
 
     # If there are no sites listed, why is this even being called?
-    if sites == []:
+    if not isinstance(site, Site):
         return
 
     # We allow for service names to be passed, though most likely only services
     # listed in the applications config will ever be used
-    if service_names == []:
+    if services == []:
         service_names = current_app.config['MOODLE_SERVICES']
 
-    # If no services, whys is the even being called?
-    if not service_names:
+    # If no services, nor a baseurl whys is the even being called?
+    if not services or site.baseurl in ['', None]:
         return
 
-    # For each site in the list of sites we need to get tokens
-    for site in sites:
-        # If the object was built odly and no baseurl exists, move onto the
-        # next sit
-        if site.baseurl in ['', None]:
+    # For the request, prepend the protocol if necessary
+    site_url = ("http://%s" % site.baseurl
+                if not site.baseurl.startswith("http") else site.baseurl)
+
+    # For each service, gather a token
+    for service in service_names:
+        try:
+            # Using the siteurl and the account information stored in the
+            # config, request a token for the given service
+            resp_data = {
+                'username': current_app.config['INSTALL_COURSE_USERNAME'],
+                'password': current_app.config['INSTALL_COURSE_PASS'],
+                'service': service
+            }
+            resp = requests.post(
+                "%s/login/token.php" % site_url,
+                data=resp_data
+            )
+        except ConnectionError:
+            logging.error("%s: Unable to connect to the site" % site.name)
             continue
 
-        # For the request, prepend the protocol if necessary
-        site_url = ("http://%s" % site.baseurl
-                    if not site.baseurl.startswith("http") else site.baseurl)
-
-        # For each service, gather a token
-        for service in service_names:
-            try:
-                # Using the siteurl and the account information stored in the
-                # config, request a token for the given service
-                resp_data = {
-                    'username': current_app.config['INSTALL_COURSE_USERNAME'],
-                    'password': current_app.config['INSTALL_COURSE_PASS'],
-                    'service': service
-                }
-                resp = requests.post(
-                    "%s/login/token.php" % site_url,
-                    data=resp_data
-                )
-            except ConnectionError:
-                logging.error("%s: Unable to connect to the site" % site.name)
+        # Try and decode the json, if we did not receive json, we need to
+        # return the string (resp.text) back to the user as an error
+        try:
+            returned = resp.json()
+            # Check for an error log and continue
+            if 'error' in returned:
+                logging.error("%s:  %s" % (
+                    site.name,
+                    returned['error']
+                ))
                 continue
-
-            # Try and decode the json, if we did not receive json, we need to
-            # return the string (resp.text) back to the user as an error
-            try:
-                returned = resp.json()
-                # Check for an error log and continue
-                if 'error' in returned:
-                    logging.error("%s:  %s" % (
-                        site.name,
-                        returned['error']
-                    ))
-                    continue
-                else:
-                    current_tokens = site.get_moodle_tokens()
-                    # Assign the service the retreived token
-                    current_tokens[service] = returned['token']
-                    # dump the json string and store it for the site
-                    site.moodle_tokens = json.dumps(current_tokens)
-                    # Commit the change to the database
-                    g.db_session.commit()
-                    logging.info(
-                        "Added '%s':'%s' to %s" %
-                        (service, returned['token'], site_url)
-                    )
-            except ValueError:
-                # Unable to parse JSON, log the problem
-                logging.warning(
-                    "Unable to parse JSON for %s: %s" %
-                    (site_url, resp.text)
+            else:
+                current_tokens = site.get_moodle_tokens()
+                # Assign the service the retreived token
+                current_tokens[service] = returned['token']
+                # dump the json string and store it for the site
+                site.moodle_tokens = json.dumps(current_tokens)
+                # Commit the change to the database
+                g.db_session.commit()
+                logging.info(
+                    "Added '%s':'%s' to %s" %
+                    (service, returned['token'], site_url)
                 )
+        except ValueError:
+            # Unable to parse JSON, log the problem
+            logging.warning(
+                "Unable to parse JSON for %s: %s" %
+                (site_url, resp.text)
+            )
 
 
 def get_course_folders(base_path):

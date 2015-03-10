@@ -53,9 +53,10 @@ def gather_tokens():
     with current_app.app_context():
         from orvsd_central.models import Site
         from orvsd_central.util import gather_tokens
-
         g.db_session = create_db_session()
-        gather_tokens(Site.query.all())
+
+        for site in Site.query.all():
+            gather_tokens(site)
 
 
 @manager.option('-d', "--data", help="CSV to import of Districts and Schools")

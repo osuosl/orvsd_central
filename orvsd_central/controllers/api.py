@@ -51,7 +51,7 @@ def add_object(category):
         g.db_session.commit()
 
         if isinstance(obj, Site):
-            gather_tokens(sites=[obj])
+            gather_tokens(obj)
             gather_siteinfo(obj)
 
         return jsonify({'id': obj.id,
