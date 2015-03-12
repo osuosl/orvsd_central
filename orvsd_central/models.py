@@ -16,9 +16,10 @@ class SiteCourse(Model):
     A representation of the connection between the courses each site has
     installed, and information about those course.
 
-    site_id     : the site's id
-    course_id   : the course's id
-    active      : state of the course on the site
+    site_id             : the site's id
+    course_id           : the course's id
+    active              : state of the course on the site
+    moodle_course_id    : The course id determined by moodle
     """
 
     __tablename__ = 'sites_courses'
@@ -41,6 +42,7 @@ class SiteCourse(Model):
         )
     )
     active = Column(Boolean, default=False)
+    moodle_course_id = Column(Integer)
 
 
 class User(Model):
@@ -415,22 +417,3 @@ class Course(Model):
             'updated': self.updated,
             'version': self.version
         }
-
-
-class CourseDetail(Model):
-    """
-    A Model representation of a Course's details.
-
-    id               : Unique to orvsd
-    moodle_course_id : The course id determined by moodle
-    """
-    __tablename__ = 'course_details'
-    id = Column(Integer, primary_key=True)
-    moodle_course_id = Column(Integer)
-
-    def __repr__(self):
-        return "<CourseDetail('%s')>" % self.moodle_course_id
-
-    def serialize(self):
-        return {'id': self.id,
-                'moodle_course_id': self.moodle_course_id}
