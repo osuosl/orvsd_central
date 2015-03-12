@@ -2,8 +2,7 @@ import json
 
 from flask import Blueprint, abort, g, jsonify, request
 
-from orvsd_central.models import (Course, CourseDetail, District, School, Site,
-                                  SiteDetail)
+from orvsd_central.models import Course, District, School, Site, SiteDetail
 from orvsd_central.util import (get_obj_by_category, get_obj_identifier,
                                 get_active_counts, get_schools, string_to_type,
                                 gather_tokens, gather_siteinfo)
@@ -154,16 +153,16 @@ def get_course_list():
     dir = request.form.get('filter')
 
     if dir == "None":
-        courses = CourseDetail.query.all()
+        courses = Course.query.all()
     else:
-        courses = g.db_session.query(CourseDetail).join(Course).filter(
+        courses = g.db_session.query(Course).filter(
             Course.source == dir
         ).all()
 
     # This means the folder selected was not the source folder or None.
     if not courses:
-        courses = g.db_session.query(CourseDetail).filter(
-            CourseDetail.filename.like("%" + dir + "%")
+        courses = g.db_session.query(Course).filter(
+            Course.filename.like("%" + dir + "%")
         ).all()
 
     courses = sorted(courses, key=lambda x: x.course.name)
