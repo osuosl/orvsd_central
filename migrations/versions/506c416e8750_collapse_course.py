@@ -131,7 +131,7 @@ def downgrade_engine1():
             filename=course.filename,
             version=course.version,
             updated=course.updated,
-            active=False,
+            active=True,
             moodle_version=course.moodle_version,
             moodle_course_id=course.moodle_course_id,
         )
