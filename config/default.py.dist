@@ -2,12 +2,16 @@ import os
 # Get rid of the /config at the end.
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
+# Logifile Location
+PROJECT_LOGFILE = "%s/orvsd_central.log" % PROJECT_PATH
+
 # Enable/Disable debug output from flask
 DEBUG = False
 
 # Flask session key
 SECRET_KEY = "secret key"
 
+# Flask CSRF
 CSRF_ENABLED = True
 CSRF_SESSION_KEY = "your csrf session key"
 
@@ -21,20 +25,21 @@ CELERY_BROKER_URL = 'sqla+sqlite:///'
 CELERY_RESULT_BACKEND = 'database'
 CELERY_RESULT_DBURI = 'sqlite:///'
 
-# database info for data gathering
-SITEINFO_DATABASE_HOST = "localhost"
-SITEINFO_DATABASE_USER = ""
-SITEINFO_DATABASE_PASS = ""
+# google oauth credentials info
+GOOGLE_CLIENT_ID = 'CLIENT ID HERE'
+GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
+REDIRECT_URI = "/oauth2callback"
+
+# Moodle Services list
+MOODLE_SERVICES = [
+    'my_servicename_1',
+    'my_servicename_2'
+]
 
 # Moodle course install web service definitions
 INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
 INSTALL_COURSE_WS_TOKEN = ""
 INSTALL_COURSE_WS_FUNCTION = "local_orvsd_installcourse_install_course"
-
-# google oauth credentials info
-GOOGLE_CLIENT_ID = 'CLIENT ID HERE'
-GOOGLE_CLIENT_SECRET = 'CLIENT SECRET HERE'
-REDIRECT_URI = "/oauth2callback"
 
 # install_course_to_site config info
 # Category is the name according to the moodle site
@@ -42,6 +47,6 @@ INSTALL_COURSE_CATEGORY = 'Miscellaneous'
 INSTALL_COURSE_FIRSTNAME = 'orvsd'
 INSTALL_COURSE_LASTNAME = 'central'
 INSTALL_COURSE_CITY = 'none'
-INSTALL_COURSE_USERNAME = 'admin'
 INSTALL_COURSE_EMAIL = 'a@a.aa'
-INSTALL_COURSE_PASS = 'adminpaINSTALL_COURSE_ss'
+INSTALL_COURSE_USERNAME = 'admin'
+INSTALL_COURSE_PASS = 'adimn'

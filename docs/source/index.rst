@@ -32,6 +32,8 @@ Developer Documentation
 .. toctree::
    :maxdepth 2
 
+   workflow
+   branching
    plugins
    orvsd_central_api
 

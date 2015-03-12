@@ -1,5 +1,3 @@
-import re
-
 from flask import (Blueprint, current_app, flash, g, redirect, render_template,
                    request, session, url_for)
 from flask.ext.login import (current_user, login_required,
@@ -7,10 +5,14 @@ from flask.ext.login import (current_user, login_required,
 import requests
 from requests.exceptions import HTTPError
 
+from sqlalchemy.exc import IntegrityError
+
 from orvsd_central import constants
 from orvsd_central.forms import AddUser, LoginForm
 from orvsd_central.models import User
-from orvsd_central.util import google, login_manager, requires_role
+from orvsd_central.util import (google, is_valid_email,
+                                login_manager, requires_role)
+
 
 mod = Blueprint('general', __name__)
 
@@ -38,23 +40,33 @@ def register():
     message = ""
 
     if request.method == "POST":
-        if form.password.data != form.confirm_pass.data:
+        if not form.user.data:
+            message = "Please enter a username.\n"
+        elif not is_valid_email(form.email.data):
+            message = "This does not look like an E-mail. Please try again.\n"
+        elif not form.password.data:
+            message = "Please enter a password.\n"
+        elif form.password.data != form.confirm_pass.data:
             message = "The passwords provided did not match!\n"
-        elif not re.match('^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
-                          form.email.data):
-            message = "Invalid email address!\n"
         else:
             # Add user to db
-            g.db_session.add(
-                User(
+            try:
+                user = User(
                     name=form.user.data,
                     email=form.email.data,
                     password=form.password.data,
                     role=constants.USER_PERMS.get(form.role.data, 1)
                 )
-            )
-            g.db_session.commit()
-            message = form.user.data + " has been added successfully!\n"
+                g.db_session.add(user)
+                g.db_session.commit()
+
+                message = form.user.data + " has been added successfully!\n"
+            except IntegrityError:
+                g.db_session.rollback()
+                if User.query.filter_by(email=form.email.data).first():
+                    message = "Email is already in use.\n"
+                else:  # assume error was duplicate username since not email
+                    message = "Username is already in use.\n"
 
     return render_template('add_user.html', form=form,
                            message=message, user=current_user)

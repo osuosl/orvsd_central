@@ -1,48 +1,55 @@
+from functools import wraps
 import unittest
 
-from flask import g
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from contextlib import contextmanager
+from flask import appcontext_pushed, g
 
 import orvsd_central
-from orvsd_central import attach_blueprints, models
-from orvsd_central.database import Model
+from orvsd_central.database import create_db_session
+from orvsd_central.models import Model
+
+
+def db_context(f):
+    @wraps(f)
+    def decorated(inst, *args, **kwargs):
+        with database_set(inst.app):
+            with inst.app.app_context():
+                f(inst, *args, **kwargs)
+    return decorated
+
+
+@contextmanager
+def database_set(app):
+    def handler(sender, **kwargs):
+        from orvsd_central.database import init_db
+        g.db_session = create_db_session()
+        init_db()
+    with appcontext_pushed.connected_to(handler, app):
+        yield
 
 
 class TestBase(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self, test_cfg_changes=None):
         """
         Create a test database in memory and a test app to be referenced as
         self.db_session and self.app respectively.
         """
 
+        # Config modifications for testing
+        db = 'sqlite:///:memory:'
+        cfg = {
+            'SQLALCHEMY_DATABASE_URI': db,
+            'CELERY_BROKER_URL': 'sqla+' + db,
+            'CELERY_RESULT_DBURI': db,
+            'TESTING': True,
+            'DEBUG': True
+        }
+
+        # Update the config with test-specific configuration changes
+        if test_cfg_changes:
+            cfg.update(test_cfg_changes)
+
         # Create the app
-        self.app = orvsd_central.create_app()
+        self.app = orvsd_central.create_app(config_changes=cfg)
         self.app.testing = True
-
-        with self.app.app_context():
-            attach_blueprints()
-
-            self.test_engine = create_engine(
-                "sqlite:///:memory:",
-                 convert_unicode=True
-            )
-            g.db_session = scoped_session(
-                sessionmaker(
-                    autocommit=True,
-                    autoflush=True,
-                    bind=self.test_engine
-                )
-            )
-            Model.query = g.db_session.query_property()
-
-            # Create the tables
-            Model.metadata.create_all(bind=self.test_engine)
-
-    def tearDown(self):
-        """
-        Close the session and clean the db. Some tests may create
-        data and we don't want to keep that around
-        """
-        Model.metadata.drop_all(bind=self.test_engine)

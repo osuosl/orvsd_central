@@ -5,99 +5,100 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row-fluid">
-        <h1>{{school.name}}</h1>
+<div class="container-fluid">
+    <div class="page-header">
+        <h1><strong>{{school.name}}</strong></h1>
         </br>
     </div>
-    <div class="row-fluid">
-        <h2>Basic Information:</h2>
-        <div class="offset1">
-            </br>
-            <h4 style="font-weight:normal">
-                <b>State Id:</b> {{school.state_id}} </br></br>
-                <b>School Name:</b> {{school.name}}</br></br>
-                <b>Domain:</b> {{school.domain}}</br></br>
-                <b>License:</b> {{school.license}} </br></br>
-            </h4>
-        </div>
+    <div class="row">
+        <h2><strong>Basic Information</strong></h2>
     </div>
+    <h4>
+        <div class="row"><b>State Id:</b> {{school.state_id}}</div><br />
+        <div class="row"><b>School Name:</b> {{school.name}}</div><br />
+        <div class="row"><b>Domain:</b> {{school.domain}}</div><br />
+        <div class="row"><b>License:</b> {{school.license}}</div>
+    </h4>
 
     {% if drupal_siteinfo %}
-    <div class="row-fluid">
-        <h2>Drupal Site{% if drupal_siteinfo|length > 1%}s{% endif %}:</h2>
+    <div>
+        <h2><strong>Drupal Site{% if drupal_siteinfo|length > 1%}s{% endif %}</strong></h2>
     </div>
     {% for site, site_details in drupal_siteinfo %}
-    <div class="offset1">
-        <div class="row-fluid">
-            <h3> {{site.name}} </h3>
-            </br>
-            <h4 style="font-weight:normal">
-                {% if site_details %}
-                <b>Admins:</b> {{site_details.adminusers}}</br></br>
-                <b>Teachers:</b> {{site_details.teachers}}</br></br>
-                <b>Active Users:</b> {{site_details.activeusers}}</br></br>
-                <b>Admin Email:</b> {{site_details.adminemail}}</br></br>
-                {% endif %}
-                <b>Base Url:</b> {{site.baseurl}}</br></br>
-                <b>Base Path:</b> {{site.basepath}}</br></br>
-                <b>Jenkin's Cron Job:</b> {{site.jenkins_cron_job}}</br></br>
-                <b>Location:</b> {{site.location}}</br></br>
-            </h4>
-        </div>
+    <div class="row">
+        <h3><strong>{{site.name}}</strong></h3>
     </div>
-    </br>
+    <h4>
+        {% if site_details %}
+        <div class="row"><b>Active Users:</b> {{site_details.activeusers}}</div><br />
+        <div class="row"><b>Teacher Count:</b> {{site_details.teachers}}</div><br />
+        <div class="row"><b>Admin Count:</b> {{site_details.adminusers}}</div><br />
+        <div class="row"><b>Admins:</b><br />
+            {% for admin in site_details.adminlist %}
+                {{admin['fristname']}} {{admin['lastname']}} - {{admin['email']}}<br />
+            {% endfor %}
+        </div><br />
+        {% endif %}
+        <div class="row"><b>Base Url:</b> {{site.baseurl}}</div><br />
+        <div class="row"><b>Base Path:</b> {{site.basepath}}</div><br />
+        <div class="row"><b>Jenkin's Cron Job:</b> {{site.jenkins_cron_job}}</div><br />
+        <div class="row"><b>Location:</b> {{site.location}}</div>
+    </h4>
     {% endfor %}
     {% endif %}
 
     {% if moodle_siteinfo %}
-    <div class="row-fluid">
-        <h2>Moodle Site{% if moodle_siteinfo|length > 1%}s{% endif %}:</h2>
+    <div class="row">
+        <h2><strong>Moodle Site{% if moodle_siteinfo|length > 1%}s{% endif %}</strong></h2>
     </div>
     {% for site, site_details in moodle_siteinfo %}
-    <div class="offset1">
-        <div class="row-fluid">
-            <div class="span5">
-                <h3> {{site.name}} </h3>
-                </br>
-                <h4 style="font-weight:normal">
-                    {% if site_details %}
-                    <b>Admins:</b> {{site_details.adminusers}}</br></br>
-                    <b>Teachers:</b> {{site_details.teachers}}</br></br>
-                    <b>Active Users:</b> {{site_details.activeusers}}</br></br>
-                    <b>Admin Email:</b> {{site_details.adminemail}}</br></br>
-                    {% endif %}
-                    <b>Base Url:</b> {{site.baseurl}}</br></br>
-                    <b>Base Path:</b> {{site.basepath}}</br></br>
-                    <b>Jenkin's Cron Job:</b> {{site.jenkins_cron_job}}</br></br>
-                    <b>Location:</b> {{site.location}}</br></br>
-                    <b>API Key:</b> {{site.api_key}}</br></br>
-                </h4>
+    <div class="row">
+        <div class="col-xs-5">
+            <div class="row">
+                <h3><strong>{{site.name}}</strong></h3>
             </div>
-            <div class="span6">
-                <h3>Courses:</h3>
-                </br>
-                {% if site_details.courses %}
-                <table id="courses" class="table table-striped">
-                    <tr>
-                        <th>Serial #</th>
-                        <th>Course Name</th>
-                        <th># Enrolled</th>
-                    </tr>
-                    {% for course in site_details.courses %}
-                    <tr>
-                        <td>{{course['serial']}}</td>
-                        <td>{{course['shortname']}}</td>
-                        <td>{{course['enrolled']}}</td>
-                    </tr>
+            <h4>
+                {% if site_details %}
+                <div class="row"><b>Active Users:</b> {{site_details.activeusers}}</div><br />
+                <div class="row"><b>Teacher Count:</b> {{site_details.teachers}}</div><br />
+                <div class="row"><b>Admin Count:</b> {{site_details.adminusers}}</div><br />
+                <div class="row"><b>Admins:</b><br />
+                    {% for admin in site_details.adminlist %}
+                        {{admin['firstname']}} {{admin['lastname']}} - {{admin['email']}}<br />
                     {% endfor %}
-                </table>
-                {% else %}
-                <h4>No Courses Available...</h4>
+                </div><br />
                 {% endif %}
+                <div class="row"><b>Base Url:</b> {{site.baseurl}}</div><br />
+                <div class="row"><b>Base Path:</b> {{site.basepath}}</div><br />
+                <div class="row"><b>Jenkin's Cron Job:</b> {{site.jenkins_cron_job}}</div><br />
+                <div class="row"><b>Location:</b> {{site.location}}</div><br />
+            </h4>
+        </div>
+        <div class="col-xs-6">
+            <div class="row">
+                <h3><strong>Courses</strong></h3>
             </div>
+            {% if site_details.courses %}
+            <table id="courses" class="table table-condensed table-responsive table-bordered table-hover table-striped">
+                <tr>
+                    <th>Serial #</th>
+                    <th>Course Name</th>
+                    <th># Enrolled</th>
+                </tr>
+                {% for course in site_details.courses %}
+                <tr>
+                    <td>{{course['serial']}}</td>
+                    <td>{{course['shortname']}}</td>
+                    <td>{{course['enrolled']}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <h4>No Courses Available...</h4>
+            {% endif %}
         </div>
     </div>
-    </br>
     {% endfor %}
     {% endif %}
+</div>
 {% endblock %}

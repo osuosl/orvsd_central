@@ -1,69 +1,97 @@
-dump_schools = function(a, d) {
-    // Find the count details and update them
-    a.find(".admins").html("(A)dmins: " + d.counts.admins);
-    a.find(".users").html("(U)sers: " + d.counts.users);
-    a.find(".teachers").html("(T)eachers: " + d.counts.teachers);
-
-    // Clear the list
-    var out = a.find(".accordion-inner dl");
-    out.html("");
-
-    // Add to the lists
-    $.each(d.schools, function(k, v) {
-        var line = "";
-        var link = "<hr><li><a href=\"/schools/" + v.id + "/view\">" + v.name + "</a>";
-        if (v.sitedata != "") {
-            line = link + " - <b>A:</b> " + v.admincount +
-                          ", <b>T</b>: " + v.teachercount +
-                          ", <b>U</b>: " + v.usercount + " </li>";
-            $.each(v.sitedata, function(j, l) {
-                line += "<hr>";
-                $.each(l, function(m, n) {
-                    if (n == undefined)
-                        n = "Not available";
-                    line += "<dd>" + m.charAt(0).toUpperCase() + m.slice(1) + ": " + n;
-                });
-            });
-        } else {
-            line += link + "<hr>No sites found for this school"
-        }
-        out.append(line);
-    });
-};
-
 $(function() {
-    // Fill in the statistics at the top of the page.
-    $(window).on("load", function() {
-        $.get("/1/report/stats", function(resp) {
-            for (var key in resp) {
-                $("#" + key).append(resp[key]);
+    // Get active districts
+    // Data is [(dist_name, dist_shortname, dist_id), ...]
+    $.get("/1/districts/active", function(data) {
+        // Sort based on name for alphabetical display
+        data.category.sort(function(a, b) {
+            if (a[0] > b[0])
+                return 1;
+            if (a[0] < b[0])
+                return -1;
+            return 0;
+        });
+
+        // Remove 'Loading...'
+        $("#report_tables").html("");
+
+        // For each district
+        $.each(data.category, function(id, value) {
+            // Apend a row for the district name and the district table
+            $("#report_tables").append(
+                "<div class=\"row\" data-district=\""+value[0]+"\">\
+                    <h4>"+value[0]+"</h4>\
+                </div>\
+                <div class=\"row\" id=\""+value[1]+"\" data-district=\""+value[0]+"\">\
+                    Loading...\
+                </div>"
+            );
+
+            // Get the active details for the district to be displayed
+            // then generate table data from the returned
+            $.get(
+                "/1/report/get_active_schools",
+                // value[2] is the district id
+                {distid: value[2]},
+                function(tdata) {
+                    var table = "<table class=\"table table-condensed table-responsive table-bordered table-hover table-striped\">";
+                    table += "<tr>\
+                        <th>Site</th>\
+                        <th>School</th>\
+                        <th>Admin(s)</th>\
+                        <th>Users</th>\
+                        <th>Teachers</th>\
+                        <th>Courses</th>\
+                    </tr>";
+                    /*    <th>Actions</th>\
+                    </tr>";*/
+                    for (var school in tdata) {
+                        table += "<tr>\
+                        <td><a href=\"http://" + tdata[school].baseurl + "\">" + tdata[school].sitename + "</a></td>\
+                        <td><a href=\"/schools/" + tdata[school].schoolid + "/view\">" + tdata[school].schoolname + "</a></td>\
+                        <td>";
+                        var json = JSON.parse(tdata[school].admin);
+                        for (var k in json) {
+                            table += json[k].firstname + " " + json[k].lastname + " - " + json[k].email + "<br/>";
+                        }
+                        table += "</td>\
+                        <td>"+tdata[school].users+"</td>\
+                        <td>"+tdata[school].teachers+"</td>\
+                        <td>"+tdata[school].courses+"</td>";//\
+                        /*<td>\
+                            <a>Add Course</a><br />\
+                            <a>Add User</a><br />\
+                            <a>Edit</a>\
+                        </td></tr>";*/
+                    }
+                    table += "</table>";
+                    $("#"+value[1]).html(table);
+                }
+            );
+        });
+    });
+    //
+    // Get the top of the reort page stats
+    $.get("/1/report/stats", function(data) {
+        // Since Active Sites also displays the sites count, we have a special
+        // case for it
+        $.each(data, function(k,v) {
+            if (k === 'sites') {
+                $("."+k).html(v);
+            } else {
+                $("#"+k).html(v);
             }
         });
     });
 
-    // Show the schools in a given district.
-    $(".districtcollapse").on("show", function() {
-        var elem = $(this);
-        // Hacky way to check whether we're in the active or inactive districts
-        if (elem.parent().parent().attr('id') == 'dist_accord_active') {
-            $.ajax({
-                type: "POST",
-                url: "/1/report/get_active_schools",
-                data: {'distid': $(this).attr('distid')},
-                success: function(data) {
-                    dump_schools(elem, data);
-                }
-            });
-        }
-        else if (elem.parent().parent().attr('id') == 'dist_accord_inactive') {
-            $.ajax({
-                type: "POST",
-                url: "/1/report/get_inactive_schools",
-                data: {'distid': $(this).attr('distid')},
-                success: function(data) {
-                    dump_schools(elem, data);
-                }
-            });
-        }
+    // Filter districts when input is changed
+    $("#filter").on('input propertychange paste', function() {
+        var keyword = $(this).val().toLowerCase();
+        $("#report_tables > div[data-district]").filter(function() {
+            if ($(this).data('district').toLowerCase().indexOf(keyword) > -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
     });
 });

@@ -10,37 +10,35 @@
 {% endblock %}
 
 {% block content %}
-    <div class='row pagination-centered'>
-        <h1> {{category}} </h1>
-        <div class='span12'>&nbsp;</div>
+<form class="form-horizontal">
+    <div class='page-header'>
+        <h1>{{category}}</h1>
     </div>
-    <div class="row pagination-centered">
-        <select id="object_list" class="span6">
-            {% for obj in objects %}
-            <option value={{obj['id']}} class="object">{{obj[identifier]}}</option>
-            {% endfor %}
-        </select>
-    </div>
-        </br>
-        <div class='span12'>
-            <div class="form-horizontal">
-                <div id="form" class="row-fluid">
-
-                <!-- Embed things here -->
-
-                </div>
-            </div>
-            <p id="message" align="center"> </p> 
-            <div class="row pagination-centered">
-                <div class="span3 offset1">
-                    <input id="add" type="button" name="add" value="Add" class="btn btn-success btn-large span2">
-                </div>
-                <div class="span3">
-                    <input id="update" type="submit" name="update" value="Update" class="btn btn-primary btn-large span2">
-                </div>
-                <div class="span3">
-                    <input id="delete" type="submit" name="delete" value="Delete" class="btn btn-danger btn-large span2">
-                </div>
-            </div>
+    <div class="row">
+        <div class="col-xs-6">
+            <select id="object_list" class="form-control">
+                {% for obj in objects %}
+                <option value={{obj['id']}} class="object">{{obj[identifier]}}</option>
+                {% endfor %}
+            </select>
         </div>
+    </div><br />
+    <div class='row' id='form'>
+
+        <!-- Embed things here -->
+
+    </div>
+    <div class="row"><p id="message" align="center"> </p></div>
+    <div class="row">
+        <div class="col-xs-offset-3 col-xs-3">
+            <input id="add" type="button" name="add" value="Add" class="btn btn-success btn-large span2">
+        </div>
+        <div class="col-xs-3">
+            <input id="update" type="submit" name="update" value="Update" class="btn btn-primary btn-large span2">
+        </div>
+        <div class="col-xs-3">
+            <input id="delete" type="submit" name="delete" value="Delete" class="btn btn-danger btn-large span2">
+        </div>
+    </div>
+</form>
 {% endblock %}

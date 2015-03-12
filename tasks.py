@@ -1,6 +1,6 @@
 from celery import Celery
 
-from manage import setup_app
+from orvsd_central import create_app
 
 
 def init_celery(app):
@@ -18,7 +18,7 @@ def init_celery(app):
     celery.Task = ContextTask
     return celery
 
-celery_app = setup_app()
+celery_app = create_app()
 celery = init_celery(celery_app)
 
 if __name__ == "__main__":

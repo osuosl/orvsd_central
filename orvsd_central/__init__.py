@@ -1,10 +1,27 @@
-from flask import Flask, current_app
+from flask import Flask, current_app, g
+
+from orvsd_central.database import create_db_session
 
 
-def create_app(config='config.default'):
+def create_app(config='config.default', config_changes=None):
+    """
+    Creates an instance of our application.
+
+    We needed to create the app in this way so we could set different
+    configurations within the same app. (hint: not using the same database
+    when testing)
+    """
+
     app = Flask(__name__)
     app.config.from_object(config)
-    return app
+
+    if config_changes:
+        app.config.update(config_changes)
+
+    with app.app_context():
+        g.db_session = create_db_session()
+        attach_blueprints()
+        return app
 
 
 def attach_blueprints():

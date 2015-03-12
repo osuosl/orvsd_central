@@ -1,91 +1,98 @@
 <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}" />
 <script type="text/javascript" src="{{url_for('static', filename='js/flash.js') }}"></script>
-<div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
-        <ul class="nav">
-            <li><a href="{{ url_for('general.root')}}" class="brand" style="padding-left: 40px">ORVSD Central</a></li>
-            {% if user.is_authenticated() %}
-            <li>
-                <a href="{{ url_for('report.index') }}">Report</a>
-            </li>
-            {% if user.role >= 3 %}
-            <li class="dropdown">
-                <a class="dropdown-toggle"
-                   data-toggle="dropdown"
-                   href="#">Districts
-                   <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a href="{{ url_for('category.update', category='districts') }}">Modify</a></li>
-                </ul>
-            </li>
-            <li class="dropdown">
-                <a class="dropdown-toggle"
-                   data-toggle="dropdown"
-                   href="#">Schools
-                   <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a href="{{ url_for('category.update', category='schools')}}">Modify</a></li>
-                    <li><a href="{{ url_for('category.migrate_schools') }}">Migrate to different district</a></li>
-                </ul>
-            </li>
-            <li class="dropdown">
-                <a class="dropdown-toggle"
-                   data-toggle="dropdown"
-                   href="#">Sites
-                   <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a href="{{ url_for('category.update', category='sites')}}">Modify</a></li>
-                </ul>
-            </li>
-            <li class="dropdown">
-                <a class="dropdown-toggle"
-                   data-toggle="dropdown"
-                   href="#">Courses
-                   <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a href="{{ url_for('category.update', category='courses')}}">Modify</a></li>
-                    <li><a href="{{ url_for('category.update_courselist') }}">Update Availble Courses</a></li>
-                    <li><a href="{{ url_for('category.install_course') }}">Install Course</a></li>
-                </ul>
-            </li>
-            <li class="dropdown">
-                <a  class="dropdown-toggle"
-                    data-toggle="dropdown"
-                    href="#">Admin
-                    <b class="caret"></b>
-                </a>
-                <ul class="disabled dropdown-menu">
-                    <li><a href="{{ url_for('general.register') }}">Register new User</a></li>
-                </ul>
-            </li>
-            {% endif %}
-            {% endif %}
-
-        </ul>
-        <ul class="nav pull-right">
-        {% if user.is_authenticated() %}
-            <li><a>Logged in as: {{user.name}}</a></li>
-            <li><a href="{{ url_for('general.logout') }}">Log Out</a></li>
-        {% else %}
-            <li><a href="{{ url_for('general.login') }}">Log In</a></li>
-        {% endif %}
-        </ul>
-    </div>
-
-    <div id="flash" class="pull-right label label-important">
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class="flashes nav">
-            {% for message in messages %}
-                <li><samp>{{message}}</samp></li>
-            {%endfor%}
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#theoc-navbar">
+                <span class="sr-only">Toggle Navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="{{ url_for('general.root')}}" class="navbar-brand">ORVSD Central</a>
+        </div>
+        <div class="collapse navbar-collapse" id="theoc-navbar">
+            <ul class="nav navbar-nav navbar-left">
+                {% if user.is_authenticated() %}
+                <li>
+                    <a href="{{ url_for('report.index') }}">Report</a>
+                </li>
+                {% endif %}
+                {% if user.role >= 3 %}
+                <li class="dropdown">
+                    <a class="dropdown-toggle"
+                       data-toggle="dropdown"
+                       href="#">Districts
+                       <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{{ url_for('category.update', category='districts') }}">Modify</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle"
+                       data-toggle="dropdown"
+                       href="#">Schools
+                       <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{{ url_for('category.update', category='schools')}}">Modify</a></li>
+                        <li><a href="{{ url_for('category.migrate_schools') }}">Migrate to different district</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle"
+                       data-toggle="dropdown"
+                       href="#">Sites
+                       <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{{ url_for('category.update', category='sites')}}">Modify</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle"
+                       data-toggle="dropdown"
+                       href="#">Courses
+                       <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{{ url_for('category.update', category='courses')}}">Modify</a></li>
+                        <li><a href="{{ url_for('category.update_courselist') }}">Update Availble Courses</a></li>
+                        <li><a href="{{ url_for('category.install_course') }}">Install Course</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a  class="dropdown-toggle"
+                        data-toggle="dropdown"
+                        href="#">Admin
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{{ url_for('general.register') }}">Register new User</a></li>
+                    </ul>
+                </li>
+                {% endif %}
             </ul>
-        {%endif%}
-    {%endwith%}
-    </div>
 
+            <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated() %}
+                    <li class="navbar-text">Logged in as: {{user.name}}</li>
+                    <li class="navbar-link"><a href="{{ url_for('general.logout') }}">Log Out</a></li>
+                {% else %}
+                    <li class="navbar-link"><a href="{{ url_for('general.login') }}">Log In</a></li>
+                {% endif %}
+            </ul>
+
+            {% with messages = get_flashed_messages() %}
+                <ul id="flash" class="nav navbar-nav navbar-right">
+                {% if messages %}
+                    {% for message in messages %}
+                        <li class="navbar-text"><samp>{{message}}</samp></li>
+                    {%endfor%}
+                {%endif%}
+              </ul>
+            {%endwith%}
+        </div>
+    </div>
 </div>

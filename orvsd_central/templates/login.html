@@ -4,20 +4,22 @@
     <title>Login</title>
 {% endblock %}
 
-{% block head %}
-    <link type="text/css" rel="stylesheet" href="{{ url_for('static',filename='css/zocial.css') }}"/>
-{% endblock %}
-
 {% block content %}
-<form method="POST">
-    <fieldset>
-        <legend>Login</legend>
-        <label>Username</label>
-        {{ form.name }}
-        <label>Password</label>
-        {{ form.password }}<br />
-        <button type="submit" class="btn">Login</button>
-        <a class='zocial google' href={{url_for('general.google_login')}}>Login with Google</a>
-    </fieldset>
+<form class="form-horizontal" method="POST">
+    <legend>Login</legend>
+    <div class="form-group">
+        <label for='name' class="control-label col-xs-2">Username</label>
+        <div class="col-xs-3">{{ form.name(class_='form-control') }}</div>
+    </div>
+    <div class="form-group">
+        <label for='password' class="control-label col-xs-2">Password</label>
+        <div class="col-xs-3">{{ form.password(class_='form-control') }}</div>
+    </div>
+    <div class="form-group">
+        <div class="col-xs-offset-2">
+            <a class="btn btn-primary" href={{url_for('general.google_login')}}>Login with Google</a>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </div>
+    </div>
 </form>
 {% endblock %}

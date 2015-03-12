@@ -16,7 +16,7 @@ $(document).on("ready", function() {
                 dataType: "json",
                 success: function(data, textStatus, jqXHR) {
                     // Update the district id for the school
-                    data['district_id'] = $("#districts option:selected").val();
+                    data.district_id = $("#districts option:selected").val();
 
                     // POST the fixed data
                     $.ajax({

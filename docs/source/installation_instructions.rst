@@ -9,32 +9,36 @@ Instructions
 ----
 We recommend setting up orvsd_central in a virtualenv.
 
-\1. After sourcing your virtualenv go to your directory which contains 
+\1. After sourcing your virtualenv go to your directory which contains
 orvsd_central and run::
-    
+
     pip install -r requirements.txt
 
-\2. Run the following command twice::
-    
-    python manage.py initdb
+\2. Configure ORVSD Central
 
-**Warning** It won't work the first time. This command has to be run twice.
+    cp config/default.py.dist config/default.py
+
+Edit the options according to your environment
+
+\3. Run the following manage.py command before any others::
+
+    python manage.py setup_db
 
 A prompt for an admin account creation will show, choose any
 username, email, and password you wish.
 
-\3. Import district and school data::
+\4. Import district and school data::
 
-    python manage.py import_data -d /path/to/someData.csv 
-    
+    python manage.py import_data -d /path/to/someData.csv
+
 .. This instruction isn't complete until we find a way so the user doesn't need
     download the .csv file.
 
-\4. Gather sitedetail data from existing moodle sites::
-    
+\5. Gather sitedetail data from existing moodle sites::
+
     python manage.py gather
 
-\5. To run the server::
+\6. To run the server::
 
     python manage.py runserver
 

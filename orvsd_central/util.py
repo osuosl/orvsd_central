@@ -2,18 +2,21 @@
 Utility class containing useful methods not tied to specific models or views
 """
 from bs4 import BeautifulSoup as Soup
+import json
+import logging
 import os
 import re
 import zipfile
 from datetime import datetime
 from functools import wraps
+from getpass import getpass
 
 from celery import Celery
-from flask import current_app, flash, g, jsonify, redirect, render_template
+from flask import current_app, flash, g, redirect, render_template
 from flask.ext.login import LoginManager, current_user
 from flask.ext.oauth import OAuth
-from oursql import DictCursor, connect
 import requests
+from requests.exceptions import ConnectionError
 
 from orvsd_central import constants
 from orvsd_central.database import create_db_session
@@ -87,76 +90,6 @@ def page_not_found(e):
     return render_template('404.html', user=current_user), 404
 
 
-def build_accordion(districts, active_accordion_id, inactive_accordion_id,
-                    type, user, extra=None):
-    """
-    Builds the accordion from pre-defined templates.
-    * Note: There is some complex logic in here to differentiate schools
-            with and without students/teachers/admins. These usually refer
-            back to the database entries that we have on districts/schools, but
-            are not continuously tracking.
-    """
-    inner_t = current_app.jinja_env.get_template('accordion_inner.html')
-    outer_t = current_app.jinja_env.get_template('accordion.html')
-
-    active_inner = ""
-    inactive_inner = ""
-
-    # Find all active schools (a school with a site that has a SiteDetail)
-    active_schools = set(
-        g.db_session.query(School).join(Site).join(SiteDetail).distinct().all()
-    )
-
-    # All other schools are inactive
-    inactive_schools = set(g.db_session.query(School).all()) - active_schools
-
-    # Get the district ids of active and inactive schools
-    active_district_ids = set(
-        int(school.district_id) for school in active_schools
-    )
-    inactive_district_ids = set(
-        int(school.district_id) for school in inactive_schools
-    )
-
-    # List of districts in the
-    active_districts = set(
-        district for district in districts
-        if district.id in active_district_ids
-    )
-    inactive_districts = set(
-        district for district in districts
-        if district.id in inactive_district_ids
-    )
-
-    for district in sorted(active_districts, key=lambda x: x.shortname):
-        inner_id = "%s_active" % district.shortname
-        active_inner += inner_t.render(
-            accordion_id=active_accordion_id,
-            inner_id=inner_id,
-            type=type,
-            link=district.name,
-            extra=None if not extra else extra % district.id
-        )
-
-    for district in sorted(inactive_districts, key=lambda x: x.shortname):
-        inner_id = "%s_inactive" % district.shortname
-        inactive_inner += inner_t.render(
-            accordion_id=active_accordion_id,
-            inner_id=inner_id,
-            type=type,
-            link=district.name,
-            extra=None if not extra else extra % district.id
-        )
-
-    return outer_t.render(active_accordion_id=active_accordion_id,
-                          inactive_accordion_id=inactive_accordion_id,
-                          active=active_inner,
-                          active_count=len(active_districts),
-                          inactive=inactive_inner,
-                          inactive_count=len(inactive_districts),
-                          user=user)
-
-
 def create_course_from_moodle_backup(base_path, source, file_path):
     """
     This creates a Course object from a backup xml file for FLVS/NROC courses.
@@ -167,6 +100,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     The full file path format looks something like this:
         base_path          |   source  |          file_path
     /data/moodle2_masters      /flvs       /flvs_osl_2012/backup_algebra2.xml
+        ^ This path can be modified in your config/default.py file ^
 
     Args:
         base_path (string) - The path to our FLVS/NROC folders.
@@ -182,7 +116,7 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     project_folder = current_app.config["PROJECT_PATH"]
 
     # Unzip the file to get the manifest (All course backups are zip files)
-    zip = zipfile.ZipFile(base_path+source+file_path)
+    zip = zipfile.ZipFile(base_path + source + file_path)
     xmlfile = file(zip.extract("moodle_backup.xml"), "r")
     xml = Soup(xmlfile.read(), "lxml")
     info = xml.moodle_backup.information
@@ -268,195 +202,157 @@ def district_details(schools, active):
             'users': user_count}
 
 
-def gather_siteinfo():
+def gather_siteinfo(site, from_when=7):
     """
-    Gathers moodle/drupal site information to be put into our db.
-    * This is where all of our SiteDetail objects are generated.
+    Using the siteinfo webservice plugin for moodle, gather the siteinfo data
+    about a site
     """
-    user = current_app.config['SITEINFO_DATABASE_USER']
-    password = current_app.config['SITEINFO_DATABASE_PASS']
-    address = current_app.config['SITEINFO_DATABASE_HOST']
 
-    # Connect to gather the db list
-    con = connect(host=address, user=user, passwd=password)
-    curs = con.cursor()
+    # Verify we have a site object
+    if not isinstance(site, Site):
+        logging.error("Your 'site' appears to not be a site")
+        return
 
-    # find all the databases with a siteinfo table
-    find = ("SELECT table_schema, table_name "
-            "FROM information_schema.tables "
-            "WHERE table_name =  'siteinfo' "
-            "OR table_name = 'mdl_siteinfo';")
+    # If we have the siteinfo token, lets grab the data
+    siteinfo_token = site.get_token('orvsd_siteinfo')
+    if siteinfo_token:
+        site_url = ("http://%s" % site.baseurl
+                    if not site.baseurl.startswith("http") else site.baseurl)
 
-    curs.execute(find)
-    check = curs.fetchall()
-    con.close()
-
-    # store the db names and table name in an array to sift through
-    db_sites = []
-    if len(check):
-        for pair in check:
-            db_sites.append(pair)
-
-    unknown_district = District.query.filter_by(
-        name='z No district found'
-    ).first()
-
-    # for each relevent database, pull the siteinfo data
-    for database in db_sites:
-        cherry = connect(
-            user=user,
-            passwd=password,
-            host=address,
-            db=database[0]
+        # Make the request
+        req = requests.post(
+            url="%s/webservice/rest/server.php" % site_url,
+            data={
+                'wstoken': siteinfo_token,
+                'wsfunction': 'local_orvsd_siteinfo_siteinfo',
+                'moodlewsrestformat': 'json',
+                'datetime': str(from_when)
+            }
         )
 
-        # use DictCursor here to get column names as well
-        pie = cherry.cursor(DictCursor)
+        try:
+            # Add this data to the site details table
+            gathered_info = req.json()
 
-        # Grab the site info data
-        pie.execute("select * from `%s`;" % database[1])
-        data = pie.fetchall()
-        cherry.close()
-
-        # For all the data, shove it into the central db
-        for d in data:
-            # what version of moodle is this from?
-            # version = d['siterelease'][:3]
-
-            # what is our school domain? take the protocol
-            # off the baseurl
-            school_re = 'http[s]{0,1}:\/\/'
-            school_url = re.sub(school_re, '', d['baseurl'])
-
-            # try to figure out what machine this site lives on
-            if 'location' in d:
-                if d['location'][:3] == 'php':
-                    location = 'platform'
-                else:
-                    location = 'unknown'
-
-                # get the school
-                school = School.query.filter_by(domain=school_url).first()
-
-                # If no match is found by domain, try looking up by name
-                if not school:
-                    school = School.query.filter_by(name=d['sitename']).first()
-
-                # if no school exists, create a new one with
-                # name = sitename, district_id = 0 (special 'Unknown'
-                # district)
-                if school is None:
-                    school = School(
-                        name=d['sitename'],
-                        shortname=d['sitename'],
-                        domain=school_url,
-                        license='',
-                        state_id=None
-                    )
-
-                    dist_id = unknown_district.id
-                    if school_url:
-                        # Lets try the full school_url first.
-                        similar_schools = g.db_session.query(School).filter(
-                            School.domain.like("%" + school_url + "%")
-                        ).all()
-
-                        if not similar_schools:
-                            # Fine, let's cut off the first subdomain.
-                            broad_url = school_url[school_url.find('.'):]
-                            similar_schools = g.db_session.query(School) \
-                                .filter(School.domain.like(
-                                    "%" + broad_url + "%"
-                                )).all()
-
-                        if similar_schools:
-                            dist_id = similar_schools[0].district_id
-                            for school in similar_schools:
-                                if school.district_id != dist_id:
-                                    # If all results don't match, they
-                                    # aren't accurate enough.
-                                    dist_id = unknown_district.id
-                                    break
-
-                    school.district_id = dist_id
-                    g.db_session.add(school)
-                    g.db_session.commit()
-
-                # find the site
-                site = Site.query.filter_by(baseurl=school_url).first()
-
-                # if no site exists, make a new one, school_id = school.id
-                if site is None:
-                    site = Site(
-                        name=d['sitename'],
-                        sitetype=d['sitetype'],
-                        baseurl='',
-                        basepath='',
-                        jenkins_cron_job=None,
-                        location='',
-                        school_id=None
-                    )
-
-                site.school_id = school.id
-
-                site.baseurl = school_url
-                site.basepath = d['basepath']
-                site.location = location
-                g.db_session.add(site)
-                g.db_session.commit()
-
-                # create new site_details table
-                # site_id = site.id, timemodified = now()
-                now = datetime.now()
-                site_details = SiteDetail(
-                    siteversion=d['siteversion'],
-                    siterelease=d['siterelease'],
-                    adminemail=d['adminemail'],
-                    totalusers=d['totalusers'],
-                    adminusers=d['adminusers'],
-                    teachers=d['teachers'],
-                    activeusers=d['activeusers'],
-                    totalcourses=d['totalcourses'],
-                    timemodified=now
+            # Check for errors from moodle
+            if gathered_info.get('error', None):
+                logging.error(
+                    "%s: %s" % (site.name, gathered_info['error'])
                 )
-                site_details.site_id = site.id
+                return
+            elif gathered_info.get('exception', None):
+                logging.error(
+                    "%s: %s" % (site.name, gathered_info['exception'])
+                )
+                return
+        except ValueError:
+            # REST may be disabled
+            if req.status_code == 403:
+                logging.error(
+                    "%s: 403 Returned, is the REST service enabled?" %
+                    site.name
+                )
+            # Response given by the site
+            logging.error(
+                "%s: did not receive json: '%s'" %
+                (site.name, req.text)
+            )
+            return
 
-                # if there are courses on this site, try to
-                # associate them with our catalog
-                if d['courses']:
-                    # quick and ugly check to make sure we have
-                    # a json string
-                    if d['courses'][:2] != '[{':
-                        continue
+        # handle the adminlist
+        adminlist = json.dumps(gathered_info.get('adminlist', ''))
 
-                    """
-                    @TODO: create the correct association
-                           model for this to work
+        site_details = SiteDetail(
+            site_id=site.id,
+            courses=gathered_info.get('courses', ''),
+            siteversion=gathered_info.get('siteversion', ''),
+            siterelease=gathered_info.get('siterelease', ''),
+            adminlist=adminlist,
+            totalusers=gathered_info.get('totalusers', 0),
+            adminusers=gathered_info.get('adminusers', 0),
+            teachers=gathered_info.get('teachers', 0),
+            activeusers=gathered_info.get('activeusers', 0),
+            totalcourses=gathered_info.get('totalcourses', 0),
+            timemodified=datetime.now()
+        )
 
-                    courses = json.loads(d['courses'])
-                    associated_courses = []
+        g.db_session.add(site_details)
+        g.db_session.commit()
 
-                    for i, course in enumerate(courses):
-                        if course['serial'] != '0':
-                            course_serial = course['serial'][:4]
-                            orvsd_course = Course.query
-                                                 .filter_by(serial=
-                                                            course_serial)
-                                                 .first()
-                            if orvsd_course:
-                                # store this association
-                                # delete this course from the json string
-                                pass
 
-                    # put all the unknown courses back in the
-                    # site_details record
-                    site_details.courses = json.dumps(courses)
-                    """
+def gather_tokens(site, services=[]):
+    """
+    gather_tokens will get tokens required for moodle webservices provided in
+    the list of service_names list
 
-                    site_details.courses = d['courses']
+    sites: list of moodle sites to get tokens from
+    service_names: list of service names to get tokens for
+    """
 
-                g.db_session.add(site_details)
+    # If there are no sites listed, why is this even being called?
+    if not isinstance(site, Site):
+        return
+
+    # We allow for service names to be passed, though most likely only services
+    # listed in the applications config will ever be used
+    if services == []:
+        service_names = current_app.config['MOODLE_SERVICES']
+
+    # If no services, nor a baseurl whys is the even being called?
+    if not services or site.baseurl in ['', None]:
+        return
+
+    # For the request, prepend the protocol if necessary
+    site_url = ("http://%s" % site.baseurl
+                if not site.baseurl.startswith("http") else site.baseurl)
+
+    # For each service, gather a token
+    for service in service_names:
+        try:
+            # Using the siteurl and the account information stored in the
+            # config, request a token for the given service
+            resp_data = {
+                'username': current_app.config['INSTALL_COURSE_USERNAME'],
+                'password': current_app.config['INSTALL_COURSE_PASS'],
+                'service': service
+            }
+            resp = requests.post(
+                "%s/login/token.php" % site_url,
+                data=resp_data
+            )
+        except ConnectionError:
+            logging.error("%s: Unable to connect to the site" % site.name)
+            continue
+
+        # Try and decode the json, if we did not receive json, we need to
+        # return the string (resp.text) back to the user as an error
+        try:
+            returned = resp.json()
+            # Check for an error log and continue
+            if 'error' in returned:
+                logging.error("%s:  %s" % (
+                    site.name,
+                    returned['error']
+                ))
+                continue
+            else:
+                current_tokens = site.get_moodle_tokens()
+                # Assign the service the retreived token
+                current_tokens[service] = returned['token']
+                # dump the json string and store it for the site
+                site.moodle_tokens = json.dumps(current_tokens)
+                # Commit the change to the database
                 g.db_session.commit()
+                logging.info(
+                    "Added '%s':'%s' to %s" %
+                    (service, returned['token'], site_url)
+                )
+        except ValueError:
+            # Unable to parse JSON, log the problem
+            logging.warning(
+                "Unable to parse JSON for %s: %s" %
+                (site_url, resp.text)
+            )
 
 
 def get_course_folders(base_path):
@@ -514,6 +410,7 @@ def get_path_and_source(base_path, file_path):
     The full file path format looks something like this:
         base_path          |   source  |          file_path
     /data/moodle2_masters      /flvs       /flvs_osl_2012/backup_algebra2.xml
+        ^ This path can be modified in your config/default.py file ^
 
     Args:
         base_path (string) - The path to our FLVS/NROC folders.
@@ -524,6 +421,67 @@ def get_path_and_source(base_path, file_path):
     """
     path = file_path.replace(base_path, '').partition('/')
     return path[0] + '/', path[2]
+
+
+def get_active_counts():
+    """
+    Get the active counts of all the things - schools, sites, districts, users,
+    admins, and teachers
+    """
+
+    # Dictionary being returned of all count data
+    active_counts = {
+        'districts': 0,
+        'schools': 0,
+        'sites': 0,
+        'courses': Course.query.count(),
+        'admins': 0,
+        'teachers': 0,
+        'totalusers': 0,
+        'activeusers': 0
+    }
+
+    # Starting from the perspective of sites
+    sites = Site.query.join(SiteDetail).distinct().all()
+
+    # When looking for districts and schools, record unique names and count
+    # those at the end
+    active_schools = set()
+    active_districts = set()
+
+    # For each site, check if there is a SiteDetail associated. If there is,
+    # that means the site is active and we want all the details about users.
+    for site in sites:
+        sd = SiteDetail.query.filter(
+            SiteDetail.site_id == site.id
+        ).order_by(
+            SiteDetail.timemodified.desc()
+        ).first()
+
+        if sd:
+            # Grab all the details about the users
+            active_counts['admins'] += sd.adminusers
+            active_counts['teachers'] += sd.teachers
+            active_counts['totalusers'] += sd.totalusers
+            active_counts['activeusers'] += sd.activeusers
+            active_counts['sites'] += 1
+
+            # Add the school and district names to their respective sets for
+            # later counting
+            school = School.query.filter(School.id == site.school_id).first()
+            if school:
+                active_schools.add(school.name)
+                district = District.query.filter(
+                    District.id == school.district_id
+                ).first()
+                if district:
+                    active_districts.add(district.name)
+
+    # Count all the unique schools and districts
+    active_counts['districts'] = len(active_districts)
+    active_counts['schools'] = len(active_schools)
+
+    return active_counts
 
 
 def get_schools(dist_id, active):
@@ -537,63 +495,36 @@ def get_schools(dist_id, active):
     active  -- Status of schools to find
     """
 
-    # Given the distid, we get all the schools
-    if dist_id:
-        schools = School.query.filter_by(district_id=dist_id) \
-                              .order_by("name").all()
-    else:
-        schools = School.query.order_by("name").all()
+    # Get all schools in the district with dist_id
+    schools = School.query.filter_by(district_id=dist_id)
+    active_schools = schools.join(Site).join(SiteDetail).distinct()
 
-    # the dict to be jsonify'd
-    school_list = {}
+    # Dict to return for the report
+    district_info = {}
 
-    for school in schools:
-        sitedata = []
-        admincount = 0
-        teachercount = 0
-        usercount = 0
+    for school in active_schools:
+        # Get the sites associated with the school
+        sites = Site.query.filter_by(school_id=school.id).distinct()
 
-        sites = Site.query.filter(Site.school_id == school.id).all()
         for site in sites:
-            admin = None
-            sd = SiteDetail.query.filter(SiteDetail.site_id == site.id)\
-                                 .order_by(SiteDetail.timemodified.desc())\
-                                 .first()
-            if sd:
-                admin = sd.adminemail
-                admincount += sd.adminusers or 0
-                teachercount += sd.teachers or 0
-                usercount += sd.totalusers or 0
+            details = SiteDetail.query.filter_by(site_id=site.id).order_by(
+                SiteDetail.timemodified.desc()
+            ).first()
 
-            sitedata.append({'name': site.name,
-                             'baseurl': site.baseurl,
-                             'sitetype': site.sitetype,
-                             'admin': admin})
+            district_info[str(site.id)] = {}
+            district_info[str(site.id)]['sitename'] = site.name
+            district_info[str(site.id)]['schoolname'] = school.name
+            district_info[str(site.id)]['schoolid'] = school.id
+            district_info[str(site.id)]['baseurl'] = site.baseurl
+            if details:
+                district_info[str(site.id)]['admin'] = details.adminlist
+                district_info[str(site.id)]['teachers'] = details.teachers
+                district_info[str(site.id)]['users'] = details.activeusers
+                district_info[str(site.id)]['courses'] = (
+                    len(json.loads(details.courses)) if details.courses else 0
+                )
 
-        # Get around potential moodle plugin issues
-        totalcount = admincount + teachercount + usercount
-
-        usercount = usercount - admincount - teachercount
-        # For active schools, the totalcount better be greater than 0
-        if active and totalcount > 0:
-            school_list[school.shortname] = {'name': school.name,
-                                             'id': school.id,
-                                             'admincount': admincount,
-                                             'teachercount': teachercount,
-                                             'usercount': usercount,
-                                             'sitedata': sitedata}
-        # For inactive, the totalcount better be 0
-        elif not active and totalcount == 0:
-            school_list[school.shortname] = {'name': school.name,
-                                             'id': school.id,
-                                             'admincount': admincount,
-                                             'teachercount': teachercount,
-                                             'usercount': usercount,
-                                             'sitedata': sitedata}
-
-    # Returned the jsonify'd data of counts and schools for jvascript to parse
-    return jsonify(schools=school_list,
-                   counts=district_details(schools, active))
+    return district_info
 
 
 @celery.task(name='tasks.install_course')
@@ -622,7 +553,7 @@ def install_course_to_site(course_detail_id, install_url):
             'email': current_app.config['INSTALL_COURSE_EMAIL'],
             'pass': current_app.config['INSTALL_COURSE_PASS']}
 
-    resp = requests.post(install_url, data=data)
+    resp = requests.post(install_url, data=data, timeout=None)
 
     return "%s\n\n%s\n\n\n" % (course.shortname, resp.text)
 
@@ -676,3 +607,53 @@ def requires_role(role):
             return f(*args, **kwargs)
         return wraps(f)(wrapper)
     return decorator
+
+
+def is_valid_email(email):
+    """
+    Check that `email` is not empty and looks like an e-mail.
+    """
+    if not email:
+        return False
+
+    if not re.match(
+        '^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$',
+        email,
+    ):
+        return False
+
+    return True
+
+
+def prompt_valid_email():
+    """
+    Prompts for an email that does not already exist
+    in the database.
+
+    Returns: a valid and unique email.
+    """
+    email = raw_input("E-mail: ")
+    while not is_valid_email(email):
+        print("E-mail appears to be invalid.")
+        email = raw_input("E-mail: ")
+
+    return email
+
+
+def prompt_matching_passwords():
+    """
+    Returns valid matching passwords from the prompt.
+    """
+    matching = False
+    while not matching:
+        passwd = getpass("Password: ")
+        if not passwd:
+            print("Please enter a password.")
+            continue
+
+        confirm = getpass("Confirm: ")
+        matching = passwd == confirm
+        if not matching:
+            print("Passwords do not match. Please try again.")
+
+    return passwd
