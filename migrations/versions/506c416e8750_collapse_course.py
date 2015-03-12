@@ -23,9 +23,30 @@ def downgrade(engine_name):
 
 
 def upgrade_engine1():
+    # Begin by dropping the celery_task_id column
     op.drop_column('sites_courses', 'celery_task_id')
+
+    # Modify many from String(255) to Text
+    op.alter_column('courses', 'name',
+                    type_=sa.Text, existing_type=sa.String(255),)
+    op.alter_column('courses', 'category',
+                    type_=sa.Text, existing_type=sa.String(255),)
+    op.alter_column('courses', 'license',
+                    type_=sa.Text, existing_type=sa.String(255),)
+    op.alter_column('courses', 'source',
+                    type_=sa.Text, existing_type=sa.String(255),)
 
 
 def downgrade_engine1():
-    op.add_column('sites_courses', Column('celery_task_id', sa.String(255)))
+    # Begin by restoring the celery_task_id column
+    op.add_column('sites_courses', sa.Column('celery_task_id', sa.String(255)))
 
+    # (Potentially) Truncate columns
+    op.alter_column('courses', 'name',
+                    type_=sa.String(255), existing_type=sa.Text)
+    op.alter_column('courses', 'category',
+                    type_=sa.String(255), existing_type=sa.Text)
+    op.alter_column('courses', 'license',
+                    type_=sa.String(255), existing_type=sa.Text)
+    op.alter_column('courses', 'source',
+                    type_=sa.String(255), existing_type=sa.Text)
