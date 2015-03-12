@@ -14,11 +14,11 @@ Model = declarative_base()
 class SiteCourse(Model):
     """
     A representation of the connection between the courses each site has
-    installed, and information about those course details.
+    installed, and information about those course.
 
-    site_id        : the site's id
-    course_id      : the course's id
-    celery_task_id : celery task id for the site
+    site_id     : the site's id
+    course_id   : the course's id
+    active      : state of the course on the site
     """
 
     __tablename__ = 'sites_courses'
@@ -40,12 +40,7 @@ class SiteCourse(Model):
             name='fk_sites_courses_course_id'
         )
     )
-    celery_task_id = Column(String(255))
-
-    def __init__(self, site_id, course_id, celery_task_id):
-        self.site_id = site_id
-        self.course_id = course_id
-        self.celery_task_id = celery_task_id
+    active = Column(Boolean, default=False)
 
 
 class User(Model):
@@ -365,39 +360,61 @@ class Course(Model):
     A Model representation of a Course.
     * Courses belong to many schools
 
-    id        : Uniquely identifies among instances or versions of a course
-    name      : The course name (a moodle setting)
-    shortname : The course short name (a moodle setting)
-    license   : Schools with a license token matching this can install this
-              : class
-    source    : Provider of the course, possibly used by moodle for storing the
-              : location
-    serial    : Shared identifier among different versions of the same course
+    name            : The course name (a moodle setting)
+    filename        : The name and extension without the full path
+    license         : Schools with a license token matching this can
+                    : install this
+    moodle_course_id: Moodle course id given during the backup process
+    moodle_version  : A moodle style version class
+    serial          : Shared identifier among different versions
+                    : of the same course
+    shortname       : The course short name (a moodle setting)
+    source          : Provider of the course, possibly used by moodle
+                    : for storing the location
+    version         : The version, format determined by client
     """
+
     __tablename__ = 'courses'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(255))
-    shortname = Column(String(255))
-    license = Column(String(255))
-    source = Column(String(255))
+    name = Column(Text)
+    filename = Column(Text)
+    license = Column(Text)
+    moodle_course_id = Column(Integer)
+    moodle_version = Column(Text)
     serial = Column(Integer)
+    shortname = Column(Text)
+    source = Column(Text)
+    updated = Column(DateTime)
+    version = Column(Float)
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s')>" % \
-               (self.serial, self.name, self.shortname,
-                self.license, self.source)
+        return (
+            "<Site('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')>" %
+            (self.id, self.name, self.filename, self.license,
+             self.moodle_course_id, self.moodle_version, self.serial,
+             self.shortname, self.source, self.updated, self.version)
+        )
 
     def get_properties(self):
-        return ['id', 'name', 'shortname', 'license', 'serial']
+        return ['id', 'name', 'filename', 'license', 'moodle_course_id',
+                'moodle_version', 'serial', 'shortname', 'source', 'updated',
+                'version']
 
     def serialize(self):
-        return {'id': self.id,
-                'name': self.name,
-                'shortname': self.shortname,
-                'license': self.license,
-                'source': self.source,
-                'serial': self.serial)
+        return {
+            'id': self.id,
+            'name': self.name,
+            'filename': self.filename,
+            'license': self.license,
+            'moodle_course_id': self.moodle_course_id,
+            'moodle_version': self.moodle_version,
+            'serial': self.serial,
+            'shortname': self.shortname,
+            'source': self.source,
+            'updated': self.updated,
+            'version': self.version
+        }
 
 
 class CourseDetail(Model):
@@ -405,39 +422,15 @@ class CourseDetail(Model):
     A Model representation of a Course's details.
 
     id               : Unique to orvsd
-    course_id        : Unique to orvsd
-    filename         : The name and extension without the full path
-    version          : The version, format determined by client
-    updated          : Time of the last update
-    active           : True if the course has recently been in use
-    moodle_version   : A moodle style version
     moodle_course_id : The course id determined by moodle
     """
     __tablename__ = 'course_details'
     id = Column(Integer, primary_key=True)
-    course_id = Column(Integer,
-                       ForeignKey('courses.id',
-                                  use_alter=True,
-                                  name='fk_course_details_site_id'))
-    filename = Column(String(255))
-    version = Column(Float())
-    updated = Column(DateTime)
-    active = Column(Boolean)
-    moodle_version = Column(String(255))
     moodle_course_id = Column(Integer)
 
     def __repr__(self):
-        return "<CourseDetail('%s','%s','%s','%s','%s','%s','%s','%s')>" % \
-               (self.course_id, self.filename, self.version, self.updated,
-                self.active, self.moodle_version, self.source,
-                self.moodle_course_version)
+        return "<CourseDetail('%s')>" % self.moodle_course_id
 
     def serialize(self):
         return {'id': self.id,
-                'course_id': self.course_id,
-                'filename': self.filename,
-                'version': self.version,
-                'updated': self.updated,
-                'active': self.active,
-                'moodle_version': self.moodle_version,
                 'moodle_course_id': self.moodle_course_id}
