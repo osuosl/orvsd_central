@@ -366,44 +366,38 @@ class Course(Model):
     * Courses belong to many schools
 
     id        : Uniquely identifies among instances or versions of a course
-    serial    : Shared identifier among different versions of the same course
     name      : The course name (a moodle setting)
     shortname : The course short name (a moodle setting)
     license   : Schools with a license token matching this can install this
               : class
-    category  : Moodle category for this class (probably "default")
     source    : Provider of the course, possibly used by moodle for storing the
               : location
+    serial    : Shared identifier among different versions of the same course
     """
     __tablename__ = 'courses'
 
     id = Column(Integer, primary_key=True)
-    serial = Column(Integer)
     name = Column(String(255))
     shortname = Column(String(255))
     license = Column(String(255))
-    category = Column(String(255))
     source = Column(String(255))
-
-    course_details = relationship("CourseDetail",
-                                  backref=backref('course', order_by=id))
+    serial = Column(Integer)
 
     def __repr__(self):
-        return "<Site('%s','%s','%s','%s','%s','%s')>" % \
+        return "<Site('%s','%s','%s','%s','%s')>" % \
                (self.serial, self.name, self.shortname,
-                self.license, self.category, self.source)
+                self.license, self.source)
 
     def get_properties(self):
-        return ['id', 'serial', 'name', 'shortname', 'license', 'category']
+        return ['id', 'name', 'shortname', 'license', 'serial']
 
     def serialize(self):
         return {'id': self.id,
-                'serial': self.serial,
                 'name': self.name,
                 'shortname': self.shortname,
                 'license': self.license,
-                'category': self.category,
-                'source': self.source}
+                'source': self.source,
+                'serial': self.serial)
 
 
 class CourseDetail(Model):
