@@ -102,6 +102,17 @@ def upgrade_engine1():
     # Commit the changes to course
     session.commit()
 
+    # Final step in this migration, add active to all SiteCourses
+    # defaulting to true
+    op.add_column(
+        'sites_courses',
+        sa.Column(
+            'active',
+            type_=sa.Boolean,
+            default=True
+        )
+    )
+
 
 def downgrade_engine1():
     # Grab the session, we will need to commit along the way
@@ -148,3 +159,5 @@ def downgrade_engine1():
     op.drop_column('courses', 'updated')
     op.drop_column('courses', 'version')
 
+    # Drop active from sites courses
+    op.drop_column('sites_courses', 'active')
