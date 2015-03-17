@@ -42,8 +42,8 @@ $(function() {
                         <th>Teachers</th>\
                         <th>Courses</th>\
                     </tr>";
-                    /*    <th>Actions</th>\
-                    </tr>";*/
+                        <th>Actions</th>\
+                    </tr>";
                     for (var school in tdata) {
                         table += "<tr>\
                         <td><a href=\"http://" + tdata[school].baseurl + "\">" + tdata[school].sitename + "</a></td>\
@@ -57,11 +57,11 @@ $(function() {
                         <td>"+tdata[school].users+"</td>\
                         <td>"+tdata[school].teachers+"</td>\
                         <td>"+tdata[school].courses+"</td>";//\
-                        /*<td>\
-                            <a>Add Course</a><br />\
-                            <a>Add User</a><br />\
+                        <td>\
                             <a>Edit</a>\
-                        </td></tr>";*/
+                            /*<a>Add Course</a><br />\
+                            <a>Add User</a><br />\*/
+                        </td></tr>";
                     }
                     table += "</table>";
                     $("#"+value[1]).html(table);
