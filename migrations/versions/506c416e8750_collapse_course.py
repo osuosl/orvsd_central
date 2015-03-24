@@ -113,7 +113,10 @@ def upgrade_engine1():
         )
     )
 
-    session.commit()
+    # Remove the category column
+    op.drop_column('courses', 'category')
+
+    # Drop the unneeded course_details table
     op.drop_table('course_details')
 
 
