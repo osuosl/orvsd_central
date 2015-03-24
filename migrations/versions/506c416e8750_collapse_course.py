@@ -113,6 +113,9 @@ def upgrade_engine1():
         )
     )
 
+    session.commit()
+    op.drop_table('course_details')
+
 
 def downgrade_engine1():
     # Grab the session, we will need to commit along the way
