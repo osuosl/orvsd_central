@@ -7,8 +7,8 @@ from flask.ext.login import current_user, login_required
 from sqlalchemy import and_
 
 from orvsd_central.forms import InstallCourse
-from orvsd_central.models import (CourseDetail, District, School, Site,
-                                  SiteCourse, SiteDetail)
+from orvsd_central.models import (Course, District, School, Site, SiteCourse,
+                                  SiteDetail)
 from orvsd_central.util import (create_course_from_moodle_backup,
                                 get_course_folders, get_path_and_source,
                                 get_obj_by_category, get_obj_identifier,
@@ -67,8 +67,8 @@ def install_course():
         form = InstallCourse()
 
         # Query all moodle 2.x courses
-        courses = g.db_session.query(CourseDetail).filter(
-            CourseDetail.moodle_version
+        courses = g.db_session.query(Course).filter(
+            Course.moodle_version
             .like('2%')
             ).all()
 
@@ -97,16 +97,16 @@ def install_course():
         listed_courses = []
         # Create the courses list
         for course in courses:
-            if course.course_id not in listed_courses:
+            if course.id not in listed_courses:
                 if course.version:
                     courses_info.append(
-                        (course.course_id, "%s - v%s" %
-                         (course.course.name, course.version)))
+                        (course.id, "%s - v%s" %
+                         (course.name, course.version)))
                 else:
                     courses_info.append(
-                        (course.course_id, "%s" %
-                         (course.course.name)))
-                listed_courses.append(course.course_id)
+                        (course.id, "%s" %
+                         (course.name)))
+                listed_courses.append(course.id)
 
         # Create the sites list
         for site in moodle_2_sites:
@@ -133,8 +133,8 @@ def install_course():
         site_ids = [site_id for site_id in request.form.getlist('site')]
         sites = [Site.query.filter_by(id=site).first() for site in site_ids]
 
-        course_details = g.db_session.query(CourseDetail).filter(
-            CourseDetail.course_id.in_(selected_courses)
+        course_details = g.db_session.query(Course).filter(
+            Course.id.in_(selected_courses)
         ).all()
 
         for site in sites:
@@ -196,15 +196,14 @@ def update_courselist():
                 sources.append(source)
                 filenames.append(path)
 
-            details = g.db_session.query(CourseDetail) \
-                .join(CourseDetail.course) \
-                .filter(CourseDetail.filename.in_(
-                        filenames)).all()
+            courses = g.db_session.query(Course).filter(
+                Course.filename.in_(filenames)
+            ).all()
 
-            for detail in details:
-                if detail.filename in filenames:
-                    sources.pop(filenames.index(detail.filename))
-                    filenames.pop(filenames.index(detail.filename))
+            for course in courses:
+                if course.filename in filenames:
+                    sources.pop(filenames.index(course.filename))
+                    filenames.pop(filenames.index(course.filename))
 
             for source, file_path in zip(sources, filenames):
                 create_course_from_moodle_backup(base_path, source, file_path)

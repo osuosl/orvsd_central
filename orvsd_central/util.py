@@ -21,7 +21,7 @@ from requests.exceptions import ConnectionError
 from orvsd_central import constants
 from orvsd_central.database import create_db_session
 from orvsd_central.models import (District, School, Site, SiteDetail,
-                                  Course, CourseDetail, User)
+                                  Course, User)
 
 # Set up a google oath object for user authentication.
 google = OAuth().remote_app(
@@ -121,44 +121,35 @@ def create_course_from_moodle_backup(base_path, source, file_path):
     xml = Soup(xmlfile.read(), "lxml")
     info = xml.moodle_backup.information
 
-    old_course = Course.query.filter_by(
+    course = Course.query.filter_by(
         name=info.original_course_fullname.string) or \
         Course.query.filter_by(
             name=info.original_course_shortname.string)
 
-    if old_course is not None:
+    if not course:
+        _version_re = re.findall(r'_v(\d)_', file_path)
+
+        # Regex will only be a list if it has a value in it
+        version = _version_re[0] if list(_version_re) else None
+
         # Create a course since one is unable to be found with that name.
-        new_course = Course(serial=1000 + len(Course.query.all()),
-                            source=source.replace('/', ''),
-                            name=info.original_course_fullname.string,
-                            shortname=info.original_course_shortname.string)
+        new_course = Course(
+            name=info.original_course_fullname.string,
+            filename=file_path,
+            license=None,
+            moodle_course_id=info.original_course_id.string,
+            moodle_version=info.moodle_release.string,
+            serial=1000 + len(Course.query.all()),
+            shortname=info.original_course_shortname.string,
+            source=source.replace('/', ''),
+            updated=datetime.now(),
+            version=version
+        )
         g.db_session.add(new_course)
 
         # Until the session is committed, the new_course does not yet have
         # an id.
         g.db_session.commit()
-
-        course_id = new_course.id
-    else:
-        course_id = old_course.id
-
-    _version_re = re.findall(r'_v(\d)_', file_path)
-
-    # Regex will only be a list if it has a value in it
-    version = _version_re[0] if list(_version_re) else None
-
-    new_course_detail = CourseDetail(course_id=course_id,
-                                     filename=file_path,
-                                     version=version,
-                                     updated=datetime.now(),
-                                     active=True,
-                                     moodle_version=info.moodle_release.string,
-                                     moodle_course_id=info
-                                                     .original_course_id
-                                                     .string)
-
-    g.db_session.add(new_course_detail)
-    g.db_session.commit()
 
     # Get rid of moodle_backup.xml
     os.remove(os.path.join(project_folder, "moodle_backup.xml"))
@@ -384,7 +375,7 @@ def get_obj_by_category(category):
     # Checking for case insensitive categories
     categories = {'districts': District, 'schools': School,
                   'sites': Site, 'courses': Course, 'users': User,
-                  'coursedetails': CourseDetail, 'sitedetails': SiteDetail}
+                  'sitedetails': SiteDetail}
 
     return categories.get(category.lower())
 
@@ -528,20 +519,19 @@ def get_schools(dist_id, active):
 
 
 @celery.task(name='tasks.install_course')
-def install_course_to_site(course_detail_id, install_url):
+def install_course_to_site(course_id, install_url):
     """
     Installs 'course' to 'site'.
     """
     # To get the file path we need the text input, the lowercase of
     # source, and the filename
-    course_detail = CourseDetail.query.filter_by(id=course_detail_id).first()
-    course = course_detail.course
+    course = Course.query.filter_by(id=course_id).first()
 
     fp = os.path.join(current_app.config['INSTALL_COURSE_FILE_PATH'],
                       course.source)
 
     data = {'filepath': fp,
-            'file': course_detail.filename,
+            'file': course.filename,
             'courseid': course.id,
             'coursename': course.name,
             'shortname': course.shortname,
