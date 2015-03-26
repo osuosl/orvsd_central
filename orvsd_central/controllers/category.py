@@ -210,9 +210,15 @@ def update_courselist():
                 num_courses += 1
 
             if num_courses > 0:
-                flash(str(num_courses) + ' new courses added successfully!')
+                flash(
+                    "%s new courses added successfully!" % num_courses,
+                    category='info'
+                )
         else:
-            flash("Invalid INSTALL_COURSE_FILE_PATH in your config")
+            flash(
+                "Invalid INSTALL_COURSE_FILE_PATH in your config",
+                category='error'
+            )
 
     return render_template('update_courses.html', user=current_user)
 

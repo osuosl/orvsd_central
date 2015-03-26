@@ -84,11 +84,11 @@
                 {% endif %}
             </ul>
 
-            {% with messages = get_flashed_messages() %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
                 <ul id="flash" class="nav navbar-nav navbar-right">
                 {% if messages %}
-                    {% for message in messages %}
-                        <li class="navbar-text"><samp>{{message}}</samp></li>
+                    {% for category, message in messages %}
+                        <li class="navbar-text"><div class="flash flash_{{category}}">{{message}}</div></li>
                     {%endfor%}
                 {%endif%}
               </ul>

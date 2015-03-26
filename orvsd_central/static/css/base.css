@@ -22,3 +22,20 @@ html, body {
 #wrap > .container {
     padding-top: 60px;
 }
+
+.flash {
+    border-radius: 10px 10px 10px 10px;
+    color: white;
+}
+
+.flash_error {
+    background-color: rgb(255, 25, 25);
+}
+
+.flash_info {
+    background-color: rgb(25, 255, 25);
+}
+
+.flash_warn {
+    background-color: yellow;
+}
