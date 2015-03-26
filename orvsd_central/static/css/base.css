@@ -24,16 +24,16 @@ html, body {
 }
 
 .flash {
-    border-radius: 15px 15px 15px 15px;
+    border-radius: 10px 10px 10px 10px;
     color: white;
 }
 
 .flash_error {
-    background-color: rgb(255, 50, 50);
+    background-color: rgb(255, 25, 25);
 }
 
 .flash_info {
-    background-color: rgb(50, 255, 50);
+    background-color: rgb(25, 255, 25);
 }
 
 .flash_warn {
