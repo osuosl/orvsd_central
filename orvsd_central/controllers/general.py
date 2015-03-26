@@ -85,11 +85,13 @@ def login():
         user = User.query.filter_by(name=form.name.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
-            flash("Logged in successfully.")
+            flash("Logged in successfully.", category='info')
             return redirect(url_for("report.index"))
         else:
-            flash("Username/Password combo was not recognized.  "
-                  "Please try again.")
+            flash(
+                "Username or Password was not recognized. Please try again.",
+                category='error'
+            )
 
     # current_user should be anonymous at this point which does not have a role
     # thus requiring some value for user.role or jinja2 complains with an
@@ -119,8 +121,10 @@ def google_login():
         except HTTPError:
             if req.status_code == 401:
                 session.pop('access_token', None)
-                flash('There was a problem with your Google \
-                      login information.  Please try again.')
+                flash(
+                    "Incorrect google Username or Password, please try again",
+                    category='error'
+                )
                 return redirect(url_for('general.login'))
             return req.raw.read()
         obj = req.json()
@@ -133,7 +137,10 @@ def google_login():
             login_user(user)
             return redirect(url_for('report.index'))
         else:
-            flash("That google account does not have access.")
+            flash(
+                "That google account does not have access.",
+                category='error'
+            )
             return redirect(url_for('general.login'))
 
 
@@ -171,5 +178,8 @@ def unauthorized():
     """
     Handler for unauthorized users. Returns the user to a login page.
     """
-    flash('You are not authorized to view this page, please login.')
+    flash(
+        "You are not authorized to view this page, please login.",
+        category='error'
+    )
     return redirect(url_for('general.login'))
