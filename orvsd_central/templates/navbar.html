@@ -88,7 +88,7 @@
                 <ul id="flash" class="nav navbar-nav navbar-right">
                 {% if messages %}
                     {% for category, message in messages %}
-                        <li class="navbar-text"><div class="flash_{{category}}">{{message}}</div></li>
+                        <li class="navbar-text"><div class="flash flash_{{category}}">{{message}}</div></li>
                     {%endfor%}
                 {%endif%}
               </ul>
