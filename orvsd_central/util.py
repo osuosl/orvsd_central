@@ -601,7 +601,10 @@ def requires_role(role):
             if not current_user.is_anonymous():
                 if current_user.role >= constants.USER_PERMS.get(role):
                     return f(*args, **kwargs)
-                flash("You do not have permission to access this page.")
+                flash(
+                    "You do not have permission to access this page.",
+                    category='error'
+                )
                 return redirect("/")
             # Must check for a logged in user before checking it's attrs.
             return f(*args, **kwargs)
