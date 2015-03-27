@@ -21,7 +21,8 @@ method to **return unicode(self.id)** instead of a typo you found such as: **ret
 will not require a migration because the column is not changed, but rather code that references
 the column.
 
-Run this command from the orvsd_central folder when your migraitons are ready.
+Run this command from the orvsd_central folder when you are ready to generate the revision
+files that you will modify to do the actual migration.
 
     PYTHONPATH='.' alembic revision -m "my nifty changes"
     
