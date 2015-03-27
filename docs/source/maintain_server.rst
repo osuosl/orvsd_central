@@ -13,7 +13,7 @@ it is stored.
 We use a nifty little tool called alembic to handle database versioning for us.
 
 When you need to change the schema (change the name of a column, table, modify a table or data),
-you will need to generate a migration file and then edit it. Check out some examples in the
+you will need to generate a migration stub and write the migration. Check out some examples in the
 migrations folder. Some things
 that will not require a migration are changes to methods within the models.py classes which use the
 data but do not necessarily represent the data. Take the method **User.get_id(self)**. changing this
@@ -21,7 +21,7 @@ method to **return unicode(self.id)** instead of a typo you found such as: **ret
 will not require a migration because the column is not changed, but rather code that references
 the column.
 
-Run this command from the orvsd_central folder when you are ready to generate the revision
+Run this command from the orvsd_central folder when you are ready to generate the migration
 files that you will modify to do the actual migration.
 
     PYTHONPATH='.' alembic revision -m "my nifty changes"
