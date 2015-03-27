@@ -28,7 +28,7 @@ files that you will modify to do the actual migration.
     
 Now that the revision exists, go to the migrations folder and fill out the function stubs which
 only have "pass" as their body. The migrations that you write will need to only modify the table
-and any data that is needed. Seperate changes will need to be made by the actual orvsd code
+and any data that is needed. Separate changes will need to be made by the actual orvsd code
 that should be changed as a result of the new schema. Once this is complete we can run the migration.
 
 To run a migration, from the orvsd_central folder, run:
