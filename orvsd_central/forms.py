@@ -1,6 +1,7 @@
 from flask.ext.wtf import (Form, TextField, PasswordField, SelectField,
                            SelectMultipleField, Required, Email)
 
+defaults = [('None', '---')]
 
 class LoginForm(Form):
     """
@@ -27,7 +28,6 @@ class InstallCourse(Form):
     """
     Form for installing course(s) to site(s).
     """
-    defaults = [('None', '---')]
     site = SelectMultipleField('Site', choices=defaults)
     course = SelectMultipleField('Course', choices=defaults)
     filter = SelectField('Filter', choices=defaults)

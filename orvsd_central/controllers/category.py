@@ -29,22 +29,15 @@ def update(category):
     """
     Returns a rendered template that shows all objects in a given 'category'.
     """
-    obj = get_obj_by_category(category)
-    identifier = get_obj_identifier(category)
-    if obj:
-        if 'details' in category:
-            category = category.split("details")[0] + " Details"
-        category = category[0].upper() + category[1:]
 
-        objects = obj.query.order_by(identifier).all()
-        objects = objects if objects else []
-        return render_template(
-            "update.html", objects=objects,
-            identifier=identifier, category=category,
-            user=current_user
-        )
-    else:
-        abort(404)
+    forms = {}
+
+    return render_template(
+        "update.html",
+        category=category.title(),
+        form=forms.get(category, []),
+        user=current_user
+    )
 
 
 """

@@ -14,15 +14,15 @@
     <div class='page-header'>
         <h1>{{category}}</h1>
     </div>
+    {% for field in form %}
+    {% if field.type != "CSRFTokenField" %}
     <div class="row">
-        <div class="col-xs-6">
-            <select id="object_list" class="form-control">
-                {% for obj in objects %}
-                <option value={{obj['id']}} class="object">{{obj[identifier]}}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div><br />
+        <div class="col-xs-3">{{ field.label }}</div>
+        <div class="col-xs-5">{{ field }}</div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    <br />
     <div class='row' id='form'>
 
         <!-- Embed things here -->
