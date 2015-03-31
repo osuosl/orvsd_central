@@ -1,5 +1,5 @@
-from flask.ext.wtf import (Form, TextField, PasswordField, SelectField,
-                           SelectMultipleField, Required, Email)
+from flask.ext.wtf import (DateTimeField, Email, Form, PasswordField, Required,
+                           SelectField, SelectMultipleField, TextField)
 
 defaults = [('None', '---')]
 
@@ -7,6 +7,7 @@ class LoginForm(Form):
     """
     Login form.
     """
+
     name = TextField('name', [Required()])
     password = PasswordField('password', [Required()])
 
@@ -15,6 +16,7 @@ class AddUser(Form):
     """
     Registration/Add User form.
     """
+
     user = TextField('user', [Required()])
     password = PasswordField('password', [Required()])
     confirm_pass = PasswordField('confirm_pass', [Required()])
@@ -28,6 +30,7 @@ class InstallCourse(Form):
     """
     Form for installing course(s) to site(s).
     """
+
     site = SelectMultipleField('Site', choices=defaults)
     course = SelectMultipleField('Course', choices=defaults)
     filter = SelectField('Filter', choices=defaults)

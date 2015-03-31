@@ -7,6 +7,7 @@ from flask.ext.login import current_user, login_required
 from sqlalchemy import and_
 
 from orvsd_central.forms import InstallCourse
+from orvsd_central.forms import CourseForm, DistrictForm, SchoolForm, SiteForm
 from orvsd_central.models import (Course, District, School, Site, SiteCourse,
                                   SiteDetail)
 from orvsd_central.util import (create_course_from_moodle_backup,
@@ -30,7 +31,7 @@ def update(category):
     Returns a rendered template that shows all objects in a given 'category'.
     """
 
-    forms = {}
+    forms = {'districts': DistrictForm()}
 
     return render_template(
         "update.html",
