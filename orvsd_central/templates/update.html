@@ -10,26 +10,19 @@
 {% endblock %}
 
 {% block content %}
-<form class="form-horizontal">
-    <div class='page-header'>
-        <h1>{{category}}</h1>
-    </div>
+<div class='page-header'>
+    <h1>{{category}}</h1>
+</div>
+<form class="form-horizontal" method="POST">
     {% for field in form %}
     {% if field.type != "CSRFTokenField" %}
-    <div class="row">
-        <div class="col-xs-3">{{ field.label }}</div>
-        <div class="col-xs-5">{{ field }}</div>
-        <div class="col-xs 4" id="{{ field.label }}_hint"></div>
+    <div class="form-group">
+        <label class="control-label col-xs-2">{{field.label}}</label>
+        <div class="col-xs-5">{{ field(class_='form-control') }}</div>
     </div>
     {% endif %}
     {% endfor %}
-    <br />
-    <div class='row' id='form'>
-
-        <!-- Embed things here -->
-
-    </div>
-    <div class="row"><p id="message" align="center"> </p></div>
+    <div class="row"><p id="message" align="center"></p>&nbsp;</div>
     <div class="row">
         <div class="col-xs-offset-3 col-xs-3">
             <input id="add" type="button" name="add" value="Add" class="btn btn-success btn-large span2">
