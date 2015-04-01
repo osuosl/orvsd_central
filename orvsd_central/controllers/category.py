@@ -38,16 +38,22 @@ def update(category):
         'courses': CourseForm(),
     }
 
-    form = forms[category]
-
     # This is a hackish 404, we really should have a specific 404 page for
     # this error
     if category not in forms.keys():
         abort(404)
 
-    # Select all form fields except for csrf_token. This allows for a generic
-    # template, but also allows for specific forms
+    form = forms[category]
+
+    # Select all form fields except for csrf_token. This allows for a
+    # generic template, but also allows for specific forms
     fields = [f != "csrf_token" for f in form._fields]
+
+    if form.validate_on_submit():
+        # Validation checks that javascript doesn't handle.
+        #
+        # Create/update the selected object.
+        pass
 
     return render_template(
         "update.html",
