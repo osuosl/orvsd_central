@@ -31,7 +31,17 @@ def update(category):
     Returns a rendered template that shows all objects in a given 'category'.
     """
 
-    forms = {'districts': DistrictForm()}
+    forms = {
+        'districts': DistrictForm(),
+        'schools': SchoolForm(),
+        'sites': SiteForm(),
+        'courses': CourseForm(),
+    }
+
+    # This is a hackish 404, we really should have a specific 404 page for
+    # this error
+    if category not in forms.keys():
+        abort(404)
 
     return render_template(
         "update.html",
