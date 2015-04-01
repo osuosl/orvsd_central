@@ -8,6 +8,7 @@ import sys
 from flask import current_app, g
 from flask.ext.script import Manager
 import nose
+import requests
 
 from orvsd_central import create_app
 from orvsd_central.database import (create_db_session, create_admin_account,
@@ -168,6 +169,89 @@ def setup_db():
             logging.info("Database: Initializing")
             init_db()
             command.stamp(alembic_cfg, "head")
+
+
+@manager.option('-d', "--data", help="File to import of Sites")
+def update_sites(data):
+    """
+    Expected Format:
+    ./ashland/moodle22/languages.orvsd.org
+    ./astoria/moodle22/astoria22.orvsd.org
+    ./beaverton/moodle22/beaverton22.orvsd.org
+    """
+
+    with current_app.app_context():
+        # Create a db session
+        g.db_session = create_db_session()
+        from orvsd_central.models import Site
+        from orvsd_central.util import gather_siteinfo, gather_tokens
+
+        # Used for finding a default nginx page.
+        random_domain = 'http://randomdomain.oregonachieves.org'
+        nginx_default = requests.get(random_domain).text
+        is_not_default = lambda d: requests.get(d).text != nginx_default
+
+        orvsd_sites = set(map(lambda x: x[0],
+                            g.db_session.query(Site.baseurl).distinct()))
+        filepaths = {}
+        server_sites = set()
+        with open(data, 'r') as f:
+            prefix = '/var/www/'
+            f = f.read().strip().replace('./', '')
+            for line in f.split('\n'):
+                line = line.strip()
+                base_url = line.split('/')[-1]
+                if is_not_default('http://' + base_url):
+                    filepaths[base_url] = prefix + line + '/'
+                    server_sites.add(base_url)
+                else:
+                    print 'Default nginx page for %s' % base_url
+
+        if not server_sites:
+            print 'No sites retrieved from input file. Was the format correct?'
+            exit()
+
+        # Retrieve sites in the server site list, but not on ORVSD
+        sites_to_add = server_sites - orvsd_sites
+        to_add = defaultdict(dict)
+        for site in sites_to_add:
+            subdomain = site.split('.')[0]
+            name = ' '.join(map(lambda x: x.capitalize(), subdomain.split('_')))
+            to_add[site] = {
+                'school_id': None,
+                'name': name,
+                'sitetype': 'moodle',
+                'baseurl': site,
+                'basepath': filepaths[site],
+                'machine': '',
+                'moodle_tokens': ''
+            }
+
+        '''
+        new_sites = []
+        for site in to_add:
+            new_site = Site(**site)
+            new_sites.append(new_site)
+            g.db_session.add(new_site)
+        g.db_session.commit()
+
+        not_in_server = orvsd_sites - server_sites
+        # Delete sites that weren't on the server.
+        to_delete = (g.db_session.query(Site)
+                        .filter(Site.baseurl._in(not_in_server))
+                        .all())
+        for site in to_delete:
+            g.db_session.delete(site)
+        g.db_session.commit()
+
+        # Gather tokens and siteinfo
+        for site in new_sites:
+            gather_tokens(site)
+            gather_siteinfo(site)
+        '''
+
+    print 'Sites cross-referenced. Added %d sites:' % len(to_add)
+    print '\t' + '\n\t'.join(to_add)
 
 
 @manager.option('-n', '--nosetest', help="Specific tests for nose to run")
