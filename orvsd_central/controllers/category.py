@@ -43,10 +43,16 @@ def update(category):
     if category not in forms.keys():
         abort(404)
 
+    obj = get_obj_by_category(category)
+    ident = get_obj_identifier(category)
+
+    objects = obj.query.order_by(ident).all()
+
     return render_template(
         "update.html",
         category=category.title(),
         form=forms.get(category, []),
+        objects=objects,
         user=current_user
     )
 

@@ -14,6 +14,16 @@
     <h1>{{category}}</h1>
 </div>
 <form class="form-horizontal" method="POST">
+    <div class="row">
+        <label class="control-label col-xs-2">Available {{category}}</label>
+        <div class="col-xs-5">
+            <select id="object_list" class="form-control">
+                {% for obj in objects %}
+                <option value={{obj['id']}} class="object">{{obj[identifier]}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div><br />
     {% for field in form %}
     {% if field.type != "CSRFTokenField" %}
     <div class="form-group">
@@ -34,5 +44,6 @@
             <input id="delete" type="submit" name="delete" value="Delete" class="btn btn-danger btn-large span2">
         </div>
     </div>
+    <div class="row">&nbsp;</div>
 </form>
 {% endblock %}
