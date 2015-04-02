@@ -188,8 +188,8 @@ def update_sites(data):
 
         # Used for finding a default nginx page.
         random_domain = 'http://randomdomain.oregonachieves.org'
-        nginx_default = requests.get(random_domain).text
-        is_not_default = lambda d: requests.get(d).text != nginx_default
+        nginx_default_page = requests.get(random_domain).text
+        nginx_default = lambda d: requests.get(d).text == nginx_default_page
 
         orvsd_sites = set(map(lambda x: x[0],
                             g.db_session.query(Site.baseurl).distinct()))
@@ -199,13 +199,10 @@ def update_sites(data):
             prefix = '/var/www/'
             f = f.read().strip().replace('./', '')
             for line in f.split('\n'):
-                line = line.strip()
                 base_url = line.split('/')[-1]
-                if is_not_default('http://' + base_url):
+                if not nginx_default('http://' + base_url):
                     filepaths[base_url] = prefix + line + '/'
                     server_sites.add(base_url)
-                else:
-                    print 'Default nginx page for %s' % base_url
 
         if not server_sites:
             print 'No sites retrieved from input file. Was the format correct?'
@@ -216,42 +213,49 @@ def update_sites(data):
         to_add = defaultdict(dict)
         for site in sites_to_add:
             subdomain = site.split('.')[0]
-            name = ' '.join(map(lambda x: x.capitalize(), subdomain.split('_')))
+            name = ' '.join(map(lambda x: x.capitalize(),
+                                subdomain.split('-')))
             to_add[site] = {
                 'school_id': None,
                 'name': name,
                 'sitetype': 'moodle',
                 'baseurl': site,
                 'basepath': filepaths[site],
-                'machine': '',
+                'location': '',
                 'moodle_tokens': ''
             }
 
-        '''
+        print 'Sites cross-referenced. '
+        print 'Added %d sites:' % len(to_add)
+        print '\t' + '\n\t'.join(to_add)
+
+        # Add sites that weren't in ORVSD
         new_sites = []
-        for site in to_add:
-            new_site = Site(**site)
+        for base_url, site_info in to_add.items():
+            new_site = Site(**site_info)
             new_sites.append(new_site)
             g.db_session.add(new_site)
         g.db_session.commit()
 
-        not_in_server = orvsd_sites - server_sites
         # Delete sites that weren't on the server.
+        not_in_server = orvsd_sites - server_sites
         to_delete = (g.db_session.query(Site)
-                        .filter(Site.baseurl._in(not_in_server))
+                        .filter(Site.baseurl.in_(not_in_server))
                         .all())
+        base_urls = [site.baseurl for site in to_delete]
         for site in to_delete:
             g.db_session.delete(site)
         g.db_session.commit()
 
-        # Gather tokens and siteinfo
-        for site in new_sites:
-            gather_tokens(site)
-            gather_siteinfo(site)
-        '''
+        print 'Deleted %d sites:' % len(base_urls)
+        print '\t' + '\n\t'.join(base_urls)
 
-    print 'Sites cross-referenced. Added %d sites:' % len(to_add)
-    print '\t' + '\n\t'.join(to_add)
+        # Gather tokens and siteinfo
+        print 'Gathering tokens and siteinfo...'
+        map(gather_tokens, new_sites)
+        map(gather_siteinfo, new_sites)
+
+        print 'Sites updated.'
 
 
 @manager.option('-n', '--nosetest', help="Specific tests for nose to run")
