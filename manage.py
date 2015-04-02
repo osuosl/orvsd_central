@@ -197,11 +197,11 @@ def update_sites(data):
         server_sites = set()
         with open(data, 'r') as f:
             prefix = '/var/www/'
-            f = f.read().strip().replace('./', '')
-            for line in f.split('\n'):
+            for line in f.readlines():
+                line = line.strip()  # Get rid of new line char
                 base_url = line.split('/')[-1]
                 if not nginx_default('http://' + base_url):
-                    filepaths[base_url] = prefix + line + '/'
+                    filepaths[base_url] = '%s/' % line.replace('./', prefix)
                     server_sites.add(base_url)
 
         if not server_sites:
