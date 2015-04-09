@@ -188,11 +188,11 @@ def update_sites(data):
 
         # Used for finding a default nginx page.
         random_domain = 'http://randomdomain.oregonachieves.org'
-        nginx_default_page = requests.get(random_domain).text
-        nginx_default = lambda d: requests.get(d).text == nginx_default_page
+        nginx_default = requests.get(random_domain).text
 
-        orvsd_sites = set(map(lambda x: x[0],
-                            g.db_session.query(Site.baseurl).distinct()))
+        orvsd_sites = set(
+            map(lambda x: x[0], g.db_session.query(Site.baseurl).distinct())
+        )
         filepaths = {}
         server_sites = set()
         with open(data, 'r') as f:
@@ -200,7 +200,8 @@ def update_sites(data):
             for line in f.readlines():
                 line = line.strip()  # Get rid of new line char
                 base_url = line.split('/')[-1]
-                if not nginx_default('http://' + base_url):
+                # Confirm we only save sites that are running.
+                if requests.get('http://' + base_url).text != nginx_default:
                     filepaths[base_url] = '%s/' % line.replace('./', prefix)
                     server_sites.add(base_url)
 
@@ -239,9 +240,9 @@ def update_sites(data):
 
         # Delete sites that weren't on the server.
         not_in_server = orvsd_sites - server_sites
-        to_delete = (g.db_session.query(Site)
-                        .filter(Site.baseurl.in_(not_in_server))
-                        .all())
+        to_delete = g.db_session.query(Site).filter(
+            Site.baseurl.in_(not_in_server)
+        ).all()
         base_urls = [site.baseurl for site in to_delete]
         for site in to_delete:
             g.db_session.delete(site)
