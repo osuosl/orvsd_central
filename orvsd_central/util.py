@@ -650,3 +650,18 @@ def prompt_matching_passwords():
             print("Passwords do not match. Please try again.")
 
     return passwd
+
+
+def create_school_by_district_site(district, site):
+    school = School(
+        district_id=district.id,
+        state_id=0,
+        name=district.name.rstrip() + ' School',
+        shortname=district.name.replace(' ', ''),
+        domain=site.baseurl,
+        license='',
+        county='',
+    )
+    g.db_session.add(school)
+    g.db_session.commit()
+    return school

@@ -259,6 +259,81 @@ def update_sites(data):
         print 'Sites updated.'
 
 
+@manager.command
+def assoc_sites_districts():
+    """
+    Associates orphan sites with districts either through fuzzy matching
+    or creating schools as intermediaries between sites and districts.
+    """
+
+    with current_app.app_context():
+        g.db_session = create_db_session()
+        from orvsd_central.models import Site, School, District
+        from orvsd_central.util import create_school_by_district_site
+        import pylev
+        import copy
+
+        orphan_sites = set(Site.query.filter_by(school_id=None).all())
+        assigned_sites = set()
+        schools = School.query.all()
+        print 'School Matching:'
+        num_matches = 0
+        match_id = -1
+
+        # If a site belongs to more than 1 school, just default to creating
+        # by a district.
+
+        # Let's fuzzy match on schools first.
+        for school in schools:
+            for site in orphan_sites:
+                if site.name in school.name or school.name in site.name:
+                    num_matches += 1
+                    match_id = school.id
+                # Use Levenshtein Distance for fuzzy matching
+                elif pylev.levenshtein(site.name, school.name) <= 3:
+                    num_matches += 1
+                    match_id = school.id
+            if num_matches == 1:  # Abusing site's scope here.
+                print ('School: {0} and Site: {1} matched.'
+                       .format(school.name, site.name))
+                site.school_id = match_id
+                assigned_sites.add(site)
+            num_matches = 0
+            match_id = -1
+
+        g.db_session.commit()
+        orphan_sites = orphan_sites - assigned_sites
+
+        print '\nDistrict Matching: '
+
+        # Districts next, with anything that's left.
+        districts = District.query.all()
+        for site in orphan_sites:
+            for district in districts:
+                if site.name in district.name or district.name in site.name:
+                    print ('District: {0} or Site: {1} contained in the other.'
+                           .format(district.name, site.name))
+                    school = create_school_by_district_site(district, site)
+                    site.school_id = school.id
+                    assigned_sites.add(site)
+                    break
+
+                # Use Levenshtein Distance for fuzzy matching
+                elif pylev.levenshtein(site.name, school.name) <= 3:
+                    print ('District: {0} and Site: {1} fuzzy matched.'
+                           .format(district.name, site.name))
+                    school = create_school_by_district_site(district, site)
+                    site.school_id = school.id
+                    assigned_sites.add(site)
+                    break
+
+        g.db_session.commit()
+        orphan_sites = orphan_sites - assigned_sites
+
+        print '\nRemaining Sites: '
+        print '\t' + '\n\t'.join((site.name for site in orphan_sites))
+
+
 @manager.option('-n', '--nosetest', help="Specific tests for nose to run")
 def run_tests(nosetest):
     """
