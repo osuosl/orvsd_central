@@ -270,36 +270,34 @@ def assoc_sites_districts():
         g.db_session = create_db_session()
         from orvsd_central.models import Site, School, District
         from orvsd_central.util import create_school_by_district_site
+        from collections import namedtuple
         import pylev
-        import copy
 
         orphan_sites = set(Site.query.filter_by(school_id=None).all())
         assigned_sites = set()
         schools = School.query.all()
-        print 'School Matching:'
         num_matches = 0
-        match_id = -1
+        match_tuple = namedtuple('match', ['id', 'name'])
+        match = None
 
         # If a site belongs to more than 1 school, just default to creating
         # by a district.
 
-        # Let's fuzzy match on schools first.
-        for school in schools:
-            for site in orphan_sites:
-                if site.name in school.name or school.name in site.name:
+        print 'School Matching:'
+        for site in orphan_sites:
+            for school in schools:
+                # Check for names as subsets or <=3 levenshtein distance.
+                if (site.name in school.name or school.name in site.name or
+                        pylev.levenshtein(site.name, school.name) <= 3):
                     num_matches += 1
-                    match_id = school.id
-                # Use Levenshtein Distance for fuzzy matching
-                elif pylev.levenshtein(site.name, school.name) <= 3:
-                    num_matches += 1
-                    match_id = school.id
-            if num_matches == 1:  # Abusing site's scope here.
+                    match = match_tuple(id=school.id, name=school.name)
+            if num_matches == 1:
                 print ('School: {0} and Site: {1} matched.'
-                       .format(school.name, site.name))
-                site.school_id = match_id
+                       .format(match.name, site.name))
+                site.school_id = match.id
                 assigned_sites.add(site)
             num_matches = 0
-            match_id = -1
+            match = None 
 
         g.db_session.commit()
         orphan_sites = orphan_sites - assigned_sites
