@@ -36,6 +36,9 @@ MOODLE_SERVICES = [
     'my_servicename_2'
 ]
 
+# In days
+MOODLE_ACTIVE_SINCE = 7
+
 # Moodle course install web service definitions
 INSTALL_COURSE_FILE_PATH = "/some/absolute/path/"  # must end with a /
 INSTALL_COURSE_WS_TOKEN = ""
