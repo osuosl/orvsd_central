@@ -287,7 +287,7 @@ def gather_tokens(site, services=[]):
     # We allow for service names to be passed, though most likely only services
     # listed in the applications config will ever be used
     if services == []:
-        service_names = current_app.config['MOODLE_SERVICES']
+        services = current_app.config['MOODLE_SERVICES']
 
     # If no services, nor a baseurl whys is the even being called?
     if not services or site.baseurl in ['', None]:
@@ -298,7 +298,7 @@ def gather_tokens(site, services=[]):
                 if not site.baseurl.startswith("http") else site.baseurl)
 
     # For each service, gather a token
-    for service in service_names:
+    for service in services:
         try:
             # Using the siteurl and the account information stored in the
             # config, request a token for the given service
