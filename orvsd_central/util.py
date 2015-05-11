@@ -193,7 +193,7 @@ def district_details(schools, active):
             'users': user_count}
 
 
-def gather_siteinfo(site, from_when=7):
+def gather_siteinfo(site):
     """
     Using the siteinfo webservice plugin for moodle, gather the siteinfo data
     about a site
@@ -210,6 +210,12 @@ def gather_siteinfo(site, from_when=7):
         site_url = ("http://%s" % site.baseurl
                     if not site.baseurl.startswith("http") else site.baseurl)
 
+        active_since = current_app.config.get('MOODLE_ACTIVE_SINCE', None)
+        if not active_since:
+            err = 'MOODLE_ACTIVE_SINCE not defined in configuration settings.'
+            logging.error(err)
+            return
+
         # Make the request
         req = requests.post(
             url="%s/webservice/rest/server.php" % site_url,
@@ -217,7 +223,7 @@ def gather_siteinfo(site, from_when=7):
                 'wstoken': siteinfo_token,
                 'wsfunction': 'local_orvsd_siteinfo_siteinfo',
                 'moodlewsrestformat': 'json',
-                'datetime': str(from_when)
+                'datetime': str(active_since)
             }
         )
 
