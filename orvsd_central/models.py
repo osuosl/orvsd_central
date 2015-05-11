@@ -212,7 +212,7 @@ class Site(Model):
     basepath = Column(String(255))
     jenkins_cron_job = Column(DateTime)
     location = Column(String(255))
-    moodle_tokens = Column(String(2048))
+    moodle_tokens = Column(String(2048), default="{}")
 
     site_details = relationship("SiteDetail", backref=backref('sites'))
     courses = relationship("Course",
