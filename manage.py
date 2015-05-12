@@ -183,7 +183,7 @@ def update_sites(data):
     with current_app.app_context():
         # Create a db session
         g.db_session = create_db_session()
-        from orvsd_central.models import Site
+        from orvsd_central.models import Site, SiteDetail
         from orvsd_central.util import gather_siteinfo, gather_tokens
 
         # Used for finding a default nginx page.
@@ -251,6 +251,20 @@ def update_sites(data):
         print 'Deleted %d sites:' % len(base_urls)
         print '\t' + '\n\t'.join(base_urls)
 
+        # Remove site_details whose sites do not exist anymore.
+        remaining_sites = {site.id for site in Site.query.all()}
+        site_details = SiteDetail.query.all()
+        orphan_details = 0
+
+        for site_detail in site_details:
+            if site_detail.site_id not in remaining_sites:
+                orphan_details += 1
+                g.db_session.delete(site_detail)
+
+        g.db_session.commit()
+        print ('Removed %d site_details whose sites no longer exist.'
+               % orphan_details)
+
         # Gather tokens and siteinfo
         print 'Gathering tokens and siteinfo...'
         map(gather_tokens, new_sites)
@@ -297,7 +311,7 @@ def assoc_sites_districts():
                 site.school_id = match.id
                 assigned_sites.add(site)
             num_matches = 0
-            match = None 
+            match = None
 
         g.db_session.commit()
         orphan_sites = orphan_sites - assigned_sites
