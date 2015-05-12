@@ -223,7 +223,6 @@ def update_sites(data):
                 'baseurl': site,
                 'basepath': filepaths[site],
                 'location': '',
-                'moodle_tokens': ''
             }
 
         print 'Sites cross-referenced. '
