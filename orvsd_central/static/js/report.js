@@ -38,7 +38,8 @@ $(function() {
                         <th>Site</th>\
                         <th>School</th>\
                         <th>Admin(s)</th>\
-                        <th>Users</th>\
+                        <th>Total Users</th>\
+                        <th>Active Users</th>\
                         <th>Teachers</th>\
                         <th>Courses</th>\
                     </tr>";
@@ -54,7 +55,8 @@ $(function() {
                             table += json[k].firstname + " " + json[k].lastname + " - " + json[k].email + "<br/>";
                         }
                         table += "</td>\
-                        <td>"+tdata[school].users+"</td>\
+                        <td>"+tdata[school].totalusers+"</td>\
+                        <td>"+tdata[school].activeusers+"</td>\
                         <td>"+tdata[school].teachers+"</td>\
                         <td>"+tdata[school].courses+"</td>";//\
                         /*<td>\
