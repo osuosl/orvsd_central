@@ -251,7 +251,7 @@ def update_sites(data):
         print '\t' + '\n\t'.join(base_urls)
 
         # Remove site_details whose sites do not exist anymore.
-        remaining_sites = {site.id for site in Site.query.all()}
+        remaining_sites = set(site.id for site in Site.query.all())
         site_details = SiteDetail.query.all()
         orphan_details = 0
 
