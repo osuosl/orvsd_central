@@ -516,7 +516,8 @@ def get_schools(dist_id, active):
             if details:
                 district_info[str(site.id)]['admin'] = details.adminlist
                 district_info[str(site.id)]['teachers'] = details.teachers
-                district_info[str(site.id)]['users'] = details.activeusers
+                district_info[str(site.id)]['activeusers'] = details.activeusers
+                district_info[str(site.id)]['totalusers'] = details.totalusers
                 district_info[str(site.id)]['courses'] = (
                     len(json.loads(details.courses)) if details.courses else 0
                 )
